@@ -1,17 +1,16 @@
 # For TOML reference
 # https://learnxinyminutes.com/docs/toml/
 
-<<requires::testing
 [tool.pytest.ini_options]
 testpaths = ["tests"]             # path to the test directory
 minversion = "3.8"
-addopts = "--cov=<<package-name>>" # Should be package name
+addopts = "--cov=ALP" # Should be package name
 
 [tool.coverage.run]
 branch = true
-context = "<<package-name>>" # Should be package name
+context = "ALP" # Should be package name
 omit = [
-    "<<package-name>>/__init__.py", # Has variables only needed for setup.py
+    "ALP/__init__.py", # Has variables only needed for setup.py
 ]
 
 [tool.coverage.report]
@@ -23,22 +22,18 @@ exclude_lines = [
     "raise NotImplementedError",
     "if TYPE_CHECKING",
 ] # These are lines to exclude from coverage
-endrequires::testing>>
 
-<<requires::black
 [tool.black]
 target-version = ['py38']
 line-length = 120
-endrequires::black>>
 
-<<requires::isort
 [tool.isort]
 py_version = "38"
-<<requires::black profile = "black" # Play nicely with black endrequires::black>>
-src_paths = ["<<package-name>>", "tests"]
+profile = "black" # Play nicely with black
+src_paths = ["ALP", "tests"]
 known_types = ["typing", "abc"] # We put these in their own section "types"
 known_test = ["tests"]
-known_first_party = ["<<package-name>>"]
+known_first_party = ["ALP"]
 sections = [
     "FUTURE",
     "TYPES",
@@ -49,9 +44,7 @@ sections = [
     "LOCALFOLDER",
 ] # section ordering
 multi_line_output = 3 # https://pycqa.github.io/isort/docs/configuration/multi_line_output_modes.html
-endrequires::isort>>
 
-<<requires::pydocstyle
 [tool.pydocstyle]
 convention = "numpy"
 add-ignore = [ # http://www.pydocstyle.org/en/stable/error_codes.html
@@ -70,24 +63,4 @@ add-ignore = [ # http://www.pydocstyle.org/en/stable/error_codes.html
     "D413", # Missing blank line after last section
     "D415", # First line should end with a period, question mark, or exclamation point
 ]
-endrequires::pydocstyle>>
 
-<<requires::mypy
-[tool.mypy]
-python_version = "3.8"
-show_error_codes = true
-warn_unused_configs = true         # warn about unused [tool.mypy] lines
-follow_imports = "normal"          # Type check top level api code we use from imports
-ignore_missing_imports = false     # prefer explicit ignores
-disallow_untyped_defs = true       # All functions must have types
-disallow_untyped_decorators = true # ... even decorators
-disallow_incomplete_defs = true    # ... all types
-
-[[tool.mypy.overrides]]
-module = ["setuptools.*"]     # Add modules that give import errors here
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = ["tests.*"]                # pytest uses decorators which are not typed in 3.8
-disallow_untyped_decorators = false # decorators in testing are not all annotated
-endrequires::mypy>>

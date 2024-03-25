@@ -20,7 +20,7 @@ permissions:
   contents: write
 
 env:
-  name: <<name>>
+  name: ActiveLearningPipelines
 
 jobs:
   build-and-deploy:
