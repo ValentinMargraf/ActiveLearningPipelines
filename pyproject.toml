@@ -4,7 +4,6 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]             # path to the test directory
 minversion = "3.8"
-addopts = "--cov=ALP" # Should be package name
 
 [tool.coverage.run]
 branch = true

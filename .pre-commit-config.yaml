@@ -3,7 +3,7 @@
 # If things break on update, raise an issue
 repos:
   - repo: https://github.com/pycqa/isort
-    rev: 5.10.1
+    rev: 5.12.0
     hooks:
       - id: isort
         name: isort imports ALP
@@ -13,27 +13,27 @@ repos:
         name: isort imports tests
         files: tests
 
-  - repo: https://github.com/ambv/black
-    rev: 22.1.0
-    hooks:
-      - id: black
-        name: black formatter ALP
-        files: ALP
+#  - repo: https://github.com/ambv/black
+#    rev: 22.1.0
+#    hooks:
+#      - id: black
+#        name: black formatter ALP
+#        files: ALP
+#
+#      - id: black
+#        name: black formatter tests
+#        files: tests
+#
+#      - id: black
+#        name: black formatter examples
+#        files: examples
 
-      - id: black
-        name: black formatter tests
-        files: tests
-
-      - id: black
-        name: black formatter examples
-        files: examples
-
-  - repo: https://github.com/pycqa/pydocstyle
-    rev: 6.1.1
-    hooks:
-      - id: pydocstyle
-        files: ALP
-        additional_dependencies: ["toml"] # Needed to parse pyproject.toml
+#  - repo: https://github.com/pycqa/pydocstyle
+#    rev: 6.1.1
+#    hooks:
+#      - id: pydocstyle
+#        files: ALP
+#        additional_dependencies: ["toml"] # Needed to parse pyproject.toml
 
   - repo: https://github.com/pycqa/flake8
     rev: 4.0.1

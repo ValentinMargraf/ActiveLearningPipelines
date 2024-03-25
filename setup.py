@@ -22,6 +22,8 @@ def read_file(filepath: str) -> str:
 
 extras_require = {
     "dev": [
+        # Dependencies
+        #"scikit-learn>=1.2.0",
         # Test
         "pytest>=4.6",
         "pytest-cov",
