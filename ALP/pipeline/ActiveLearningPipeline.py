@@ -1,3 +1,5 @@
+import numpy as np
+
 from ALP.benchmark.Observer import Observer
 
 
@@ -18,21 +20,27 @@ class ActiveLearningPipeline:
         self.num_samples_per_iteration = num_samples_per_iteration
 
     def active_fit(self, X_l, y_l, X_u, oracle):
+        # X_u_idx = np.arange(len(X_u))
+
         # select data points from X_u to sample additional data points for initialization (i.e., uninformed) and remove
         # the sampled data points from the unlabeled dataset
         if self.initializer is not None:
-            X_u_selected = self.initializer.sample(X_u, self.init_budget)
-            X_u_red = X_u - X_u_selected
+            init_idx = self.initializer.sample(X_u, self.init_budget)
+
+            X_u_sel = X_u[init_idx]
+            mask = np.array([True] * len(self.X_u))
+            mask[init_idx] = False
+            X_u = X_u[mask]
 
             # label data points via the oracle
-            y_u_selected = oracle.query(X_u_selected)
+            y_u_selected = oracle.query(X_u_sel)
 
             # augment the given labeled data set by the data points selected for initialization
-            X_l_aug = X_l + X_u_selected
+            X_l_aug = X_l + X_u_sel
             y_l_aug = y_l + y_u_selected
 
             if self.observer is not None:
-                self.observer.observe_data(0, X_u_selected, y_u_selected, X_l_aug, y_l_aug)
+                self.observer.observe_data(0, X_u_sel, y_u_selected, X_l_aug, y_l_aug)
         else:
             X_l_aug = X_l
             y_l_aug = y_l

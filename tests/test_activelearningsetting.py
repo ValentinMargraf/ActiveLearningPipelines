@@ -1,6 +1,6 @@
 import pytest
 
-from ALP.benchmark.Setting import Setting
+from ALP.benchmark.ActiveLearningSetting import ActiveLearningSetting
 
 SETTING_ID = 42
 SETTING_NAME = "TestSetting"
@@ -13,10 +13,10 @@ NUMBER_OF_SAMPLES = 5
 
 @pytest.fixture
 def setting():
-    return Setting(setting_id=SETTING_ID, setting_name=SETTING_NAME,
-                   setting_labeled_train_size=SETTING_TRAIN_SIZE, setting_train_type=SETTING_TRAIN_TYPE,
-                   setting_test_size=SETTING_TEST_SIZE, number_of_iterations=NUMBER_OF_IT,
-                   number_of_samples=NUMBER_OF_SAMPLES)
+    return ActiveLearningSetting(setting_id=SETTING_ID, setting_name=SETTING_NAME,
+                                 setting_labeled_train_size=SETTING_TRAIN_SIZE, setting_train_type=SETTING_TRAIN_TYPE,
+                                 setting_test_size=SETTING_TEST_SIZE, number_of_iterations=NUMBER_OF_IT,
+                                 number_of_samples=NUMBER_OF_SAMPLES)
 
 
 def test_get_setting_id(setting):

@@ -1,6 +1,9 @@
 
 
-class Setting:
+class ActiveLearningSetting:
+    """
+    The active learning setting defines constraints and design choices of one active learning setup.
+    """
 
     def __init__(self, setting_id, setting_name, setting_labeled_train_size, setting_train_type, setting_test_size,
                  number_of_iterations, number_of_samples):

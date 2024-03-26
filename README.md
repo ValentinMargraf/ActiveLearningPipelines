@@ -1,4 +1,4 @@
-# ActiveLearningPipelines
+# SALTBench: Self-Supervised and Active Learning with Tabular data
 
 
 
