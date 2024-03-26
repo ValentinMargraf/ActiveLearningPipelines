@@ -6,10 +6,15 @@ from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
 from sklearn import metrics
 from scipy import stats
 from uncertainty_quantifier import RandomForestEns as RFEns
+import sklearn
+
+
+
+
 
 class ActiveLearningPipeline():
 
-    def __init__(self, scenario_id, scenario_name, openmlid, seed, setting_id, init_query, learner, query_strategy, query_learner, num_to_label, iterations):
+    def __init__(self, scenario_id, scenario_name, openmlid, seed, setting, setting_id, init_query, learner, query_strategy, query_learner, num_to_label, iterations):
         """
         This class implements the active learning pipeline. It is constructed from a dataset (openmlid + seed, which determines the initial
         split into labeled/unlabeled/test dataset), a setting (empty, small, medium, large) an initial query strategy
@@ -20,6 +25,7 @@ class ActiveLearningPipeline():
         self.openmlid = openmlid
         self.seed = seed
 
+        self.setting = setting
         self.setting_id = setting_id
         self.init_query = init_query
         self.learner = learner
@@ -61,7 +67,7 @@ class ActiveLearningPipeline():
         This method retrieves the data from OpenML.
         """
         try:
-            ds = openml.datasets.get_dataset(openmlid)
+            ds = openml.datasets.get_dataset(self.openmlid)
             # print("dataset info loaded")
             df = ds.get_data()[0]
             # prepare label column as numpy array
@@ -76,7 +82,7 @@ class ActiveLearningPipeline():
                 y = y_int
 
         except Exception as e:
-            task = openml.tasks.get_task(openmlid)
+            task = openml.tasks.get_task(self.openmlid)
             X, y = task.get_X_and_y()
 
         self.X = X
@@ -92,7 +98,11 @@ class ActiveLearningPipeline():
         # depending on the setting, calculate the split
         if self.setting != "empty":
             split = self.initial_size / len(self.indices_train)
-            self.indices_labeled, self.indices_unlabeled = train_test_split(self.indices_train, test_size=split, random_state=self.seed)
+            try:
+                self.indices_labeled, self.indices_unlabeled = train_test_split(self.indices_train, test_size=split, random_state=self.seed)
+            except sklearn.utils._param_validation.InvalidParameterError as e:
+                print("Less instances in Dataset than specified for initial labeled set")
+
         else:
             self.indices_labeled = []
             self.indices_unlabeled = self.indices_train
@@ -125,17 +135,17 @@ class ActiveLearningPipeline():
     def get_oracle_ids(self):
         # TODO CHECK FOR ERRORS
         # RANDOM
-        if self.sampling_approach == 'random':
+        if self.query_strategy == 'random':
             np.random.seed(self.seed)
             return np.random.choice(np.arange(len(self.Xu)), self.num_to_label, replace=False)
-        elif self.sampling_approach == 'least_confident':
+        elif self.query_strategy == 'least_confident':
             clf = self.query_learner
             clf.fit(self.Xl, self.yl)
             probas = clf.predict_proba(self.Xu)
             probas_max = probas.max(axis=-1)
             least_confident_ids = np.argsort(probas_max)[:self.num_to_label]
             return least_confident_ids
-        elif self.sampling_approach == 'margin_sampling':
+        elif self.query_strategy == 'margin_sampling':
             clf = self.query_learner
             clf.fit(self.Xl, self.yl)
             probas = clf.predict_proba(self.Xu)
@@ -152,7 +162,7 @@ class ActiveLearningPipeline():
             margin_ids = np.argsort(margins)[:self.num_to_label]
             #print("margins",margin_ids)
             return margin_ids
-        elif self.sampling_approach == 'power_margin_sampling':
+        elif self.query_strategy == 'power_margin_sampling':
             clf = self.query_learner
             clf.fit(self.Xl, self.yl)
             probas = clf.predict_proba(self.Xu)
@@ -172,7 +182,7 @@ class ActiveLearningPipeline():
             margin_ids = np.argsort(margins)[-self.num_to_label:]
             return margin_ids
 
-        elif self.sampling_approach == 'least_confident':
+        elif self.query_strategy == 'least_confident':
             clf = self.query_learner
             clf.fit(self.Xl, self.yl)
             probas = clf.predict_proba(self.Xu)
@@ -180,7 +190,7 @@ class ActiveLearningPipeline():
             least_confident_ids = np.argsort(probas_max)[:self.num_to_label]
             return least_confident_ids
 
-        elif self.sampling_approach == 'entropy':
+        elif self.query_strategy == 'entropy':
             clf = self.query_learner
             clf.fit(self.Xl, self.yl)
             probas = clf.predict_proba(self.Xu)
@@ -193,7 +203,7 @@ class ActiveLearningPipeline():
             entropy_ids = np.argsort(entropies)[-self.num_to_label:]
             return entropy_ids
 
-        elif self.sampling_approach == 'qbc':
+        elif self.query_strategy == 'qbc':
             clf = RFEns(n_estimators=10)
             clf.fit(self.Xl, self.yl)
             probas = clf.predict_proba(self.Xu)
@@ -208,7 +218,7 @@ class ActiveLearningPipeline():
             KL_ids = np.argsort(KL)[-self.num_to_label:]
             return KL_ids
 
-        elif self.sampling_approach == 'weighted_cluster':
+        elif self.query_strategy == 'weighted_cluster':
             clf = self.query_learner
             clf.fit(self.Xl, self.yl)
             scores = clf.predict_proba(self.Xu)  + 1e-8
@@ -253,7 +263,7 @@ class ActiveLearningPipeline():
         self.indices_labeled = ids
         self.indices_unlabeled = np.setdiff1d(self.indices_train, ids)
 
-    def init(self):
+    def init(self, testrun=False):
         """
         This method initializes the active learning pipeline.
         """
@@ -263,23 +273,24 @@ class ActiveLearningPipeline():
             self.init_empty()
         self.get_split_data()
         self.num_classes = len(np.unique(self.yl))
-        self.fit()
-        preds = self.predict(self.Xte)
-        test_acc = metrics.accuracy_score(self.yte, preds)
-        # convert to array of shape (num_samples, num_classes)
-        auc_te = np.zeros((len(self.yte), self.num_classes))
-        for i in range(len(self.yte)):
-            auc_te[i, int(self.yte[i])] = 1
-        auc_preds = np.zeros((len(preds), self.num_classes))
-        for i in range(len(preds)):
-            auc_preds[i, int(preds[i])] = 1
-        try:
-            test_auc = metrics.roc_auc_score(auc_te, auc_preds, average='macro', multi_class='ovr')
-        except Exception as e:
-            test_auc = None
-        test_prec = metrics.precision_score(auc_te, auc_preds, average='macro', zero_division=np.nan)
-        test_rec = metrics.recall_score(auc_te, auc_preds, average='macro', zero_division=np.nan)
-        self.current_test_metrics = [test_acc, test_auc, test_prec, test_rec]
+        if not testrun:
+            self.fit()
+            preds = self.predict(self.Xte)
+            test_acc = metrics.accuracy_score(self.yte, preds)
+            # convert to array of shape (num_samples, num_classes)
+            auc_te = np.zeros((len(self.yte), self.num_classes))
+            for i in range(len(self.yte)):
+                auc_te[i, int(self.yte[i])] = 1
+            auc_preds = np.zeros((len(preds), self.num_classes))
+            for i in range(len(preds)):
+                auc_preds[i, int(preds[i])] = 1
+            try:
+                test_auc = metrics.roc_auc_score(auc_te, auc_preds, average='macro', multi_class='ovr')
+            except Exception as e:
+                test_auc = None
+            test_prec = metrics.precision_score(auc_te, auc_preds, average='macro', zero_division=np.nan)
+            test_rec = metrics.recall_score(auc_te, auc_preds, average='macro', zero_division=np.nan)
+            self.current_test_metrics = [test_acc, test_auc, test_prec, test_rec]
 
     def update_indices(self, ids):
         self.indices_labeled = np.concatenate([self.indices_labeled, self.indices_unlabeled[ids]])
@@ -330,15 +341,23 @@ def run_active_pipeline():
     svm_rbf = svm(kernel='rbf', probability=True)
     rf_entropy = rf(n_estimators=100, max_depth=10, criterion='entropy')
     rf_gini = rf(n_estimators=100, max_depth=10, criterion='gini')
+    rf_entropy_large = rf(n_estimators=250, max_depth=10, criterion='entropy')
+    rf_gini_large = rf(n_estimators=250, max_depth=10, criterion='gini')
     knn_3 = nn(n_neighbors=3)
     knn_10 = nn(n_neighbors=10)
     log_reg = lr()
     multinomial_bayes = mnb()
     etc_entropy = etc(n_estimators=100, max_depth=10, criterion='entropy')
     etc_gini = etc(n_estimators=100, max_depth=10, criterion='gini')
+    etc_entropy_large = etc(n_estimators=250, max_depth=10, criterion='entropy')
+    etc_gini_large = etc(n_estimators=250, max_depth=10, criterion='gini')
     naive_bayes = GaussianNB()
     mlp = MLPClassifier()
-
+    from sklearn.ensemble import GradientBoostingClassifier
+    GBT_logloss = GradientBoostingClassifier(n_estimators=100)
+    GBT_exp = GradientBoostingClassifier(n_estimators=100, loss='exponential')
+    GBT_logloss_large = GradientBoostingClassifier(n_estimators=250)
+    GBT_exp_large = GradientBoostingClassifier(n_estimators=250, loss='exponential')
 
 
 

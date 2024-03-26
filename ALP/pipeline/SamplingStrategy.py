@@ -23,3 +23,5 @@ class WrappedSamplingStrategy(SamplingStrategy):
 class MarginSampling(SamplingStrategy):
     def sample(self, learner, X_l, y_l, X_u, num_samples):
         pass
+
+# mein todo hier
