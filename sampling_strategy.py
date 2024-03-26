@@ -16,7 +16,7 @@ class WrappedSamplingStrategy(SamplingStrategy):
         self.wrapped_strategy = wrapped_strategy
         self.learner = learner
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, already_queried_ids, num_samples):
         self.learner.fit(X_l, y_l)
         self.wrapped_strategy.sample(self.learner, X_l, y_l, X_u, num_samples)
 
@@ -224,18 +224,6 @@ class TypicalClusterSampling(SamplingStrategy):
                         return selected_ids
                     ct += 1
 
-
-class CoreSetSampling(SamplingStrategy):
-    def __init__(self, seed):
-        super().__init__(seed)
-
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
-
-
-class MutualInformation??
-
-margin density
-cluster margin
 
 
 
