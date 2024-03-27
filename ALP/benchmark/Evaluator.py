@@ -1,6 +1,6 @@
 from ALP.benchmark.ActiveLearningScenario import ActiveLearningScenario
-from ALP.benchmark.Oracle import Oracle
 from ALP.pipeline import ActiveLearningPipeline
+from ALP.pipeline.Oracle import Oracle
 
 
 class Evaluator:

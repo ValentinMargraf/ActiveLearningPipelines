@@ -6,7 +6,7 @@ import mysql.connector
 
 from ALP.benchmark.ActiveLearningScenario import ActiveLearningScenario
 from ALP.benchmark.ActiveLearningSetting import ActiveLearningSetting
-from ALP.common import format_insert_query, format_select_query
+from ALP.util.common import format_insert_query, format_select_query
 
 
 class BenchmarkConnector(ABC):
