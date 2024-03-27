@@ -4,10 +4,14 @@ import openml
 from ALP.benchmark.ActiveLearningSetting import ActiveLearningSetting
 
 
+def create_dataset_split():
+    pass
+
+
 class ActiveLearningScenario:
 
-    def __init__(self, scenario_id, openml_id, test_split_seed, train_split_seed, seed, labeled_indices, test_indices,
-                 setting: ActiveLearningSetting):
+    def __init__(self, scenario_id, openml_id, test_split_seed, train_split_seed, seed, setting: ActiveLearningSetting,
+                 labeled_indices=None, test_indices=None):
         self.scenario_id = scenario_id
         self.openml_id = openml_id
         self.test_split_seed = test_split_seed
@@ -33,6 +37,12 @@ class ActiveLearningScenario:
             y = y_int
         self.X = X
         self.y = y
+
+        if test_indices is None:
+            self.test_indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+        if labeled_indices is None:
+            self.labeled_indices = [10, 11, 12, 13, 14, 15]
 
     def get_scenario_id(self):
         return self.scenario_id
@@ -69,3 +79,9 @@ class ActiveLearningScenario:
         X_u, y_u = self.get_unlabeled_train_data()
         X_test, y_test = self.get_test_data()
         return X_l, y_l, X_u, y_u, X_test, y_test
+
+    def __repr__(self):
+        params = dict(self.__dict__)
+        params.pop("X")
+        params.pop("y")
+        return "<ActiveLearningScenario> " + str(params)

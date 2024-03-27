@@ -22,6 +22,14 @@ class ActiveLearningSetting:
         # number of samples queried per iteration
         self.number_of_samples = number_of_samples
 
+    def from_dict(setting: dict):
+        return ActiveLearningSetting(setting_id=setting["setting_id"], setting_name=setting["setting_name"],
+                                     setting_labeled_train_size=setting["setting_labeled_train_size"],
+                                     setting_train_type=setting["setting_train_type"],
+                                     setting_test_size=setting["setting_test_size"],
+                                     number_of_iterations=setting["number_of_iterations"],
+                                     number_of_samples=setting["number_of_samples"])
+
     def get_setting_id(self):
         return self.setting_id
 
@@ -42,3 +50,6 @@ class ActiveLearningSetting:
 
     def get_number_of_samples(self):
         return self.number_of_samples
+
+    def __repr__(self):
+        return "<ActiveLearningSetting> " + str(self.__dict__)
