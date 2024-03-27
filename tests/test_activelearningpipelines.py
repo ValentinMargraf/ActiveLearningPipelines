@@ -47,10 +47,9 @@ alscenario = ActiveLearningScenario(scenario_id=SCENARIO_ID, openml_id=OPENML_ID
 
 alscenario.preprocess_data()
 X_l, y_l, X_u, y_u, X_test, y_test = alscenario.get_data_split()
-sampling_strategies = [RandomSamplingStrategy(42),WeightedClusterSampling(42)]
-#sampling_strategies = [RandomSamplingStrategy(42),EntropySampling(42),MarginSampling(42),LeastConfidentSampling(42),MonteCarloEERLogLoss(42),
-#                       MonteCarloEERMisclassification(42),DiscriminativeSampling(42),QueryByCommitteeEntropySampling(42),QueryByCommitteeKLSampling(42),BatchBaldSampling(42),
-#            PowerMarginSampling(42),RandomMarginSampling(42),MinMarginSampling(42),ExpectedAveragePrecision(42),TypicalClusterSampling(42),WeightedClusterSampling(42)]
+sampling_strategies = [RandomSamplingStrategy(42),EntropySampling(42),MarginSampling(42),LeastConfidentSampling(42),MonteCarloEERLogLoss(42),
+                      MonteCarloEERMisclassification(42),DiscriminativeSampling(42),QueryByCommitteeEntropySampling(42),QueryByCommitteeKLSampling(42),BatchBaldSampling(42),
+            PowerMarginSampling(42),RandomMarginSampling(42),MinMarginSampling(42),ExpectedAveragePrecision(42),TypicalClusterSampling(42),WeightedClusterSampling(42)]
 
 
 
