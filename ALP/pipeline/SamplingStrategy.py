@@ -35,8 +35,8 @@ class RandomSamplingStrategy(SamplingStrategy):
         Xu = X_u#[to_query_from]
         nan_labels = np.full(len(Xu), np.nan, dtype=float)
         queried_ids = self.qs.query(X=np.concatenate([X_l, Xu]), y=np.concatenate([y_l, nan_labels]), batch_size=num_samples)
-        ids = queried_ids - len(y_l)
-        queried_original_ids = to_query_from[ids]
+        queried_original_ids = queried_ids - len(y_l)
+        #queried_original_ids = to_query_from[ids]
         return queried_original_ids
 
 class EntropySampling(SamplingStrategy):
@@ -48,8 +48,8 @@ class EntropySampling(SamplingStrategy):
         Xu = X_u#[to_query_from]
         nan_labels = np.full(len(Xu), np.nan, dtype=float)
         queried_ids = self.qs.query(X=np.concatenate([X_l, Xu]), y=np.concatenate([y_l, nan_labels]), clf=learner, fit_clf=True, batch_size=num_samples)
-        ids = queried_ids - len(y_l)
-        queried_original_ids = to_query_from[ids]
+        queried_original_ids = queried_ids - len(y_l)
+        #queried_original_ids = to_query_from[ids]
         return queried_original_ids
 
 
@@ -81,8 +81,8 @@ class EpistemicUncertaintySampling(SamplingStrategy):
         Xu = X_u#[to_query_from]
         nan_labels = np.full(len(Xu), np.nan, dtype=float)
         queried_ids = self.qs.query(X=np.concatenate([X_l, Xu]), y=np.concatenate([y_l, nan_labels]), clf=learner, fit_clf=True, batch_size=num_samples)
-        ids = queried_ids - len(y_l)
-        queried_original_ids = to_query_from[ids]
+        queried_original_ids = queried_ids - len(y_l)
+        #queried_original_ids = to_query_from[ids]
         return queried_original_ids
 
 class MonteCarloEERLogLoss(SamplingStrategy):
@@ -94,8 +94,8 @@ class MonteCarloEERLogLoss(SamplingStrategy):
         Xu = X_u#[to_query_from]
         nan_labels = np.full(len(Xu), np.nan, dtype=float)
         queried_ids = self.qs.query(X=np.concatenate([X_l, Xu]), y=np.concatenate([y_l, nan_labels]), clf=learner, fit_clf=True, batch_size=num_samples)
-        ids = queried_ids - len(y_l)
-        queried_original_ids = to_query_from[ids]
+        queried_original_ids = queried_ids - len(y_l)
+        #queried_original_ids = to_query_from[ids]
         return queried_original_ids
 
 class MonteCarloEERMisclassification(MonteCarloEERLogLoss):
@@ -112,8 +112,8 @@ class DiscriminativeSampling(SamplingStrategy):
         Xu = X_u#[to_query_from]
         nan_labels = np.full(len(Xu), np.nan, dtype=float)
         queried_ids = self.qs.query(X=np.concatenate([X_l, Xu]), y=np.concatenate([y_l, nan_labels]), discriminator=learner, batch_size=num_samples)
-        ids = queried_ids - len(y_l)
-        queried_original_ids = to_query_from[ids]
+        queried_original_ids = queried_ids - len(y_l)
+        #queried_original_ids = to_query_from[ids]
         return queried_original_ids
 
 class QueryByCommitteeEntropySampling(SamplingStrategy):
@@ -126,8 +126,8 @@ class QueryByCommitteeEntropySampling(SamplingStrategy):
         Xu = X_u#[to_query_from]
         nan_labels = np.full(len(Xu), np.nan, dtype=float)
         queried_ids = self.qs.query(X=np.concatenate([X_l, Xu]), y=np.concatenate([y_l, nan_labels]), ensemble=learners, fit_ensemble=True, batch_size=num_samples)
-        ids = queried_ids - len(y_l)
-        queried_original_ids = to_query_from[ids]
+        queried_original_ids = queried_ids - len(y_l)
+        #queried_original_ids = to_query_from[ids]
         return queried_original_ids
 
 
@@ -145,8 +145,8 @@ class BatchBaldSampling(SamplingStrategy):
         Xu = X_u#[to_query_from]
         nan_labels = np.full(len(Xu), np.nan, dtype=float)
         queried_ids = self.qs.query(X=np.concatenate([X_l, Xu]), y=np.concatenate([y_l, nan_labels]), ensemble=learners, fit_ensemble=True, batch_size=num_samples)
-        ids = queried_ids - len(y_l)
-        queried_original_ids = to_query_from[ids]
+        queried_original_ids = queried_ids - len(y_l)
+        #queried_original_ids = to_query_from[ids]
         return queried_original_ids
 
 
@@ -200,7 +200,8 @@ class TypicalClusterSampling(SamplingStrategy):
                     selected_ids.append(selected_id[0])
                     ct += 1
                     if ct==num_samples:
-                        return to_query_from[selected_ids]
+                        return selected_ids
+                        #return to_query_from[selected_ids]
 
 
 class PowerMarginSampling(SamplingStrategy):
@@ -223,8 +224,8 @@ class PowerMarginSampling(SamplingStrategy):
         np.random.seed(self.seed)
         margins = np.log(margins + 1e-8) + np.random.gumbel(size=len(margins))
         margins = 1 - margins
-        margin_ids = np.argsort(margins)[-num_samples:]
-        original_margin_ids = to_query_from[margin_ids]
+        original_margin_ids = np.argsort(margins)[-num_samples:]
+        #original_margin_ids = to_query_from[margin_ids]
         return original_margin_ids
 
 class WeightedClusterSampling(SamplingStrategy):
@@ -234,6 +235,7 @@ class WeightedClusterSampling(SamplingStrategy):
     def sample(self, learner, X_l, y_l, X_u, num_samples):
         #to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
         Xu = X_u#[to_query_from]
+        print("Xu: ", Xu.shape)
         scores = learner.predict_proba(Xu) + 1e-8
         entropy = -np.sum(scores * np.log(scores), axis=1)
         num_classes = len(np.unique(y_l))
@@ -244,25 +246,23 @@ class WeightedClusterSampling(SamplingStrategy):
             warnings.simplefilter("ignore")
             kmeans = KMeans(n_clusters=num_classes)
             kmeans.fit(Xu, sample_weight=entropy)
-            #TODO hier gabs noch errors in medium setting, to be checked
-            class_ids = [np.argwhere(kmeans.labels_ == i) for i in range(num_classes)]
+            #class_ids = [np.argwhere(kmeans.labels_ == i) for i in range(num_classes)]
             centers = kmeans.cluster_centers_
-            dists = euclidean_distances(centers, Xu)
-            sort_idxs = dists.argsort(axis=1)
-            q_idxs = []
-            n = len(Xu)
-            # taken from https://github.com/virajprabhu/CLUE/blob/main/CLUE.py
-            ax, rem = 0, n
-            idxs_unlabeled = np.arange(n)
-            while rem > 0:
-                q_idxs.extend(list(sort_idxs[:, ax][:rem]))
-                q_idxs = list(set(q_idxs))
-                rem = n - len(q_idxs)
-                ax += 1
-            print("q_idxs: ", q_idxs)
-            idxs = idxs_unlabeled[q_idxs[:num_samples]]
-            print("idxs: ", idxs)
-            return to_query_from[idxs]
+            # for each class, find instance clostes to center
+            selected_ids = []
+
+            per_class = num_samples // num_classes + 1
+            for class_ in range(num_classes):
+                class_ids = np.argwhere(kmeans.labels_ == class_)
+                # corresponding center
+                center = centers[class_].reshape(1, -1)
+                class_neigh = np.squeeze(Xu[class_ids], axis=1)
+                dists = euclidean_distances(center, class_neigh)
+                closest_instances_id = np.argsort(dists)[:per_class][0]
+                for closest_instance_id in closest_instances_id:
+                    selected_ids.append(class_ids[closest_instance_id][0])
+
+            return selected_ids[0:num_samples]
 
 
 class RandomMarginSampling(SamplingStrategy):
@@ -273,8 +273,8 @@ class RandomMarginSampling(SamplingStrategy):
     def sample(self, learner, X_l, y_l, X_u, num_samples):
         num_for_margin = num_samples // 2
         num_for_random = num_samples - num_for_margin
-        margin_ids = MarginSampling(self.seed).sample(learner, X_l, y_l, X_u, already_queried_ids, num_for_margin)
-        random_ids = RandomSamplingStrategy(self.seed).sample(learner, X_l, y_l, X_u, already_queried_ids, num_for_random)
+        margin_ids = MarginSampling(self.seed).sample(learner, X_l, y_l, X_u, num_for_margin)
+        random_ids = RandomSamplingStrategy(self.seed).sample(learner, X_l, y_l, X_u, num_for_random)
         return np.concatenate((margin_ids, random_ids))
 
 class MinMarginSampling(SamplingStrategy):
@@ -298,4 +298,5 @@ class MinMarginSampling(SamplingStrategy):
                 margins[i,j] = most_likely_prob - second_most_likely_prob
         margins = np.min(margins, axis=0)
         margin_ids = np.argsort(margins)[:num_samples]
-        return to_query_from[margin_ids]
+        return margin_ids
+        #return to_query_from[margin_ids]
