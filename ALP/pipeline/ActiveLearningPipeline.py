@@ -62,7 +62,6 @@ class ActiveLearningPipeline:
             self.observer.observe_model(self.learner)
 
         for i in range(1, self.num_iterations + 1):
-            print("iteration", i)
             # ask query strategy for samples
             idx_query = self.sampling_strategy.sample(learner=self.learner, X_l=X_l_aug, y_l=y_l_aug, X_u=X_u_red,
                                                       num_samples=self.num_samples_per_iteration)
@@ -93,7 +92,7 @@ class ActiveLearningPipeline:
 
             # let the observer know about the learned model
             if self.observer is not None:
-                self.observer.observe_model(self.learner)
+                self.observer.observe_model(i, self.learner)
 
     def predict(self, X_test):
         return self.learner.predict(X_test)

@@ -11,7 +11,7 @@ class Observer(ABC):
         pass
 
     @abstractmethod
-    def observe_model(self, model):
+    def observe_model(self, iteration, model):
         pass
 
 
@@ -21,7 +21,7 @@ class TestPerformanceObserver(Observer):
         self.X_test = X_test
         self.y_test = y_test
 
-    def observe_model(self, model):
+    def observe_model(self, iteration, model):
         from sklearn.metrics import accuracy_score
         y_pred = model.predict(self.X_test)
         print("Test Accuracy", accuracy_score(self.y_test, y_pred))

@@ -23,7 +23,10 @@ def read_file(filepath: str) -> str:
 extras_require = {
     "dev": [
         # Dependencies
-        #"scikit-learn>=1.2.0",
+        "scikit-learn>=1.2.0",
+        "scikit-activeml>=0.4.1",
+        "py-experimenter>=1.4.1",
+        "mysql-connector-python>=8.3.0",
         # Test
         "pytest>=4.6",
         "pytest-cov",

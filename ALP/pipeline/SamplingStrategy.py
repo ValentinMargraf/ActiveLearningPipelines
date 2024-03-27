@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
+from skactiveml.classifier import SklearnClassifier
 from skactiveml.pool import (
     BatchBALD,
     DiscriminativeAL,
@@ -52,12 +53,24 @@ class ActiveMLSamplingStrategy(PseudoRandomizedSamplingStrategy):
         return queried_original_ids
 
 
+class ActiveMLModelBasedSamplingStrategy(ActiveMLSamplingStrategy):
+    def __init__(self, seed, qs):
+        super().__init__(seed=seed, qs=qs)
+
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
+        nan_labels = np.full(len(X_u), np.nan, dtype=float)
+        queried_ids = self.qs.query(clf=SklearnClassifier(learner), X=np.concatenate([X_l, X_u]),
+                                    y=np.concatenate([y_l, nan_labels]), batch_size=num_samples)
+        queried_original_ids = queried_ids - len(y_l)
+        return queried_original_ids
+
+
 class RandomSamplingStrategy(ActiveMLSamplingStrategy):
     def __init__(self, seed):
         super().__init__(seed, RandomSampling(random_state=seed))
 
 
-class UncertaintySamplingStrategy(ActiveMLSamplingStrategy):
+class UncertaintySamplingStrategy(ActiveMLModelBasedSamplingStrategy):
     def __init__(self, seed, method):
         super().__init__(seed=seed, qs=UncertaintySampling(method=method, random_state=seed))
 
@@ -87,7 +100,7 @@ class EpistemicUncertaintySamplingStrategy(ActiveMLSamplingStrategy):
         super().__init__(seed, EpistemicUncertaintySampling(random_state=seed))
 
 
-class MonteCarloEERStrategy(ActiveMLSamplingStrategy):
+class MonteCarloEERStrategy(ActiveMLModelBasedSamplingStrategy):
     def __init__(self, seed, method):
         super().__init__(seed, MonteCarloEER(method=method, random_state=seed))
 
@@ -106,6 +119,13 @@ class DiscriminativeSampling(ActiveMLSamplingStrategy):
     def __init__(self, seed):
         super().__init__(seed=seed, qs=DiscriminativeAL(random_state=seed))
 
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
+        nan_labels = np.full(len(X_u), np.nan, dtype=float)
+        queried_ids = self.qs.query(X=np.concatenate([X_l, X_u]), y=np.concatenate([y_l, nan_labels]),
+                                    discriminator=SklearnClassifier(learner), batch_size=num_samples)
+        queried_original_ids = queried_ids - len(y_l)
+        return queried_original_ids
+
 
 class ActiveMLEnsembleSamplingStrategy(ActiveMLSamplingStrategy):
     def __init__(self, seed, qs, ensemble_size):
@@ -113,7 +133,7 @@ class ActiveMLEnsembleSamplingStrategy(ActiveMLSamplingStrategy):
         self.ensemble_size = ensemble_size
 
     def sample(self, learner, X_l, y_l, X_u, num_samples):
-        learners = [learner] * self.ensemble_size
+        learners = [SklearnClassifier(learner)] * self.ensemble_size
         nan_labels = np.full(len(X_u), np.nan, dtype=float)
         queried_ids = self.qs.query(X=np.concatenate([X_l, X_u]), y=np.concatenate([y_l, nan_labels]),
                                     ensemble=learners, fit_ensemble=True, batch_size=num_samples)
