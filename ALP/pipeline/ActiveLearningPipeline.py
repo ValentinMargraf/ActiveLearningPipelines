@@ -5,7 +5,7 @@ from ALP.benchmark.Observer import Observer
 
 class ActiveLearningPipeline:
 
-    def __init__(self, initializer, learner, sampling_strategy, observer: Observer = None, init_budget=10,
+    def __init__(self, learner, sampling_strategy, initializer=None, observer: Observer = None, init_budget=10,
                  num_iterations=10, num_samples_per_iteration=10):
         self.initializer = initializer
         self.learner = learner
@@ -24,29 +24,35 @@ class ActiveLearningPipeline:
 
         # select data points from X_u to sample additional data points for initialization (i.e., uninformed) and remove
         # the sampled data points from the unlabeled dataset
-        already_queried_ids = []
+
+        idx_available = np.arange(0, len(X_u))
+        idx_queried = np.array([])
+
+        X_u_red = X_u
+        X_l_aug = X_l
+        y_l_aug = y_l
+
         if self.initializer is not None:
-            init_ids = self.initializer.sample(X_u, self.init_budget)
+            idx_init = self.initializer.sample(X_u, self.init_budget)
+            # find the index of the sampled indices
+            idx_mapped = np.array([np.where(idx_available == value)[0][0] for value in idx_init])
+            # update the list of already queried indices
+            idx_queried = np.concatenate(idx_queried, idx_init)
+            # remove the queried indices from the list of available indices
+            np.delete(idx_available, idx_mapped)
 
+            X_u_red = X_u[idx_available]
+            X_u_sel = X_u[idx_mapped]
 
-            X_u_selected = X_u[init_ids]
             # label data points via the oracle
-            y_u_selected = oracle.query(init_ids, already_queried_ids)
-            for init_id in init_ids:
-                already_queried_ids.append(init_id)
+            y_u_sel = oracle.query(idx_mapped)
+
             # augment the given labeled data set by the data points selected for initialization
-            X_l_aug = np.concatenate([X_l, X_u_selected])
-            y_l_aug = np.concatenate([y_l, y_u_selected])
-
-
-
+            X_l_aug = np.concatenate([X_l_aug, X_u_sel])
+            y_l_aug = np.concatenate([y_l_aug, y_u_sel])
 
             if self.observer is not None:
-                self.observer.observe_data(0, X_u_selected, y_u_selected, X_l_aug, y_l_aug)
-        else:
-            X_l_aug = X_l
-            y_l_aug = y_l
-            X_u_red = X_u
+                self.observer.observe_data(0, X_u_sel, y_u_sel, X_l_aug, y_l_aug)
 
         # fit the initial model
         self.learner.fit(X_l_aug, y_l_aug)
@@ -56,23 +62,31 @@ class ActiveLearningPipeline:
             self.observer.observe_model(self.learner)
 
         for i in range(1, self.num_iterations + 1):
+            print("iteration", i)
             # ask query strategy for samples
-            queried_ids = self.sampling_strategy.sample(self.learner, X_l_aug, y_l_aug, X_u, already_queried_ids, self.num_samples_per_it)
+            idx_query = self.sampling_strategy.sample(learner=self.learner, X_l=X_l_aug, y_l=y_l_aug, X_u=X_u_red,
+                                                      num_samples=self.num_samples_per_iteration)
+            # get the original indices for X_u
+            idx_query_orig = idx_available[idx_query]
+            idx_mapping = np.array([np.where(idx_available == v)[0][0] for v in idx_query_orig])
 
-            X_u_selected = X_u[queried_ids]
+            # delete the selected indices from the available list of indices
+            idx_available = np.delete(idx_available, idx_mapping)
+            idx_queried = np.concatenate((idx_queried, idx_query_orig))
+
+            X_u_red = X_u[idx_available]
+            X_u_sel = X_u[idx_query_orig]
+
             # query oracle for ground truth labels
-            y_u_selected = oracle.query(queried_ids)
-            for query_id in queried_ids:
-                already_queried_ids.append(query_id, already_queried_ids)
-            # add to augmented labeled dataset
-            X_l_aug = np.concatenate([X_l_aug, X_u_selected])
-            y_l_aug = np.concatenate([y_l_aug, y_u_selected])
+            y_u_sel = oracle.query(idx_query_orig)
 
-
+            # augment the labeled dataset
+            X_l_aug = np.concatenate([X_l_aug, X_u_sel])
+            y_l_aug = np.concatenate([y_l_aug, y_u_sel])
 
             # let the observer see the change in the data for this iteration
             if self.observer is not None:
-                self.observer.observe_data(i, X_u_selected, y_u_selected, X_l_aug, y_l_aug)
+                self.observer.observe_data(i, X_u_sel, y_u_sel, X_l_aug, y_l_aug)
 
             # fit the initial model
             self.learner.fit(X_l_aug, y_l_aug)

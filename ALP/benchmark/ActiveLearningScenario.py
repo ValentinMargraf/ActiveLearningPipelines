@@ -1,6 +1,8 @@
 import numpy as np
 import openml
+from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 
 from ALP.benchmark.ActiveLearningSetting import ActiveLearningSetting
 
@@ -55,8 +57,10 @@ class ActiveLearningScenario:
                 mask = y == val
                 y_int[mask] = i
             y = y_int
+        X = OrdinalEncoder().fit_transform(X)
+        X = SimpleImputer(missing_values=np.nan, strategy='mean').fit_transform(X)
         self.X = X
-        self.y = y
+        self.y = LabelEncoder().fit_transform(y)
 
         if test_indices is None or labeled_indices is None:
             self.labeled_indices, self.test_indices = create_dataset_split(X, y, test_split_seed,
