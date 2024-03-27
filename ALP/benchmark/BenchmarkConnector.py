@@ -141,11 +141,13 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         # check whether the specified setting already exists. if so, fetch its id from the database and return an
         # instance of that setting
         query_check = format_select_query(MySQLBenchmarkConnector.setting_table, setting_descriptor)
+        print(query_check)
         cursor = self.con.cursor(buffered=True, dictionary=True)
         cursor.execute(query_check)
         res_check = cursor.fetchall()
         cursor.close()
 
+        print(res_check)
         if len(res_check) > 0:
             print("fetched setting from db")
             setting_descriptor["setting_id"] = res_check[0]["setting_id"]

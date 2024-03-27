@@ -10,6 +10,6 @@ def format_insert_query(table_name, values: dict):
 def format_select_query(table_name, where: dict = None):
     query = f"SELECT * FROM {table_name}"
     if where is not None and len(where) > 0:
-        query += " WHERE " + " AND ".join([key + "=' " + str(value) + "'" for key, value in where.items()])
+        query += " WHERE " + " AND ".join([key + "='" + str(value) + "'" for key, value in where.items()])
     query = query + ";"
     return query
