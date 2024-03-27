@@ -7,7 +7,7 @@ class Observer(ABC):
         return
 
     @abstractmethod
-    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug):
+    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red):
         pass
 
     @abstractmethod
@@ -26,5 +26,5 @@ class TestPerformanceObserver(Observer):
         y_pred = model.predict(self.X_test)
         print("Test Accuracy", accuracy_score(self.y_test, y_pred))
 
-    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug):
+    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red):
         pass

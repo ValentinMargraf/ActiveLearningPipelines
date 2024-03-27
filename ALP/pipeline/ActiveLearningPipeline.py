@@ -52,7 +52,7 @@ class ActiveLearningPipeline:
             y_l_aug = np.concatenate((y_l_aug, y_u_sel))
 
             if self.observer is not None:
-                self.observer.observe_data(0, X_u_sel, y_u_sel, X_l_aug, y_l_aug)
+                self.observer.observe_data(0, X_u_sel, y_u_sel, X_l_aug, y_l_aug, X_u_red)
 
         # fit the initial model
         self.learner.fit(X_l_aug, y_l_aug)
