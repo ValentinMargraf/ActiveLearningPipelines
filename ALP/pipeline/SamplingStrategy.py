@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from skactiveml.pool import RandomSampling, UncertaintySampling, EpistemicUncertaintySampling, MonteCarloEER, DiscriminativeAL, QueryByCommittee, BatchBALD
 from uncertainty_quantifier import RandomForestEns as RFEns
-
+import numpy as np
 
 
 class SamplingStrategy(ABC):
@@ -9,7 +9,7 @@ class SamplingStrategy(ABC):
         return
 
     @abstractmethod
-    def sample(self, learner, X_l, y_l, X_u, already_queried_ids, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
         pass
 
 
@@ -18,22 +18,21 @@ class WrappedSamplingStrategy(SamplingStrategy):
         self.wrapped_strategy = wrapped_strategy
         self.learner = learner
 
-    def sample(self, learner, X_l, y_l, X_u, already_queried_ids, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
         self.learner.fit(X_l, y_l)
-        self.wrapped_strategy.sample(self.learner, X_l, y_l, X_u, already_queried_ids, num_samples)
+        self.wrapped_strategy.sample(self.learner, X_l, y_l, X_u, num_samples)
 
 class PseudoRandomizedSamplingStrategy(SamplingStrategy):
     def __init__(self, seed):
         self.seed = seed
 
-class RandomSampling(SamplingStrategy):
+class RandomSamplingStrategy(SamplingStrategy):
     def __init__(self, seed):
-        super().__init__(seed)
         self.qs = RandomSampling(random_state=seed)
 
-    def sample(self, learner, X_l, y_l, X_u, already_queried_ids, num_samples):
-        to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
-        Xu = X_u[to_query_from]
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
+        #to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
+        Xu = X_u#[to_query_from]
         nan_labels = np.full(len(Xu), np.nan, dtype=float)
         queried_ids = self.qs.query(X=np.concatenate([X_l, Xu]), y=np.concatenate([y_l, nan_labels]), batch_size=num_samples)
         ids = queried_ids - len(y_l)
@@ -42,12 +41,11 @@ class RandomSampling(SamplingStrategy):
 
 class EntropySampling(SamplingStrategy):
     def __init__(self, seed, method='entropy'):
-        super().__init__(seed)
         self.qs = UncertaintySampling(method=method, random_state=seed)
 
-    def sample(self, learner, X_l, y_l, X_u, already_queried_ids, num_samples):
-        to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
-        Xu = X_u[to_query_from]
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
+        #to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
+        Xu = X_u#[to_query_from]
         nan_labels = np.full(len(Xu), np.nan, dtype=float)
         queried_ids = self.qs.query(X=np.concatenate([X_l, Xu]), y=np.concatenate([y_l, nan_labels]), clf=learner, fit_clf=True, batch_size=num_samples)
         ids = queried_ids - len(y_l)
@@ -57,15 +55,13 @@ class EntropySampling(SamplingStrategy):
 
 class MarginSampling(EntropySampling):
     def __init__(self, seed):
-        super().__init__(seed, method='margin')
+        super().__init__(seed, method='margin_sampling')
 
 class LeastConfidentSampling(EntropySampling):
     def __init__(self, seed):
         super().__init__(seed, method='least_confident')
 
-class UncertainySampling(EntropySampling):
-    def __init__(self, seed):
-        super().__init__(seed, method='uncertainty')
+
 
 class ExpectedAveragePrecision(EntropySampling):
     def __init__(self, seed):
@@ -77,12 +73,12 @@ class EpistemicUncertaintySampling(SamplingStrategy):
         self.qs = EpistemicUncertaintySampling(random_state=seed)
 
 
-    def sample(self, learner, X_l, y_l, X_u, already_queried_ids, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
         # if learner is not logistic regression or parzen window classifier, raise error
         if learner.__class__.__name__ not in ['LogisticRegression', 'ParzenWindowClassifier']:
             raise ValueError(f"Epistemic uncertainty sampling can only be used with LogisticRegression or ParzenWindowClassifier, not {learner.__class__.__name__}")
-        to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
-        Xu = X_u[to_query_from]
+        #to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
+        Xu = X_u#[to_query_from]
         nan_labels = np.full(len(Xu), np.nan, dtype=float)
         queried_ids = self.qs.query(X=np.concatenate([X_l, Xu]), y=np.concatenate([y_l, nan_labels]), clf=learner, fit_clf=True, batch_size=num_samples)
         ids = queried_ids - len(y_l)
@@ -90,13 +86,12 @@ class EpistemicUncertaintySampling(SamplingStrategy):
         return queried_original_ids
 
 class MonteCarloEERLogLoss(SamplingStrategy):
-    def __init__(self, seed):
-        super().__init__(seed, method='log_loss')
+    def __init__(self, seed, method='log_loss'):
         self.qs = MonteCarloEER(method=method, random_state=seed)
 
-    def sample(self, learner, X_l, y_l, X_u, already_queried_ids, num_samples):
-        to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
-        Xu = X_u[to_query_from]
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
+        #to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
+        Xu = X_u#[to_query_from]
         nan_labels = np.full(len(Xu), np.nan, dtype=float)
         queried_ids = self.qs.query(X=np.concatenate([X_l, Xu]), y=np.concatenate([y_l, nan_labels]), clf=learner, fit_clf=True, batch_size=num_samples)
         ids = queried_ids - len(y_l)
@@ -110,27 +105,25 @@ class MonteCarloEERMisclassification(MonteCarloEERLogLoss):
 
 class DiscriminativeSampling(SamplingStrategy):
     def __init__(self, seed):
-        super().__init__(seed)
         self.qs = DiscriminativeAL(random_state=seed)
 
-    def sample(self, learner, X_l, y_l, X_u, already_queried_ids, num_samples):
-        to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
-        Xu = X_u[to_query_from]
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
+        #to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
+        Xu = X_u#[to_query_from]
         nan_labels = np.full(len(Xu), np.nan, dtype=float)
-        queried_ids = self.qs.query(X=np.concatenate([X_l, Xu]), y=np.concatenate([y_l, nan_labels]), clf=learner, fit_clf=True, batch_size=num_samples)
+        queried_ids = self.qs.query(X=np.concatenate([X_l, Xu]), y=np.concatenate([y_l, nan_labels]), discriminator=learner, batch_size=num_samples)
         ids = queried_ids - len(y_l)
         queried_original_ids = to_query_from[ids]
         return queried_original_ids
 
 class QueryByCommitteeEntropySampling(SamplingStrategy):
-    def __init__(self, seed):
-        super().__init__(seed, method='vote_entropy')
+    def __init__(self, seed, method='vote_entropy'):
         self.qs = QueryByCommittee(method=method, random_state=seed)
 
-    def sample(self, learner, X_l, y_l, X_u, already_queried_ids, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
         learners = [learner]*10
-        to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
-        Xu = X_u[to_query_from]
+        #to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
+        Xu = X_u#[to_query_from]
         nan_labels = np.full(len(Xu), np.nan, dtype=float)
         queried_ids = self.qs.query(X=np.concatenate([X_l, Xu]), y=np.concatenate([y_l, nan_labels]), ensemble=learners, fit_ensemble=True, batch_size=num_samples)
         ids = queried_ids - len(y_l)
@@ -140,17 +133,16 @@ class QueryByCommitteeEntropySampling(SamplingStrategy):
 
 class QueryByCommitteeKLSampling(QueryByCommitteeEntropySampling):
     def __init__(self, seed):
-        super().__init__(seed, method='kl_divergence')
+        super().__init__(seed, method='KL_divergence')
 
 class BatchBaldSampling(SamplingStrategy):
     def __init__(self, seed):
-        super().__init__(seed)
         self.qs = BatchBALD(random_state=seed)
 
-    def sample(self, learner, X_l, y_l, X_u, already_queried_ids, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
         learners = [learner]*10
-        to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
-        Xu = X_u[to_query_from]
+        #to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
+        Xu = X_u#[to_query_from]
         nan_labels = np.full(len(Xu), np.nan, dtype=float)
         queried_ids = self.qs.query(X=np.concatenate([X_l, Xu]), y=np.concatenate([y_l, nan_labels]), ensemble=learners, fit_ensemble=True, batch_size=num_samples)
         ids = queried_ids - len(y_l)
@@ -165,12 +157,11 @@ class BatchBaldSampling(SamplingStrategy):
 #########################
 class TypicalClusterSampling(SamplingStrategy):
     def __init__(self, seed):
-        super().__init__(seed)
         self.seed = seed
 
-    def sample(self, learner, X_l, y_l, X_u, already_queried_ids, num_samples):
-        to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
-        Xu = X_u[to_query_from]
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
+        #to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
+        Xu = X_u#[to_query_from]
         # from num_saples "uncovered" cluster (there where are no X_l) select the one with highest "typicality"
         pool_size = len(y_l)
         num_cluster = pool_size + num_samples
@@ -195,9 +186,9 @@ class TypicalClusterSampling(SamplingStrategy):
                     # compute typicality for each instance, append the one with highest typicality
                     typicalities = []
                     K=20
-                    for instance in instances:
-                        remaining_instances = np.delete(instances, instance, axis=0)
-                        dists = np.linalg.norm(instance - remaining_instances)
+                    for i,instance in enumerate(instances):
+                        remaining_instances = np.delete(instances, i, axis=0)
+                        dists = np.sqrt((instance - remaining_instances)**2)
                         if len(dists) < K:
                             dist = np.mean(dists)
                         else:
@@ -206,19 +197,19 @@ class TypicalClusterSampling(SamplingStrategy):
                         typicalities.append(typicality)
                     typicalities = np.array(typicalities)
                     selected_id = instances_ids[np.argmax(typicalities)]
-                    selected_ids.append(selected_id)
+                    selected_ids.append(selected_id[0])
+                    ct += 1
                     if ct==num_samples:
                         return to_query_from[selected_ids]
-                    ct += 1
+
 
 class PowerMarginSampling(SamplingStrategy):
     def __init__(self, seed):
-        super().__init__(seed)
         self.seed = seed
 
-    def sample(self, learner, X_l, y_l, X_u, already_queried_ids, num_samples):
-        to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
-        Xu = X_u[to_query_from]
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
+        #to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
+        Xu = X_u#[to_query_from]
         probas = learner.predict_proba(Xu)
         margins = []
         for i in range(len(probas)):
@@ -238,15 +229,14 @@ class PowerMarginSampling(SamplingStrategy):
 
 class WeightedClusterSampling(SamplingStrategy):
     def __init__(self, seed):
-        super().__init__(seed)
         self.seed = seed
 
-    def sample(self, learner, X_l, y_l, X_u, already_queried_ids, num_samples):
-        to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
-        Xu = X_u[to_query_from]
-        scores = clf.predict_proba(Xu) + 1e-8
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
+        #to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
+        Xu = X_u#[to_query_from]
+        scores = learner.predict_proba(Xu) + 1e-8
         entropy = -np.sum(scores * np.log(scores), axis=1)
-        num_classes = len(y_l.unique())
+        num_classes = len(np.unique(y_l))
         from sklearn.cluster import KMeans
         from sklearn.metrics.pairwise import euclidean_distances
         import warnings
@@ -269,31 +259,31 @@ class WeightedClusterSampling(SamplingStrategy):
                 q_idxs = list(set(q_idxs))
                 rem = n - len(q_idxs)
                 ax += 1
+            print("q_idxs: ", q_idxs)
             idxs = idxs_unlabeled[q_idxs[:num_samples]]
+            print("idxs: ", idxs)
             return to_query_from[idxs]
 
 
 class RandomMarginSampling(SamplingStrategy):
     def __init__(self, seed):
-        super().__init__(seed)
         self.seed = seed
 
 
-    def sample(self, learner, X_l, y_l, X_u, already_queried_ids, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
         num_for_margin = num_samples // 2
         num_for_random = num_samples - num_for_margin
         margin_ids = MarginSampling(self.seed).sample(learner, X_l, y_l, X_u, already_queried_ids, num_for_margin)
-        random_ids = RandomSampling(self.seed).sample(learner, X_l, y_l, X_u, already_queried_ids, num_for_random)
+        random_ids = RandomSamplingStrategy(self.seed).sample(learner, X_l, y_l, X_u, already_queried_ids, num_for_random)
         return np.concatenate((margin_ids, random_ids))
 
 class MinMarginSampling(SamplingStrategy):
     def __init__(self, seed):
-        super().__init__(seed)
         self.seed = seed
 
-    def sample(self, learner, X_l, y_l, X_u, already_queried_ids, num_samples):
-        to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
-        Xu = X_u[to_query_from]
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
+        #to_query_from = np.setdiff1d(np.arange(len(X_u)), already_queried_ids)
+        Xu = X_u#[to_query_from]
         num_estimators = 25
         clf = RFEns(n_estimators=num_estimators)
         clf.fit(X_l, y_l)

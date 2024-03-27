@@ -1,5 +1,7 @@
 import numpy as np
 import openml
+import sklearn.preprocessing as preprocessing
+import sklearn.impute as impute
 
 from ALP.benchmark.ActiveLearningSetting import ActiveLearningSetting
 
@@ -16,6 +18,8 @@ class ActiveLearningScenario:
         self.labeled_indices = labeled_indices
         self.test_indices = test_indices
         self.setting = setting
+        self.imputer = impute.SimpleImputer(missing_values=np.nan, strategy='mean')
+        self.encoder = preprocessing.OrdinalEncoder()
 
         # actual data
         ds = openml.datasets.get_dataset(openml_id)
@@ -33,6 +37,10 @@ class ActiveLearningScenario:
             y = y_int
         self.X = X
         self.y = y
+
+    def preprocess_data(self):
+        self.X = self.encoder.fit_transform(self.X)
+        self.X = self.imputer.fit_transform(self.X)
 
     def get_scenario_id(self):
         return self.scenario_id
