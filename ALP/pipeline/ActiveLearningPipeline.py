@@ -37,7 +37,7 @@ class ActiveLearningPipeline:
             # find the index of the sampled indices
             idx_mapped = np.array([np.where(idx_available == value)[0][0] for value in idx_init])
             # update the list of already queried indices
-            idx_queried = np.concatenate(idx_queried, idx_init)
+            idx_queried = np.concatenate((idx_queried, idx_init))
             # remove the queried indices from the list of available indices
             np.delete(idx_available, idx_mapped)
 
@@ -48,8 +48,8 @@ class ActiveLearningPipeline:
             y_u_sel = oracle.query(idx_mapped)
 
             # augment the given labeled data set by the data points selected for initialization
-            X_l_aug = np.concatenate([X_l_aug, X_u_sel])
-            y_l_aug = np.concatenate([y_l_aug, y_u_sel])
+            X_l_aug = np.concatenate((X_l_aug, X_u_sel))
+            y_l_aug = np.concatenate((y_l_aug, y_u_sel))
 
             if self.observer is not None:
                 self.observer.observe_data(0, X_u_sel, y_u_sel, X_l_aug, y_l_aug)
@@ -59,7 +59,7 @@ class ActiveLearningPipeline:
 
         # let the observer know about the learned model
         if self.observer is not None:
-            self.observer.observe_model(self.learner)
+            self.observer.observe_model(0, self.learner)
 
         for i in range(1, self.num_iterations + 1):
             # ask query strategy for samples
