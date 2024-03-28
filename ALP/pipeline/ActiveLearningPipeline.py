@@ -1,16 +1,14 @@
 import numpy as np
 
-from ALP.benchmark.Observer import Observer
-
 
 class ActiveLearningPipeline:
 
-    def __init__(self, learner, sampling_strategy, initializer=None, observer: Observer = None, init_budget=10,
+    def __init__(self, learner, sampling_strategy, initializer=None, observer_list: list() = None, init_budget=10,
                  num_iterations=10, num_samples_per_iteration=10):
         self.initializer = initializer
         self.learner = learner
         self.sampling_strategy = sampling_strategy
-        self.observer = observer
+        self.observer_list = observer_list
 
         # the budget for sampling data points with the initialization strategy
         self.init_budget = init_budget
@@ -51,15 +49,17 @@ class ActiveLearningPipeline:
             X_l_aug = np.concatenate((X_l_aug, X_u_sel))
             y_l_aug = np.concatenate((y_l_aug, y_u_sel))
 
-            if self.observer is not None:
-                self.observer.observe_data(0, X_u_sel, y_u_sel, X_l_aug, y_l_aug, X_u_red)
+            if self.observer_list is not None:
+                for o in self.observer_list:
+                    o.observe_data(0, X_u_sel, y_u_sel, X_l_aug, y_l_aug, X_u_red)
 
         # fit the initial model
         self.learner.fit(X_l_aug, y_l_aug)
 
         # let the observer know about the learned model
-        if self.observer is not None:
-            self.observer.observe_model(0, self.learner)
+        if self.observer_list is not None:
+            for o in self.observer_list:
+                o.observe_model(iteration=0, model=self.learner)
 
         for i in range(1, self.num_iterations + 1):
             # ask query strategy for samples
@@ -84,15 +84,17 @@ class ActiveLearningPipeline:
             y_l_aug = np.concatenate([y_l_aug, y_u_sel])
 
             # let the observer see the change in the data for this iteration
-            if self.observer is not None:
-                self.observer.observe_data(i, X_u_sel, y_u_sel, X_l_aug, y_l_aug, X_u_red)
+            if self.observer_list is not None:
+                for o in self.observer_list:
+                    o.observe_data(i, X_u_sel, y_u_sel, X_l_aug, y_l_aug, X_u_red)
 
             # fit the initial model
             self.learner.fit(X_l_aug, y_l_aug)
 
             # let the observer know about the learned model
-            if self.observer is not None:
-                self.observer.observe_model(i, self.learner)
+            if self.observer_list is not None:
+                for o in self.observer_list:
+                    o.observe_model(i, self.learner)
 
     def predict(self, X_test):
         return self.learner.predict(X_test)

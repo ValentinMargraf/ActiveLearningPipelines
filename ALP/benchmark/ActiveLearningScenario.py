@@ -22,6 +22,7 @@ def create_dataset_split(X, y, test_split_seed, test_split_size: float, train_sp
     if train_split_type == "absolute":
         unlabeled_size = 1 - train_split_size/len(X_train)
 
+    print(len(X_train), train_split_size)
     # split data into labeled and unlabeled
     X_l, X_u, y_l, y_u, labeled_indices, unlabeled_indices = train_test_split(X_train, y_train, train_indices,
                                                                               test_size=unlabeled_size,
