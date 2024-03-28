@@ -85,7 +85,7 @@ class ActiveLearningPipeline:
 
             # let the observer see the change in the data for this iteration
             if self.observer is not None:
-                self.observer.observe_data(i, X_u_sel, y_u_sel, X_l_aug, y_l_aug)
+                self.observer.observe_data(i, X_u_sel, y_u_sel, X_l_aug, y_l_aug, X_u_red)
 
             # fit the initial model
             self.learner.fit(X_l_aug, y_l_aug)

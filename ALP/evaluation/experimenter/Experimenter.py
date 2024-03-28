@@ -14,3 +14,5 @@ experimenter = PyExperimenter(experiment_configuration_file_path=exp_config_file
 
 if setup_table:
     experimenter.fill_table_from_config()
+
+experimenter.execute(experiment_function=run_experiment)

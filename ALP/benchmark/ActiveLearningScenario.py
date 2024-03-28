@@ -33,7 +33,7 @@ def create_dataset_split(X, y, test_split_seed, test_split_size: float, train_sp
 class ActiveLearningScenario:
 
     def __init__(self, scenario_id, openml_id, test_split_seed, train_split_seed, seed, setting: ActiveLearningSetting,
-                 labeled_indices=None, test_indices=None):
+                 labeled_indices: list = None, test_indices: list = None):
         self.scenario_id = scenario_id
         self.openml_id = openml_id
         self.test_split_seed = test_split_seed
