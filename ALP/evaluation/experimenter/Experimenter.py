@@ -7,7 +7,6 @@ from ALP.evaluation.experimenter.LogTableObserver import LogTableObserver
 exp_setting_file = "config/exp_setting_conf.yml"
 exp_scenario_file = "config/exp_scenario_conf.yml"
 db_config_file = "config/db_conf.yml"
-
 setup_table = False
 
 small_openml_ids = [3, 6, 8, 10, 11, 12, 14, 15, 16, 18, 20, 21, 22, 23, 26, 28, 29, 30, 31, 32, 36, 37, 39, 40,

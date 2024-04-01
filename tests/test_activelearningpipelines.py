@@ -75,8 +75,7 @@ def test_pipeline_executions():
     print("test sampling strategies")
     for sampling_strategy in sampling_strategies:
         print("current sampling strategy: ", sampling_strategy)
-        ALP = ActiveLearningPipeline(learner=learner, sampling_strategy=sampling_strategy, observer=None,
-                                     init_budget=10,
+        ALP = ActiveLearningPipeline(learner=learner, sampling_strategy=sampling_strategy, init_budget=10,
                                      num_iterations=1, num_samples_per_iteration=10)
 
         oracle = Oracle(X_u, y_u)
