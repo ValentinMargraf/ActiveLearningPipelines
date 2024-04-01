@@ -513,7 +513,7 @@ class ALPipeline():
             test_auc = None
         test_prec = metrics.precision_score(auc_te, auc_preds, average='macro', zero_division=np.nan)
         test_rec = metrics.recall_score(auc_te, auc_preds, average='macro', zero_division=np.nan)
-        #test_f1 = metrics.f1_score(auc_te, auc_preds, average='macro')
+        test_f1 = metrics.f1_score(auc_te, auc_preds, average='macro')
         self.current_test_metrics = [test_acc, test_auc, test_prec, test_rec]
         self.num_Xl = len(self.Xl)
         self.num_X = len(self.X)

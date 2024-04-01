@@ -52,4 +52,4 @@ class LogTableObserver(Observer):
             'test_log_loss': log_loss(self.y_true, y_hat_proba)
         }
 
-        self.result_processor.process_logs(eval_scores)
+        self.result_processor.process_logs(LogTableObserver.model_performance_tbl, eval_scores)
