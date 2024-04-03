@@ -5,26 +5,23 @@ PY_EXPERIMENTER:
         provider: mysql
         database: ALP_evaluation
         table:
-            name: salt_learner
-            keyfields:
-              "learner":
-                type: TEXT
-                values: [svm_lin, svm_rbf, rf_entropy, rf_gini, rf_entropy_large, rf_gini_large, knn_3, knn_10, log_reg, multinomial_bayes, etc_entropy,
-                        etc_gini, etc_entropy_large, etc_gini_large, naive_bayes, mlp, GBT_logloss, GBT_exp, GBT_logloss_large, GBT_exp_large]
-              "sampling_strategy":
-                type: TEXT
-                values: [random, entropy, margin, least_confident, mc_logloss, mc_misclass, discrim, qbc_entropy, qbc_kl, bald, power_margin, random_margin,
-                        min_margin, expected_avg, typ_cluster, weighted_cluster]
-
             name: salt_scenario
             keyfields:
+              "learner_name":
+                type: TEXT
+                values: [ svm_lin, svm_rbf, rf_entropy, rf_gini, rf_entropy_large, rf_gini_large, knn_3, knn_10, log_reg, multinomial_bayes, etc_entropy,
+                          etc_gini, etc_entropy_large, etc_gini_large, naive_bayes, mlp, GBT_logloss, GBT_exp, GBT_logloss_large, GBT_exp_large ]
+              "sampling_strategy":
+                type: TEXT
+                values: [ random, entropy, margin, least_confident, mc_logloss, mc_misclass, discrim, qbc_entropy, qbc_kl, bald, power_margin, random_margin,
+                          min_margin, expected_avg, typ_cluster, weighted_cluster ]
               "setting_id":
                 type: INT
                 # to fill from db
                 values: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
               "openml_id":
                   type: INT
-                  values: [3, 6, 8, 10, 11, 12, 14, 15, 16, 18, 20, 21, 22, 23, 26, 28, 29, 30, 31, 32, 36, 37, 39, 40,
+                  values: [ 3, 6, 8, 10, 11, 12, 14, 15, 16, 18, 20, 21, 22, 23, 26, 28, 29, 30, 31, 32, 36, 37, 39, 40,
                            41, 43, 44, 45, 46, 48, 49, 50, 53, 54, 59, 60, 61, 62, 151, 155, 161, 162, 164, 180, 181, 182,
                            183, 184, 187, 197, 209, 219, 223, 279, 285, 287, 292, 294, 300, 307, 312, 313, 329, 333, 334, 335,
                            336, 337, 338, 375, 377, 383, 384, 385, 386, 387, 388, 389, 391, 392, 394, 395, 397, 398, 400, 401,
@@ -50,7 +47,7 @@ PY_EXPERIMENTER:
                            1565, 1568, 1600, 2074, 2079, 3021, 3022, 3560, 3902, 3904, 3913, 3917, 4134, 4135, 4153, 4340, 4534,
                            4538, 7592, 9910, 9946, 9952, 9957, 9960, 9964, 9971, 9976, 9977, 9978, 9981, 9985, 10093, 10101, 14952,
                            14954, 14965, 14969, 14970, 40474, 40475, 40476, 40477, 40478, 125920, 125922, 146195, 146800, 146817,
-                           146819, 146820, 146821, 146822, 146824, 146825, 167119, 167120, 167121, 167124, 167125, 167140, 167141]
+                           146819, 146820, 146821, 146822, 146824, 146825, 167119, 167120, 167121, 167124, 167125, 167140, 167141 ]
                 "test_split_seed":
                   type: INT
                   values: [0,1,2,3,4,5]

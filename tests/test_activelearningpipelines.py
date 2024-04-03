@@ -67,7 +67,7 @@ def test_pipeline_executions():
                            BatchBaldSampling(42, 10), PowerMarginSampling(42), RandomMarginSampling(42),
                            MinMarginSampling(42), ExpectedAveragePrecision(42), TypicalClusterSampling(42),
                            WeightedClusterSampling(42)]
-    sampling_strategies = [RandomSamplingStrategy(42)]
+    #sampling_strategies = [RandomSamplingStrategy(42)]
 
     print("setup learner")
     learner = RF(n_estimators=10)
