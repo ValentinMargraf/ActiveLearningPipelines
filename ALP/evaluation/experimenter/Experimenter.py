@@ -83,7 +83,6 @@ dict_sampling_strategies = {
         "typ_cluster": TypicalClusterSampling(42),
         "weighted_cluster": WeightedClusterSampling(42)
     }
-
 dict_learner = {
         "svm_lin": SVC(kernel='linear', probability=True),
         "svm_rbf": SVC(kernel='rbf', probability=True),
@@ -165,7 +164,7 @@ def run_experiment(parameters: dict, result_processor: ResultProcessor, custom_c
 
     setting = connector.load_setting(SETTING_ID)
 
-    # geht das auch smarter?
+
     setting_name = setting.setting_name
     if setting_name == 'small' and OPENML_ID not in small_openml_ids or setting_name == 'medium' and OPENML_ID not in medium_openml_ids or setting_name == 'large' and OPENML_ID not in large_openml_ids:
         return

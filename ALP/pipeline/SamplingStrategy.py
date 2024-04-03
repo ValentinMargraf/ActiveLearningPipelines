@@ -236,7 +236,7 @@ class WeightedClusterSampling(SamplingStrategy):
         self.seed = seed
 
     def sample(self, learner, X_l, y_l, X_u, num_samples):
-        print("X_u: ", X_u.shape)
+        #print("X_u: ", X_u.shape)
         scores = learner.predict_proba(X_u) + 1e-8
         entropy = -np.sum(scores * np.log(scores), axis=1)
         num_classes = len(np.unique(y_l))
@@ -259,7 +259,10 @@ class WeightedClusterSampling(SamplingStrategy):
                 center = centers[class_].reshape(1, -1)
                 class_neigh = np.squeeze(X_u[class_ids], axis=1)
                 dists = euclidean_distances(center, class_neigh)
-                closest_instances_id = np.argsort(dists)[:per_class][0]
+                if len(dists) < per_class:
+                    closest_instances_id = np.argsort(dists)[:][0]
+                else:
+                    closest_instances_id = np.argsort(dists)[:per_class][0]
                 for closest_instance_id in closest_instances_id:
                     selected_ids.append(class_ids[closest_instance_id][0])
 
