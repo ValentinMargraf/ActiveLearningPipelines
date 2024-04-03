@@ -18,11 +18,8 @@ class ActiveLearningPipeline:
         self.num_samples_per_iteration = num_samples_per_iteration
 
     def active_fit(self, X_l, y_l, X_u, oracle):
-        # X_u_idx = np.arange(len(X_u))
-
         # select data points from X_u to sample additional data points for initialization (i.e., uninformed) and remove
         # the sampled data points from the unlabeled dataset
-
         idx_available = np.arange(0, len(X_u))
         idx_queried = np.array([])
 

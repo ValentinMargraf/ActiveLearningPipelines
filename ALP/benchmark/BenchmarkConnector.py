@@ -32,6 +32,10 @@ class BenchmarkConnector(ABC):
         pass
 
     @abstractmethod
+    def load_setting_by_name(self, setting_name):
+        pass
+
+    @abstractmethod
     def load_or_create_setting(self, name, labeled_train_size, train_type, test_size, number_of_iterations,
                                number_of_samples):
         pass
@@ -48,11 +52,24 @@ class BenchmarkConnector(ABC):
     def load_or_create_learner(self, name, obj):
         pass
 
+    @abstractmethod
+    def load_learner_by_sampling_strategy(self, learner_name):
+        pass
+
+    @abstractmethod
+    def load_sampling_strategy(self, learner_id):
+        pass
+
+    @abstractmethod
+    def load_or_create_sampling_strategy(self, name, obj):
+        pass
+
 
 class MySQLBenchmarkConnector(BenchmarkConnector):
     scenario_table = "salt_scenario"
     setting_table = "salt_setting"
     learner_table = "salt_learner"
+    sampling_strategy_table = "salt_sampling_strategy"
 
     def __init__(self, host, user, password, database):
         self.host = host
@@ -63,9 +80,10 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         self.con = mysql.connector.connect(user=user, password=password, database=database)
 
         setting_table_query = f"CREATE TABLE IF NOT EXISTS {MySQLBenchmarkConnector.setting_table} (" \
-                              f"setting_id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY, setting_name VARCHAR(250), " \
-                              f"setting_labeled_train_size VARCHAR(50), setting_train_type VARCHAR(250), " \
-                              f"setting_test_size VARCHAR(50), number_of_iterations INT(10), number_of_samples INT(10))"
+                              f"setting_id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY, " \
+                              f"setting_name VARCHAR(250) UNIQUE, setting_labeled_train_size VARCHAR(50), " \
+                              f"setting_train_type VARCHAR(250), setting_test_size VARCHAR(50), " \
+                              f"number_of_iterations INT(10), number_of_samples INT(10))"
         scenario_table_query = f"CREATE TABLE IF NOT EXISTS {MySQLBenchmarkConnector.scenario_table} (" \
                                f"scenario_id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY, openml_id INT(10), " \
                                f"test_split_seed INT(10), train_split_seed INT(10), seed INT(10), " \
@@ -74,9 +92,14 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
                               f"learner_id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY, " \
                               f"learner_name VARCHAR(100) UNIQUE, learner_class VARCHAR(250), " \
                               f"learner_parameterization TEXT)"
+        sampling_strategy_table_q = f"CREATE TABLE IF NOT EXISTS {MySQLBenchmarkConnector.sampling_strategy_table}" \
+                                    f" (sampling_strategy_id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY, " \
+                                    f"sampling_strategy_name VARCHAR(100) UNIQUE," \
+                                    f"sampling_strategy_class VARCHAR(250), " \
+                                    f"sampling_strategy_parameterization TEXT)"
 
         cursor = self.con.cursor()
-        for q in [setting_table_query, scenario_table_query, learner_table_query]:
+        for q in [setting_table_query, scenario_table_query, learner_table_query, sampling_strategy_table_q]:
             cursor.execute(q)
 
     def load_scenario(self, scenario_id):
@@ -143,6 +166,16 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
             return ActiveLearningSetting.from_dict(res[0])
         else:
             raise Exception("Setting with ID " + str(setting_id) + " could not be found.")
+
+    def load_setting_by_name(self, setting_name):
+        query = format_select_query(MySQLBenchmarkConnector.setting_table, {"setting_name": setting_name})
+        cursor = self.con.cursor(buffered=True, dictionary=True)
+        cursor.execute(query)
+        res = cursor.fetchall()
+        if len(res) > 0:
+            return ActiveLearningSetting.from_dict(res[0])
+        else:
+            raise Exception("Setting with name " + str(setting_name) + " could not be found.")
 
     def load_or_create_setting(self, name, labeled_train_size, train_type, test_size, number_of_iterations,
                                number_of_samples):
@@ -236,3 +269,59 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
             learner_descriptor["learner_name"] = res_check[0]["learner_name"]
 
         return learner_descriptor["learner_name"], obj
+
+    def load_sampling_strategy_by_name(self, sampling_strategy_name):
+        query = format_select_query(MySQLBenchmarkConnector.sampling_strategy_table,
+                                    {"sampling_strategy_name": sampling_strategy_name})
+        cursor = self.con.cursor(buffered=True, dictionary=True)
+        cursor.execute(query)
+        res = cursor.fetchall()
+        if len(res) > 0:
+            sampling_strategy_data = res[0]
+            return instantiate_class_by_fqn(sampling_strategy_data["sampling_strategy_class"],
+                                            json.loads(sampling_strategy_data["sampling_strategy_parameterization"]))
+        else:
+            raise Exception("Sampling strategy with name " + str(sampling_strategy_name) + " unknown")
+
+    def load_sampling_strategy(self, sampling_strategy_id):
+        query = format_select_query(MySQLBenchmarkConnector.sampling_strategy_table,
+                                    {"sampling_strategy_id": sampling_strategy_id})
+        cursor = self.con.cursor(buffered=True, dictionary=True)
+        cursor.execute(query)
+        res = cursor.fetchall()
+        if len(res) > 0:
+            sampling_strategy_data = res[0]
+            return instantiate_class_by_fqn(sampling_strategy_data["sampling_strategy_class"],
+                                            json.loads(sampling_strategy_data["sampling_strategy_parameterization"]))
+        else:
+            raise Exception("Sampling strategy with ID " + str(sampling_strategy_id) + " unknown")
+
+    def load_or_create_sampling_strategy(self, name, obj):
+        """
+        This method checks whether the specified sampling strategy already exists in the database. If not, the specified
+        sampling strategy including its parameterization is added to the database and then also returned to the invoker.
+        """
+        sampling_strategy_descriptor = {
+            "sampling_strategy_class": fullname(obj),
+            "sampling_strategy_parameterization": json.dumps(obj.get_params()),
+        }
+
+        # check whether the specified setting already exists. if so, fetch its id from the database and return an
+        # instance of that setting
+        query_check = format_select_query(MySQLBenchmarkConnector.sampling_strategy_table, sampling_strategy_descriptor)
+        cursor = self.con.cursor(buffered=True, dictionary=True)
+        cursor.execute(query_check)
+        res_check = cursor.fetchall()
+        cursor.close()
+
+        if len(res_check) < 1:
+            # The specified setting does not yet exist so create it in the database and then return it to the invoker.
+            sampling_strategy_descriptor["sampling_strategy_name"] = name
+            query = format_insert_query(MySQLBenchmarkConnector.learner_table, sampling_strategy_descriptor)
+            cursor = self.con.cursor()
+            cursor.execute(query)
+            self.con.commit()
+        else:
+            sampling_strategy_descriptor["sampling_strategy_name"] = res_check[0]["sampling_strategy_name"]
+
+        return sampling_strategy_descriptor["sampling_strategy_name"], obj
