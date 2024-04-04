@@ -233,10 +233,9 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
             "learner_parameterization": json.dumps(obj.get_params()),
         }
 
-        stored_learner = _fetch_data_of_descriptor(self.learners, learner_descriptor)
-
         # check whether the specified setting already exists. if so, fetch its id from the database and return an
         # instance of that setting
+        stored_learner = _fetch_data_of_descriptor(self.learners, learner_descriptor)
 
         if stored_learner is None:
             # The specified setting does not yet exist so create it in the database and then return it to the invoker.

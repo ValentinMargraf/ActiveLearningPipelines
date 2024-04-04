@@ -5,7 +5,6 @@ from ALP.evaluation.experimenter.DefaultSetup import ensure_default_setup
 from ALP.pipeline.SALTEvaluator import SALTEvaluator
 
 # create benchmark connector and establish database connection
-# benchmark_connector = MySQLBenchmarkConnector("host", "user", "password", "database")
 benchmark_connector = DataFileBenchmarkConnector()
 
 # load some default settings and algorithm choices
