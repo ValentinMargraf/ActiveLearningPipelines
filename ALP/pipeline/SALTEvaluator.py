@@ -72,6 +72,7 @@ class SALTEvaluator:
         X_l, y_l, X_u, y_u, X_test, y_test = self.scenario.get_data_split()
         learner = self.benchmark_connector.load_learner_by_name(self.learner_name)
         sampling_strategy = self.benchmark_connector.load_sampling_strategy_by_name(self.sampling_strategy_name)
+
         oracle = Oracle(X_u=X_u, y_u=y_u)
         alp = ActiveLearningPipeline(learner=learner, sampling_strategy=sampling_strategy,
                                      num_iterations=self.setting.get_number_of_iterations(),
