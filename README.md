@@ -6,11 +6,11 @@
 ```
 git clone https://github.com/ValentinMargraf/ActiveLearningPipelines.git
 cd ActiveLearningPipelines
-conda create -n ALP python=3.8
+conda create --name ALP python=3.10
 conda activate ALP
 
 # Install for usage
-pip install .
+pip install -r req.txt
 
 # Install for development
 make install-dev
