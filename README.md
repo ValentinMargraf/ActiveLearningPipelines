@@ -1,4 +1,4 @@
-# SALTBench: Self-Supervised and Active Learning with Tabular data
+# SALTBench: Self-Supervised and Active Learning with Tabular data Benchmark
 
 
 
