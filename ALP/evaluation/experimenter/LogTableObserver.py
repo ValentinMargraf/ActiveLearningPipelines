@@ -6,7 +6,7 @@ class LogTableObserver(StatisticalPerformanceObserver):
     labeling_log_tbl = "labeling_log"
 
     def __init__(self, result_processor, X_test, y_test):
-        super().__init(X_test, y_test)
+        super().__init__(X_test, y_test)
         self.result_processor = result_processor
 
     def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red):

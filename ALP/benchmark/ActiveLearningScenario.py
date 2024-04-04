@@ -15,8 +15,7 @@ def create_dataset_split(X, y, test_split_seed, test_split_size: float, train_sp
     # split data into train and test and retrieve test_indices to be returned later
     X_train, X_test, y_train, y_test, train_indices, test_indices = train_test_split(X, y, indices,
                                                                                      test_size=test_split_size,
-                                                                                     random_state=test_split_seed,
-                                                                                     stratify=True)
+                                                                                     random_state=test_split_seed)
     # determine the proportion of unlabeled data, also in case the train split is given in terms of an absolute number
     # of labeled data points
     unlabeled_size = 1 - train_split_size
@@ -26,8 +25,7 @@ def create_dataset_split(X, y, test_split_seed, test_split_size: float, train_sp
     # split data into labeled and unlabeled
     X_l, X_u, y_l, y_u, labeled_indices, unlabeled_indices = train_test_split(X_train, y_train, train_indices,
                                                                               test_size=unlabeled_size,
-                                                                              random_state=train_split_seed,
-                                                                              stratify=True)
+                                                                              random_state=train_split_seed)
 
     return labeled_indices.tolist(), test_indices.tolist()
 
