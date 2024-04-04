@@ -5,10 +5,12 @@ from ALP.pipeline.ActiveLearningPipeline import ActiveLearningPipeline
 from ALP.benchmark.BenchmarkConnector import MySQLBenchmarkConnector
 from ALP.evaluation.experimenter.DefaultSetup import ensure_default_setup
 
-# create benchmark connector and establish database connection
 from ALP.pipeline.Oracle import Oracle
 
+
+# create benchmark connector and establish database connection
 benchmark_connector = MySQLBenchmarkConnector("host", "user", "password", "database")
+
 # load some default settings and algorithm choices
 ensure_default_setup(benchmark_connector)
 

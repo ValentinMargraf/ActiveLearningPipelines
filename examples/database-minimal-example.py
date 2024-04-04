@@ -1,15 +1,14 @@
 from sklearn.metrics import accuracy_score
 
-from ALP.benchmark.BenchmarkConnector import MySQLBenchmarkConnector, DataFileBenchmarkConnector
+from ALP.benchmark.BenchmarkConnector import MySQLBenchmarkConnector
 from ALP.evaluation.experimenter.DefaultSetup import ensure_default_setup
 from ALP.pipeline.SALTEvaluator import SALTEvaluator
 
 # create benchmark connector and establish database connection
-benchmark_connector = MySQLBenchmarkConnector("host", "user", "password", "database")
+benchmark_connector = MySQLBenchmarkConnector("isys-otfml.cs.upb.de", "results", "Hallo333!", "saltbench", False)
 
 # load some default settings and algorithm choices
 ensure_default_setup(benchmark_connector)
-benchmark_connector.dump()
 
 salt = SALTEvaluator(benchmark_connector=benchmark_connector,
                      setting_name="small", openml_id=31, sampling_strategy_name="margin", learner_name="rf_gini")

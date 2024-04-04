@@ -27,6 +27,7 @@ extras_require = {
         "scikit-activeml>=0.4.1",
         "py-experimenter>=1.4.1",
         "mysql-connector-python>=8.3.0",
+        "openml>=0.14.2"
         # Test
         "pytest>=4.6",
         "pytest-cov",

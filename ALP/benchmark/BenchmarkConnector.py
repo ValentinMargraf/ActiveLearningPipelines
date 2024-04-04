@@ -298,14 +298,16 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
     learner_table = "salt_learner"
     sampling_strategy_table = "salt_sampling_strategy"
 
-    def __init__(self, host, user, password, database):
+    def __init__(self, host, user, password, database, use_ssl):
         super().__init__()
         self.host = host
         self.user = user
         self.password = password
         self.database = database
+        self.use_ssl = use_ssl
 
-        self.con = mysql.connector.connect(user=user, password=password, database=database)
+        self.con = mysql.connector.connect(host=host, user=user, password=password, database=database,
+                                           ssl_disabled=not use_ssl)
 
         setting_table_query = f"CREATE TABLE IF NOT EXISTS {MySQLBenchmarkConnector.setting_table} (" \
                               f"setting_id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY, " \
@@ -489,7 +491,7 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         if len(res_check) < 1:
             # The specified setting does not yet exist so create it in the database and then return it to the invoker.
             learner_descriptor["learner_name"] = learner_name
-            query = format_insert_query(learner_name.learner_table, learner_descriptor)
+            query = format_insert_query(MySQLBenchmarkConnector.learner_table, learner_descriptor)
             cursor = self.con.cursor()
             cursor.execute(query)
             self.con.commit()

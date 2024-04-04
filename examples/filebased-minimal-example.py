@@ -1,6 +1,6 @@
 from sklearn.metrics import accuracy_score
 
-from ALP.benchmark.BenchmarkConnector import MySQLBenchmarkConnector, DataFileBenchmarkConnector
+from ALP.benchmark.BenchmarkConnector import DataFileBenchmarkConnector
 from ALP.evaluation.experimenter.DefaultSetup import ensure_default_setup
 from ALP.pipeline.SALTEvaluator import SALTEvaluator
 
