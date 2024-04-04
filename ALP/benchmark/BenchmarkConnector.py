@@ -24,7 +24,7 @@ class BenchmarkConnector(ABC):
         pass
 
     @abstractmethod
-    def load_or_create_scenario(self, openml_id, seed, setting_id):
+    def load_or_create_scenario(self, openml_id, test_split_seed, train_split_seed, seed, setting_id):
         pass
 
     @abstractmethod
@@ -49,19 +49,19 @@ class BenchmarkConnector(ABC):
         pass
 
     @abstractmethod
-    def load_or_create_learner(self, name, obj):
+    def load_or_create_learner(self, learner_name, obj):
         pass
 
     @abstractmethod
-    def load_sampling_strategy_by_name(self, learner_name):
+    def load_sampling_strategy_by_name(self, sampling_strategy_name):
         pass
 
     @abstractmethod
-    def load_sampling_strategy(self, learner_id):
+    def load_sampling_strategy(self, sampling_strategy_id):
         pass
 
     @abstractmethod
-    def load_or_create_sampling_strategy(self, name, obj):
+    def load_or_create_sampling_strategy(self, sampling_strategy_name, obj):
         pass
 
 
@@ -72,6 +72,7 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
     sampling_strategy_table = "salt_sampling_strategy"
 
     def __init__(self, host, user, password, database):
+        super().__init__()
         self.host = host
         self.user = user
         self.password = password
@@ -240,7 +241,7 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         else:
             raise Exception("Learner with ID " + str(learner_id) + " unknown")
 
-    def load_or_create_learner(self, name, obj):
+    def load_or_create_learner(self, learner_name, obj):
         """
         This method checks whether the specified learner already exists in the database. If not, the specified setting
         is added to the database and then also returned to the invoker.
@@ -260,8 +261,8 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
 
         if len(res_check) < 1:
             # The specified setting does not yet exist so create it in the database and then return it to the invoker.
-            learner_descriptor["learner_name"] = name
-            query = format_insert_query(MySQLBenchmarkConnector.learner_table, learner_descriptor)
+            learner_descriptor["learner_name"] = learner_name
+            query = format_insert_query(learner_name.learner_table, learner_descriptor)
             cursor = self.con.cursor()
             cursor.execute(query)
             self.con.commit()
@@ -296,7 +297,7 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         else:
             raise Exception("Sampling strategy with ID " + str(sampling_strategy_id) + " unknown")
 
-    def load_or_create_sampling_strategy(self, name, obj):
+    def load_or_create_sampling_strategy(self, sampling_strategy_name, obj):
         """
         This method checks whether the specified sampling strategy already exists in the database. If not, the specified
         sampling strategy including its parameterization is added to the database and then also returned to the invoker.
@@ -316,7 +317,7 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
 
         if len(res_check) < 1:
             # The specified setting does not yet exist so create it in the database and then return it to the invoker.
-            sampling_strategy_descriptor["sampling_strategy_name"] = name
+            sampling_strategy_descriptor["sampling_strategy_name"] = sampling_strategy_name
             query = format_insert_query(MySQLBenchmarkConnector.sampling_strategy_table, sampling_strategy_descriptor)
             cursor = self.con.cursor()
             cursor.execute(query)
