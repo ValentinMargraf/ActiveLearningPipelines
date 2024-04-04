@@ -155,7 +155,6 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
                 max_id = max(s["scenario_id"], max_id)
             descriptor["scenario_id"] = max_id + 1
 
-            print(descriptor)
             als = ActiveLearningScenario(**descriptor)
 
             descriptor["labeled_indices"] = als.get_labeled_instances()

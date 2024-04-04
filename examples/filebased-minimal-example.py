@@ -9,7 +9,6 @@ benchmark_connector = DataFileBenchmarkConnector()
 
 # load some default settings and algorithm choices
 ensure_default_setup(benchmark_connector)
-benchmark_connector.dump()
 
 salt = SALTEvaluator(benchmark_connector=benchmark_connector,
                      setting_name="small", openml_id=31, sampling_strategy_name="margin", learner_name="rf_gini")
