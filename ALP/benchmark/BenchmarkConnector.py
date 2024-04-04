@@ -53,7 +53,7 @@ class BenchmarkConnector(ABC):
         pass
 
     @abstractmethod
-    def load_learner_by_sampling_strategy(self, learner_name):
+    def load_sampling_strategy_by_name(self, learner_name):
         pass
 
     @abstractmethod
@@ -317,7 +317,7 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         if len(res_check) < 1:
             # The specified setting does not yet exist so create it in the database and then return it to the invoker.
             sampling_strategy_descriptor["sampling_strategy_name"] = name
-            query = format_insert_query(MySQLBenchmarkConnector.learner_table, sampling_strategy_descriptor)
+            query = format_insert_query(MySQLBenchmarkConnector.sampling_strategy_table, sampling_strategy_descriptor)
             cursor = self.con.cursor()
             cursor.execute(query)
             self.con.commit()

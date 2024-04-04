@@ -12,12 +12,17 @@ from skactiveml.pool import (
     UncertaintySampling,
 )
 
+from ALP.util.common import fullname
 from uncertainty_quantifier import RandomForestEns as RFEns
 
 
 class SamplingStrategy(ABC):
     @abstractmethod
     def sample(self, learner, X_l, y_l, X_u, num_samples):
+        pass
+
+    @abstractmethod
+    def get_params(self):
         pass
 
 
@@ -29,6 +34,9 @@ class PseudoRandomizedSamplingStrategy(SamplingStrategy):
     def sample(self, learner, X_l, y_l, X_u, num_samples):
         pass
 
+    def get_params(self):
+        return {"seed": self.seed}
+
 
 class WrappedSamplingStrategy(SamplingStrategy):
     def __init__(self, wrapped_strategy: SamplingStrategy, learner):
@@ -38,6 +46,18 @@ class WrappedSamplingStrategy(SamplingStrategy):
     def sample(self, learner, X_l, y_l, X_u, num_samples):
         self.learner.fit(X_l, y_l)
         self.wrapped_strategy.sample(self.learner, X_l, y_l, X_u, num_samples)
+
+    def get_params(self):
+        return {
+            "wrapped_sampling_strategy": {
+                "fqn": fullname(self.wrapped_strategy),
+                "params": self.wrapped_strategy.get_params()
+            },
+            "learner": {
+                "fqn": fullname(self.learner),
+                "params": self.learner.get_params()
+            }
+        }
 
 
 class ActiveMLSamplingStrategy(PseudoRandomizedSamplingStrategy):
@@ -140,6 +160,11 @@ class ActiveMLEnsembleSamplingStrategy(ActiveMLSamplingStrategy):
         queried_original_ids = queried_ids - len(y_l)
         return queried_original_ids
 
+    def get_params(self):
+        params = super().get_params()
+        params["ensemble_size"] = self.ensemble_size
+        return params
+
 
 class QueryByCommitteeSampling(ActiveMLEnsembleSamplingStrategy):
     def __init__(self, seed, method, ensemble_size):
@@ -164,9 +189,9 @@ class BatchBaldSampling(ActiveMLEnsembleSamplingStrategy):
 #########################
 # self-implemented
 #########################
-class TypicalClusterSampling(SamplingStrategy):
+class TypicalClusterSampling(PseudoRandomizedSamplingStrategy):
     def __init__(self, seed):
-        self.seed = seed
+        super().__init__(seed=seed)
 
     def sample(self, learner, X_l, y_l, X_u, num_samples):
         # from num_saples "uncovered" cluster (there where are no X_l) select the one with highest "typicality"
@@ -209,9 +234,9 @@ class TypicalClusterSampling(SamplingStrategy):
                         return selected_ids
 
 
-class PowerMarginSampling(SamplingStrategy):
+class PowerMarginSampling(PseudoRandomizedSamplingStrategy):
     def __init__(self, seed):
-        self.seed = seed
+        super().__init__(seed=seed)
 
     def sample(self, learner, X_l, y_l, X_u, num_samples):
         probas = learner.predict_proba(X_u)
@@ -231,12 +256,11 @@ class PowerMarginSampling(SamplingStrategy):
         return original_margin_ids
 
 
-class WeightedClusterSampling(SamplingStrategy):
+class WeightedClusterSampling(PseudoRandomizedSamplingStrategy):
     def __init__(self, seed):
-        self.seed = seed
+        super().__init__(seed=seed)
 
     def sample(self, learner, X_l, y_l, X_u, num_samples):
-        #print("X_u: ", X_u.shape)
         scores = learner.predict_proba(X_u) + 1e-8
         entropy = -np.sum(scores * np.log(scores), axis=1)
         num_classes = len(np.unique(y_l))
@@ -269,9 +293,9 @@ class WeightedClusterSampling(SamplingStrategy):
             return selected_ids[0:num_samples]
 
 
-class RandomMarginSampling(SamplingStrategy):
+class RandomMarginSampling(PseudoRandomizedSamplingStrategy):
     def __init__(self, seed):
-        self.seed = seed
+        super().__init__(seed=seed)
 
     def sample(self, learner, X_l, y_l, X_u, num_samples):
         num_for_margin = num_samples // 2
@@ -281,9 +305,9 @@ class RandomMarginSampling(SamplingStrategy):
         return np.concatenate((margin_ids, random_ids))
 
 
-class MinMarginSampling(SamplingStrategy):
+class MinMarginSampling(PseudoRandomizedSamplingStrategy):
     def __init__(self, seed):
-        self.seed = seed
+        super().__init__(seed=seed)
 
     def sample(self, learner, X_l, y_l, X_u, num_samples):
         num_estimators = 25

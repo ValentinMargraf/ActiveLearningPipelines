@@ -1,0 +1,51 @@
+PY_EXPERIMENTER:
+  n_jobs: 1
+
+  Database:
+    provider: mysql
+    database: saltbench
+    table:
+      name: salt_experiments
+      keyfields:
+        "setting_name":
+          type: VARCHAR(50)
+          # to fill from db
+          values: [ "small", "medium", "large-10", "large-20" ]
+        "openml_id":
+          type: INT
+          values: [ 3, 6, 8 ]
+        "learner_name":
+          type: VARCHAR(50)
+          values: [ "svm_lin", "svm_rbf", "rf_entropy" ]
+        "sampling_strategy_name":
+          type: VARCHAR(50)
+          values: [ "random", "entropy", "margin" ]
+        "test_split_seed":
+          type: INT
+          values: [ 0 ]
+        "train_split_seed":
+          type: INT
+          values: [ 0 ]
+        "seed":
+          type: INT
+          values: [ 0 ]
+
+    logtables:
+      accuracy_log:
+        iteration: INT
+        test_accuracy: DOUBLE
+        test_f1: DOUBLE
+        test_precision: DOUBLE
+        test_recall: DOUBLE
+        test_auc: DOUBLE
+        test_log_loss: DOUBLE
+
+      labeling_log:
+        iteration: INT
+        len_X_sel: INT
+        len_X_l: INT
+        len_X_u: INT
+        y_sel_dist: TEXT
+        y_l_dist: TEXT
+
+

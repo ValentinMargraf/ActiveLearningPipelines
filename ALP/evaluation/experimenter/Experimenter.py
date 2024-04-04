@@ -6,12 +6,10 @@ from ALP.evaluation.experimenter.LogTableObserver import LogTableObserver
 from ALP.pipeline.ActiveLearningPipeline import ActiveLearningPipeline
 from ALP.pipeline.Oracle import Oracle
 
-exp_setting_file = "config/exp_setting_conf.yml"
-exp_scenario_file = "config/exp_scenario_conf.yml"
-exp_learner_sampler_file = "config/exp_learner_sampler_conf.yml"
+exp_learner_sampler_file = "config/exp_learner_sampler.yml"
 db_config_file = "config/db_conf.yml"
 
-setup_table = False
+run_setup = True
 
 small_openml_ids = [3, 6, 8, 10, 11, 12, 14, 15, 16, 18, 20, 21, 22, 23, 26, 28, 29, 30, 31, 32, 36, 37, 39, 40, 41, 43,
                     44, 45, 46, 48, 49, 50, 53, 54, 59, 60, 61, 62, 151, 155, 161, 162, 164, 180, 181, 182, 183, 184,
@@ -68,47 +66,49 @@ large_openml_ids = [3, 6, 12, 14, 16, 18, 20, 21, 22, 26, 28, 30, 32, 36, 44, 45
                     4534, 4538, 7592, 9910, 9952, 9960, 9964, 9976, 9977, 9978, 9985, 14952, 14965, 14969, 14970, 40474,
                     40475, 40476, 40477, 40478, 125922, 146195, 146817, 146820, 146821, 146822, 146824, 146825, 167119,
                     167120, 167121, 167124, 167125, 167140, 167141]
+test_openml_ids = [3, 6, 12, 14, 16, 18, 20]
 
 
-def run_experiment(parameters: dict, result_processor: ResultProcessor, custom_config: dict):
-    connector: MySQLBenchmarkConnector = custom_config["dbbc"]
+class ExperimentRunner:
 
-    OPENML_ID = int(parameters["openml_id"])
-    SETTING_NAME = int(parameters["setting_name"])
-    TEST_SPLIT_SEED = int(parameters["test_split_seed"])
-    TRAIN_SPLIT_SEED = int(parameters["train_split_seed"])
-    SEED = int(parameters["seed"])
+    def __init__(self, dbbc):
+        self.dbbc = dbbc
 
-    setting = connector.load_setting_by_name(SETTING_NAME)
-    scenario = connector.load_or_create_scenario(openml_id=OPENML_ID, test_split_seed=TEST_SPLIT_SEED,
-                                                 train_split_seed=TRAIN_SPLIT_SEED, seed=SEED,
-                                                 setting_id=setting.get_setting_id())
+    def run_experiment(self, parameters: dict, result_processor: ResultProcessor, custom_config: dict):
+        connector: MySQLBenchmarkConnector = self.dbbc
 
-    X_l, y_l, X_u, y_u, X_test, y_test = scenario.get_data_split()
+        OPENML_ID = int(parameters["openml_id"])
+        SETTING_NAME = parameters["setting_name"]
+        TEST_SPLIT_SEED = int(parameters["test_split_seed"])
+        TRAIN_SPLIT_SEED = int(parameters["train_split_seed"])
+        SEED = int(parameters["seed"])
 
-    SAMPLING_STRATEGY = connector.load_sampling_strategy_by_name(parameters["sampling_strategy_name"])
-    LEARNER = connector.load_learner_by_name(parameters["learner_name"])
+        setting = connector.load_setting_by_name(SETTING_NAME)
+        scenario = connector.load_or_create_scenario(openml_id=OPENML_ID, test_split_seed=TEST_SPLIT_SEED,
+                                                     train_split_seed=TRAIN_SPLIT_SEED, seed=SEED,
+                                                     setting_id=setting.get_setting_id())
 
-    OBSERVER = [LogTableObserver()]
+        X_l, y_l, X_u, y_u, X_test, y_test = scenario.get_data_split()
 
-    ALP = ActiveLearningPipeline(learner=SAMPLING_STRATEGY, sampling_strategy=LEARNER, observer_list=OBSERVER,
-                                 # init_budget=INIT_BUDGET,
-                                 num_iterations=setting.get_number_of_iterations(),
-                                 num_samples_per_iteration=setting.get_number_of_samples())
+        SAMPLING_STRATEGY = connector.load_sampling_strategy_by_name(parameters["sampling_strategy_name"])
+        LEARNER = connector.load_learner_by_name(parameters["learner_name"])
 
-    oracle = Oracle(X_u, y_u)
-    ALP.active_fit(X_l, y_l, X_u, oracle)
+        OBSERVER = [LogTableObserver(result_processor, X_test, y_test)]
+        ALP = ActiveLearningPipeline(learner=LEARNER, sampling_strategy=SAMPLING_STRATEGY, observer_list=OBSERVER,
+                                     # init_budget=INIT_BUDGET,
+                                     num_iterations=setting.get_number_of_iterations(),
+                                     num_samples_per_iteration=setting.get_number_of_samples())
+
+        oracle = Oracle(X_u, y_u)
+        ALP.active_fit(X_l, y_l, X_u, oracle)
 
 
 def main():
-    run_setup = True
-
     experimenter = PyExperimenter(experiment_configuration_file_path=exp_learner_sampler_file,
                                   database_credential_file_path=db_config_file)
 
     db_name = experimenter.config.database_configuration.database_name
     db_credentials = experimenter.db_connector._get_database_credentials()
-
     dbbc = MySQLBenchmarkConnector(host=db_credentials["host"], user=db_credentials["user"],
                                    password=db_credentials["password"], database=db_name)
 
@@ -116,29 +116,32 @@ def main():
         from DefaultSetup import ensure_default_setup
         ensure_default_setup(dbbc=dbbc)
 
-        setting_combinations = [{'setting_name': 'small', 'openml_id': oid} for oid in small_openml_ids]
-        setting_combinations += [{'setting_name': 'medium', 'openml_id': oid} for oid in medium_openml_ids]
-        setting_combinations += [{'setting_name': 'large-10', 'openml_id': oid} for oid in large_openml_ids]
-        setting_combinations += [{'setting_name': 'large-20', 'openml_id': oid} for oid in large_openml_ids]
+        setting_combinations = []
+        # setting_combinations += [{'setting_name': 'small', 'openml_id': oid} for oid in small_openml_ids]
+        # setting_combinations += [{'setting_name': 'medium', 'openml_id': oid} for oid in medium_openml_ids]
+        # setting_combinations += [{'setting_name': 'large-10', 'openml_id': oid} for oid in large_openml_ids]
+        # setting_combinations += [{'setting_name': 'large-20', 'openml_id': oid} for oid in large_openml_ids]
+        setting_combinations += [{'setting_name': 'small', 'openml_id': oid} for oid in test_openml_ids]
 
         experimenter.fill_table_from_combination(
             parameters={
-                "learner_name": ["svm_lin", "svm_rbf", "rf_entropy", "rf_gini", "rf_entropy_large",
-                                 "rf_gini_large", "knn_3", "knn_10", "log_reg", "multinomial_bayes",
-                                 "etc_entropy", "etc_gini", "etc_entropy_large", "etc_gini_large",
-                                 "naive_bayes", "mlp", "GBT_logloss", "GBT_exp", "GBT_logloss_large",
-                                 "GBT_exp_large"],
-                "sampling_strategy_name": ["random", "entropy", "margin", "least_confident", "mc_logloss",
-                                           "mc_misclass", "discrim", "qbc_entropy", "qbc_kl", "bald", "power_margin",
-                                           "random_margin", "min_margin", "expected_avg", "typ_cluster",
-                                           "weighted_cluster", "random_margin"],
-                "test_split_seed": np.arange(5),
+                "learner_name": ["svm_lin", "svm_rbf", "rf_entropy", "rf_gini", "rf_entropy_large"],  # ,
+                # "rf_gini_large", "knn_3", "knn_10", "log_reg", "multinomial_bayes",
+                # "etc_entropy", "etc_gini", "etc_entropy_large", "etc_gini_large",
+                # "naive_bayes", "mlp", "GBT_logloss", "GBT_exp", "GBT_logloss_large",
+                # "GBT_exp_large"],
+                "sampling_strategy_name": ["random", "entropy", "margin", "least_confident", "mc_logloss"],
+                # "mc_misclass", "discrim", "qbc_entropy", "qbc_kl", "bald", "power_margin",
+                # "random_margin", "min_margin", "expected_avg", "typ_cluster",
+                # "weighted_cluster", "random_margin"],
+                "test_split_seed": np.arange(1),
                 "train_split_seed": np.arange(5),
-                "seed": np.arange(30)
+                "seed": np.arange(5)
             },
             fixed_parameter_combinations=setting_combinations)
 
-    experimenter.execute(run_experiment, -1)
+    er = ExperimentRunner(dbbc=dbbc)
+    experimenter.execute(er.run_experiment, 1)
 
 
 if __name__ == "__main__":
