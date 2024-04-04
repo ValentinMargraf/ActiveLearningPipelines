@@ -3,7 +3,8 @@ import numpy as np
 
 class ActiveLearningPipeline:
 
-    def __init__(self, learner, sampling_strategy, initializer=None, observer_list: list() = None, init_budget=10,
+    def __init__(self, learner, sampling_strategy, initializer=None, observer_list: list() = None,
+                 init_budget: int = None,
                  num_iterations=10, num_samples_per_iteration=10):
         self.initializer = initializer
         self.learner = learner
@@ -27,7 +28,7 @@ class ActiveLearningPipeline:
         X_l_aug = X_l
         y_l_aug = y_l
 
-        if self.initializer is not None:
+        if self.initializer is not None and self.init_budget is not None:
             idx_init = self.initializer.sample(X_u, self.init_budget)
             # find the index of the sampled indices
             idx_mapped = np.array([np.where(idx_available == value)[0][0] for value in idx_init])
@@ -93,5 +94,5 @@ class ActiveLearningPipeline:
                 for o in self.observer_list:
                     o.observe_model(i, self.learner)
 
-    def predict(self, X_test):
-        return self.learner.predict(X_test)
+    def predict(self, X):
+        return self.learner.predict(X)
