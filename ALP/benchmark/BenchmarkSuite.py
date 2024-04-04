@@ -16,18 +16,18 @@ class BenchmarkSuite(ABC):
 class OpenMLBenchmarkSuite(BenchmarkSuite):
 
     def __init__(self, openml_benchmark_id, name="OpenML-BenchmarkSuite"):
-        super(OpenMLBenchmarkSuite, self).__init__(name=name + "-" + openml_benchmark_id)
+        super(OpenMLBenchmarkSuite, self).__init__(name=name + "-" + str(openml_benchmark_id))
         self.openml_benchmark_id = openml_benchmark_id
 
         benchmark = openml.study.get_suite(openml_benchmark_id)
-        tasks = openml.tasks.list_tasks(output_format="dataframe", task_id=benchmark.tasks)
+        tasks = openml.tasks.list_tasks(task_id=benchmark.tasks)
 
         self.openml_dataset_ids = list()
-        for t in tasks:
-            self.openml_dataset_ids.append(t.get_dataset().id)
+        for k, t in tasks.items():
+            self.openml_dataset_ids.append(t['did'])
 
     def get_openml_dataset_ids(self):
-        self.openml_dataset_ids
+        return self.openml_dataset_ids
 
 
 class SALTBenchmarkSuiteLarge(BenchmarkSuite):
