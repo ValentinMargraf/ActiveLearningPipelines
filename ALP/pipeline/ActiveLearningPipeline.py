@@ -50,6 +50,9 @@ class ActiveLearningPipeline:
             if self.observer_list is not None:
                 for o in self.observer_list:
                     o.observe_data(0, X_u_sel, y_u_sel, X_l_aug, y_l_aug, X_u_red)
+        elif self.observer_list is not None:
+            for o in self.observer_list:
+                o.observe_data(0, X_l, y_l, X_l_aug, y_l_aug, X_u_red)
 
         # fit the initial model
         self.learner.fit(X_l_aug, y_l_aug)
