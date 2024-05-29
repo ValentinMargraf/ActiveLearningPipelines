@@ -1,12 +1,19 @@
-
-
 class ActiveLearningSetting:
     """
     The active learning setting defines constraints and design choices of one active learning setup.
     """
 
-    def __init__(self, setting_id, setting_name, setting_labeled_train_size, setting_train_type, setting_test_size,
-                 number_of_iterations, number_of_samples):
+    def __init__(
+        self,
+        setting_id,
+        setting_name,
+        setting_labeled_train_size,
+        setting_train_type,
+        setting_test_size,
+        number_of_iterations,
+        number_of_samples,
+        factor,
+    ):
         # id of the setting in the database
         self.setting_id = setting_id
         # descriptor of the setting
@@ -21,14 +28,20 @@ class ActiveLearningSetting:
         self.number_of_iterations = number_of_iterations
         # number of samples queried per iteration
         self.number_of_samples = number_of_samples
+        # task-dependent factor
+        self.factor = factor
 
     def from_dict(setting: dict):
-        return ActiveLearningSetting(setting_id=setting["setting_id"], setting_name=setting["setting_name"],
-                                     setting_labeled_train_size=setting["setting_labeled_train_size"],
-                                     setting_train_type=setting["setting_train_type"],
-                                     setting_test_size=setting["setting_test_size"],
-                                     number_of_iterations=setting["number_of_iterations"],
-                                     number_of_samples=setting["number_of_samples"])
+        return ActiveLearningSetting(
+            setting_id=setting["setting_id"],
+            setting_name=setting["setting_name"],
+            setting_labeled_train_size=setting["setting_labeled_train_size"],
+            setting_train_type=setting["setting_train_type"],
+            setting_test_size=setting["setting_test_size"],
+            number_of_iterations=setting["number_of_iterations"],
+            number_of_samples=setting["number_of_samples"],
+            factor=setting["factor"],
+        )
 
     def get_setting_id(self):
         return self.setting_id

@@ -7,35 +7,61 @@ from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from ALP.benchmark.ActiveLearningSetting import ActiveLearningSetting
 
 
-def create_dataset_split(X, y, test_split_seed, test_split_size: float, train_split_seed, train_split_size,
-                         train_split_type):
+def create_dataset_split(
+    X, y, test_split_seed, test_split_size: float, train_split_seed, train_split_size, train_split_type, factor
+):
     # initialize list of indices
     indices = np.arange(0, len(X))
 
     # split data into train and test and retrieve test_indices to be returned later
-    X_train, X_test, y_train, y_test, train_indices, test_indices = train_test_split(X, y, indices,
-                                                                                     test_size=test_split_size,
-                                                                                     random_state=test_split_seed,
-                                                                                     stratify=y)
+    X_train, X_test, y_train, y_test, train_indices, test_indices = train_test_split(
+        X, y, indices, test_size=test_split_size, random_state=test_split_seed, stratify=y
+    )
     # determine the proportion of unlabeled data, also in case the train split is given in terms of an absolute number
     # of labeled data points
     unlabeled_size = 1 - train_split_size
     if train_split_type == "absolute":
-        unlabeled_size = 1 - train_split_size / len(X_train)
+        if factor is not None:
+            train_split_size = factor * len(np.unique(y))
+            unlabeled_size = 1 - train_split_size / len(X_train)
+        else:
+            unlabeled_size = 1 - train_split_size / len(X_train)
 
     # split data into labeled and unlabeled
-    X_l, X_u, y_l, y_u, labeled_indices, unlabeled_indices = train_test_split(X_train, y_train, train_indices,
-                                                                              test_size=unlabeled_size,
-                                                                              random_state=train_split_seed,
-                                                                              stratify=y_train)
+    X_l, X_u, y_l, y_u, labeled_indices, unlabeled_indices = train_test_split(
+        X_train, y_train, train_indices, test_size=unlabeled_size, random_state=train_split_seed, stratify=y_train
+    )
+
+    if len(np.unique(y[labeled_indices])) != len(np.unique(y)):
+        # make sure that each class within y is at least once in the labeled data
+        for i in np.unique(y):
+            if i not in y_l:
+                ids = np.where(y_u == i)[0]
+                np.random.seed(train_split_seed)
+                idx_in_yu = np.random.choice(ids)
+                idx = unlabeled_indices[idx_in_yu]
+                labeled_indices = np.append(labeled_indices, idx)
+
+    assert len(np.unique(y[labeled_indices])) == len(
+        np.unique(y)
+    ), "Not all classes are represented in the labeled data"
 
     return labeled_indices.tolist(), test_indices.tolist()
 
 
 class ActiveLearningScenario:
 
-    def __init__(self, scenario_id, openml_id, test_split_seed, train_split_seed, seed, setting: ActiveLearningSetting,
-                 labeled_indices: list = None, test_indices: list = None):
+    def __init__(
+        self,
+        scenario_id,
+        openml_id,
+        test_split_seed,
+        train_split_seed,
+        seed,
+        setting: ActiveLearningSetting,
+        labeled_indices: list = None,
+        test_indices: list = None,
+    ):
         self.scenario_id = scenario_id
         self.openml_id = openml_id
         self.test_split_seed = test_split_seed
@@ -59,15 +85,21 @@ class ActiveLearningScenario:
                 y_int[mask] = i
             y = y_int
         X = OrdinalEncoder().fit_transform(X)
-        X = SimpleImputer(missing_values=np.nan, strategy='mean').fit_transform(X)
+        X = SimpleImputer(missing_values=np.nan, strategy="mean").fit_transform(X)
         self.X = X
         self.y = LabelEncoder().fit_transform(y)
 
         if test_indices is None or labeled_indices is None:
-            self.labeled_indices, self.test_indices = create_dataset_split(X, y, test_split_seed,
-                                                                           setting.setting_test_size, train_split_seed,
-                                                                           setting.setting_labeled_train_size,
-                                                                           setting.setting_train_type)
+            self.labeled_indices, self.test_indices = create_dataset_split(
+                X,
+                y,
+                test_split_seed,
+                setting.setting_test_size,
+                train_split_seed,
+                setting.setting_labeled_train_size,
+                setting.setting_train_type,
+                setting.factor,
+            )
 
     def get_scenario_id(self):
         return self.scenario_id

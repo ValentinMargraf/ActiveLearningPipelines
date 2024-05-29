@@ -35,8 +35,9 @@ class BenchmarkConnector(ABC):
         pass
 
     @abstractmethod
-    def load_or_create_setting(self, name, labeled_train_size, train_type, test_size, number_of_iterations,
-                               number_of_samples):
+    def load_or_create_setting(
+        self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_samples
+    ):
         pass
 
     @abstractmethod
@@ -96,20 +97,21 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
 
         # ensure files exist and are at least empty json arrays
         import os
+
         os.makedirs(DataFileBenchmarkConnector.base_folder, exist_ok=True)
 
         for file in [self.scenario_file, self.setting_file, self.learner_file, self.sampling_strategy_file]:
             if not os.path.isfile(file):
-                with open(file, 'w') as f:
+                with open(file, "w") as f:
                     f.write("[]")
 
-        with open(self.scenario_file, 'r') as f:
+        with open(self.scenario_file) as f:
             self.scenarios = json.load(f)
-        with open(self.setting_file, 'r') as f:
+        with open(self.setting_file) as f:
             self.settings = json.load(f)
-        with open(self.learner_file, 'r') as f:
+        with open(self.learner_file) as f:
             self.learners = json.load(f)
-        with open(self.sampling_strategy_file, 'r') as f:
+        with open(self.sampling_strategy_file) as f:
             self.sampling_strategies = json.load(f)
 
     def __del__(self):
@@ -120,10 +122,10 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
             (self.setting_file, self.settings),
             (self.scenario_file, self.scenarios),
             (self.learner_file, self.learners),
-            (self.sampling_strategy_file, self.sampling_strategies)
+            (self.sampling_strategy_file, self.sampling_strategies),
         ]
         for dd in dump_data:
-            with open(dd[0], 'w') as f:
+            with open(dd[0], "w") as f:
                 json.dump(obj=dd[1], fp=f, indent=4)
 
     def load_scenario(self, scenario_id: int):
@@ -142,7 +144,7 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
             "test_split_seed": test_split_seed,
             "train_split_seed": train_split_seed,
             "seed": seed,
-            "setting_id": setting_id
+            "setting_id": setting_id,
         }
         stored_scenario = _fetch_data_of_descriptor(self.scenarios, descriptor)
 
@@ -184,15 +186,16 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
 
         return ActiveLearningSetting(**stored_setting)
 
-    def load_or_create_setting(self, name, labeled_train_size, train_type, test_size, number_of_iterations,
-                               number_of_samples):
+    def load_or_create_setting(
+        self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_samples
+    ):
         setting_descriptor = {
             "setting_name": name,
             "setting_labeled_train_size": labeled_train_size,
             "setting_train_type": train_type,
             "setting_test_size": test_size,
             "number_of_iterations": number_of_iterations,
-            "number_of_samples": number_of_samples
+            "number_of_samples": number_of_samples,
         }
 
         stored_setting = _fetch_data_of_descriptor(self.settings, setting_descriptor)
@@ -214,8 +217,9 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         if stored_learner is None:
             raise BaseException("No learner could be found with name " + learner_name)
 
-        return instantiate_class_by_fqn(stored_learner["learner_class"],
-                                        json.loads(stored_learner["learner_parameterization"]))
+        return instantiate_class_by_fqn(
+            stored_learner["learner_class"], json.loads(stored_learner["learner_parameterization"])
+        )
 
     def load_learner(self, learner_id):
         stored_learner = _fetch_data_of_descriptor(self.learners, {"learner_id": learner_id})
@@ -223,8 +227,9 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         if stored_learner is None:
             raise BaseException("No learner could be found with ID " + str(learner_id))
 
-        return instantiate_class_by_fqn(stored_learner["learner_class"],
-                                        json.loads(stored_learner["learner_parameterization"]))
+        return instantiate_class_by_fqn(
+            stored_learner["learner_class"], json.loads(stored_learner["learner_parameterization"])
+        )
 
     def load_or_create_learner(self, learner_name, obj):
         learner_descriptor = {
@@ -252,24 +257,30 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         return learner_descriptor["learner_name"], obj
 
     def load_sampling_strategy_by_name(self, sampling_strategy_name):
-        stored_sampling_strategy = _fetch_data_of_descriptor(self.sampling_strategies,
-                                                             {"sampling_strategy_name": sampling_strategy_name})
+        stored_sampling_strategy = _fetch_data_of_descriptor(
+            self.sampling_strategies, {"sampling_strategy_name": sampling_strategy_name}
+        )
 
         if stored_sampling_strategy is None:
             raise BaseException("No sampling strategy could be found with ID " + sampling_strategy_name)
 
-        return instantiate_class_by_fqn(stored_sampling_strategy["sampling_strategy_class"], json.loads(
-            stored_sampling_strategy["sampling_strategy_parameterization"]))
+        return instantiate_class_by_fqn(
+            stored_sampling_strategy["sampling_strategy_class"],
+            json.loads(stored_sampling_strategy["sampling_strategy_parameterization"]),
+        )
 
     def load_sampling_strategy(self, sampling_strategy_id):
-        stored_sampling_strategy = _fetch_data_of_descriptor(self.sampling_strategies,
-                                                             {"sampling_strategy_id": sampling_strategy_id})
+        stored_sampling_strategy = _fetch_data_of_descriptor(
+            self.sampling_strategies, {"sampling_strategy_id": sampling_strategy_id}
+        )
 
         if stored_sampling_strategy is None:
             raise BaseException("No sampling strategy could be found with ID " + str(sampling_strategy_id))
 
-        return instantiate_class_by_fqn(stored_sampling_strategy["sampling_strategy_class"],
-                                        json.loads(stored_sampling_strategy["sampling_strategy_parameterization"]))
+        return instantiate_class_by_fqn(
+            stored_sampling_strategy["sampling_strategy_class"],
+            json.loads(stored_sampling_strategy["sampling_strategy_parameterization"]),
+        )
 
     def load_or_create_sampling_strategy(self, sampling_strategy_name, obj):
         sampling_strategy_descriptor = {
@@ -305,31 +316,43 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         self.database = database
         self.use_ssl = use_ssl
 
-        self.con = mysql.connector.connect(host=host, user=user, password=password, database=database,
-                                           ssl_disabled=not use_ssl)
+        self.con = mysql.connector.connect(
+            host=host, user=user, password=password, database=database, ssl_disabled=not use_ssl
+        )
 
-        setting_table_query = f"CREATE TABLE IF NOT EXISTS {MySQLBenchmarkConnector.setting_table} (" \
-                              f"setting_id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY, " \
-                              f"setting_name VARCHAR(250) UNIQUE, setting_labeled_train_size VARCHAR(50), " \
-                              f"setting_train_type VARCHAR(250), setting_test_size VARCHAR(50), " \
-                              f"number_of_iterations INT(10), number_of_samples INT(10))"
-        scenario_table_query = f"CREATE TABLE IF NOT EXISTS {MySQLBenchmarkConnector.scenario_table} (" \
-                               f"scenario_id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY, openml_id INT(10), " \
-                               f"test_split_seed INT(10), train_split_seed INT(10), seed INT(10), " \
-                               f"labeled_indices LONGTEXT, test_indices LONGTEXT, setting_id INT(10))"
-        learner_table_query = f"CREATE TABLE IF NOT EXISTS {MySQLBenchmarkConnector.learner_table} (" \
-                              f"learner_id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY, " \
-                              f"learner_name VARCHAR(100) UNIQUE, learner_class VARCHAR(250), " \
-                              f"learner_parameterization TEXT)"
-        sampling_strategy_table_q = f"CREATE TABLE IF NOT EXISTS {MySQLBenchmarkConnector.sampling_strategy_table}" \
-                                    f" (sampling_strategy_id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY, " \
-                                    f"sampling_strategy_name VARCHAR(100) UNIQUE," \
-                                    f"sampling_strategy_class VARCHAR(250), " \
-                                    f"sampling_strategy_parameterization TEXT)"
+        setting_table_query = (
+            f"CREATE TABLE IF NOT EXISTS {MySQLBenchmarkConnector.setting_table} ("
+            f"setting_id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY, "
+            f"setting_name VARCHAR(250) UNIQUE, setting_labeled_train_size VARCHAR(50), "
+            f"setting_train_type VARCHAR(250), setting_test_size VARCHAR(50), "
+            f"number_of_iterations INT(10), number_of_samples INT(10), factor INT(10))"
+        )
+        scenario_table_query = (
+            f"CREATE TABLE IF NOT EXISTS {MySQLBenchmarkConnector.scenario_table} ("
+            f"scenario_id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY, openml_id INT(10), "
+            f"test_split_seed INT(10), train_split_seed INT(10), seed INT(10), "
+            f"labeled_indices LONGTEXT, test_indices LONGTEXT, setting_id INT(10))"
+        )
+        learner_table_query = (
+            f"CREATE TABLE IF NOT EXISTS {MySQLBenchmarkConnector.learner_table} ("
+            f"learner_id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY, "
+            f"learner_name VARCHAR(100) UNIQUE, learner_class VARCHAR(250), "
+            f"learner_parameterization TEXT)"
+        )
+        sampling_strategy_table_q = (
+            f"CREATE TABLE IF NOT EXISTS {MySQLBenchmarkConnector.sampling_strategy_table}"
+            f" (sampling_strategy_id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY, "
+            f"sampling_strategy_name VARCHAR(100) UNIQUE,"
+            f"sampling_strategy_class VARCHAR(250), "
+            f"sampling_strategy_parameterization TEXT)"
+        )
 
         cursor = self.con.cursor()
         for q in [setting_table_query, scenario_table_query, learner_table_query, sampling_strategy_table_q]:
             cursor.execute(q)
+
+    def close(self):
+        self.con.close()
 
     def load_scenario(self, scenario_id):
         query = format_select_query(MySQLBenchmarkConnector.scenario_table, {"scenario_id": scenario_id})
@@ -354,7 +377,7 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
             "test_split_seed": test_split_seed,
             "train_split_seed": train_split_seed,
             "seed": seed,
-            "setting_id": setting_id
+            "setting_id": setting_id,
         }
         check_query = format_select_query(MySQLBenchmarkConnector.scenario_table, scenario_data)
         cursor = self.con.cursor(buffered=True, dictionary=True)
@@ -406,8 +429,9 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         else:
             raise Exception("Setting with name " + str(setting_name) + " could not be found.")
 
-    def load_or_create_setting(self, name, labeled_train_size, train_type, test_size, number_of_iterations,
-                               number_of_samples):
+    def load_or_create_setting(
+        self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_samples, factor
+    ):
         """
         This method checks whether the specified setting already exists. If so, it just fetches the data from the
         database and returns an instance. If not, the specified setting is added to the database and then also returned
@@ -419,7 +443,8 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
             "setting_train_type": train_type,
             "setting_test_size": test_size,
             "number_of_iterations": number_of_iterations,
-            "number_of_samples": number_of_samples
+            "number_of_samples": number_of_samples,
+            "factor": factor,
         }
 
         # check whether the specified setting already exists. if so, fetch its id from the database and return an
@@ -441,9 +466,16 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         inserted_id = cursor.lastrowid
         self.con.commit()
 
-        return ActiveLearningSetting(setting_id=inserted_id, setting_name=name, setting_test_size=test_size,
-                                     setting_train_type=train_type, setting_labeled_train_size=labeled_train_size,
-                                     number_of_iterations=number_of_iterations, number_of_samples=number_of_samples)
+        return ActiveLearningSetting(
+            setting_id=inserted_id,
+            setting_name=name,
+            setting_test_size=test_size,
+            setting_train_type=train_type,
+            setting_labeled_train_size=labeled_train_size,
+            number_of_iterations=number_of_iterations,
+            number_of_samples=number_of_samples,
+            factor=factor,
+        )
 
     def load_learner_by_name(self, learner_name):
         query = format_select_query(MySQLBenchmarkConnector.learner_table, {"learner_name": learner_name})
@@ -452,8 +484,9 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         res = cursor.fetchall()
         if len(res) > 0:
             learner_data = res[0]
-            return instantiate_class_by_fqn(learner_data["learner_class"],
-                                            json.loads(learner_data["learner_parameterization"]))
+            return instantiate_class_by_fqn(
+                learner_data["learner_class"], json.loads(learner_data["learner_parameterization"])
+            )
         else:
             raise Exception("Learner with name " + str(learner_name) + " unknown")
 
@@ -464,8 +497,9 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         res = cursor.fetchall()
         if len(res) > 0:
             learner_data = res[0]
-            return instantiate_class_by_fqn(learner_data["learner_class"],
-                                            json.loads(learner_data["learner_parameterization"]))
+            return instantiate_class_by_fqn(
+                learner_data["learner_class"], json.loads(learner_data["learner_parameterization"])
+            )
         else:
             raise Exception("Learner with ID " + str(learner_id) + " unknown")
 
@@ -500,28 +534,34 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         return learner_descriptor["learner_name"], obj
 
     def load_sampling_strategy_by_name(self, sampling_strategy_name):
-        query = format_select_query(MySQLBenchmarkConnector.sampling_strategy_table,
-                                    {"sampling_strategy_name": sampling_strategy_name})
+        query = format_select_query(
+            MySQLBenchmarkConnector.sampling_strategy_table, {"sampling_strategy_name": sampling_strategy_name}
+        )
         cursor = self.con.cursor(buffered=True, dictionary=True)
         cursor.execute(query)
         res = cursor.fetchall()
         if len(res) > 0:
             sampling_strategy_data = res[0]
-            return instantiate_class_by_fqn(sampling_strategy_data["sampling_strategy_class"],
-                                            json.loads(sampling_strategy_data["sampling_strategy_parameterization"]))
+            return instantiate_class_by_fqn(
+                sampling_strategy_data["sampling_strategy_class"],
+                json.loads(sampling_strategy_data["sampling_strategy_parameterization"]),
+            )
         else:
             raise Exception("Sampling strategy with name " + str(sampling_strategy_name) + " unknown")
 
     def load_sampling_strategy(self, sampling_strategy_id):
-        query = format_select_query(MySQLBenchmarkConnector.sampling_strategy_table,
-                                    {"sampling_strategy_id": sampling_strategy_id})
+        query = format_select_query(
+            MySQLBenchmarkConnector.sampling_strategy_table, {"sampling_strategy_id": sampling_strategy_id}
+        )
         cursor = self.con.cursor(buffered=True, dictionary=True)
         cursor.execute(query)
         res = cursor.fetchall()
         if len(res) > 0:
             sampling_strategy_data = res[0]
-            return instantiate_class_by_fqn(sampling_strategy_data["sampling_strategy_class"],
-                                            json.loads(sampling_strategy_data["sampling_strategy_parameterization"]))
+            return instantiate_class_by_fqn(
+                sampling_strategy_data["sampling_strategy_class"],
+                json.loads(sampling_strategy_data["sampling_strategy_parameterization"]),
+            )
         else:
             raise Exception("Sampling strategy with ID " + str(sampling_strategy_id) + " unknown")
 
