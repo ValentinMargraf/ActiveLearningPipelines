@@ -2,7 +2,7 @@ from sklearn.metrics import accuracy_score
 
 from ALP.benchmark.BenchmarkConnector import MySQLBenchmarkConnector
 from ALP.evaluation.experimenter.DefaultSetup import ensure_default_setup
-from ALP.pipeline.SALTEvaluator import SALTEvaluator
+from ALP.pipeline.ALTEvaluator import ALTEvaluator
 
 # create benchmark connector and establish database connection
 benchmark_connector = MySQLBenchmarkConnector("host", "user", "password", "database", False)
@@ -10,8 +10,13 @@ benchmark_connector = MySQLBenchmarkConnector("host", "user", "password", "datab
 # load some default settings and algorithm choices
 ensure_default_setup(benchmark_connector)
 
-salt = SALTEvaluator(benchmark_connector=benchmark_connector,
-                     setting_name="small", openml_id=31, sampling_strategy_name="margin", learner_name="rf_gini")
+salt = ALTEvaluator(
+    benchmark_connector=benchmark_connector,
+    setting_name="small",
+    openml_id=31,
+    sampling_strategy_name="margin",
+    learner_name="rf_gini",
+)
 alp = salt.fit()
 
 # fit / predict and evaluate predictions

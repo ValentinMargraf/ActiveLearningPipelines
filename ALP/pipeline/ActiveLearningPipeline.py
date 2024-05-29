@@ -2,13 +2,10 @@ import json
 import time
 
 import numpy as np
-
-from ALP.evaluation.experimenter.LogTableObserver import (
-    LogTableObserver,
-    SparseLogTableObserver,
-)
-from ALP.util.common import fullname
 from pytorch_tabnet.callbacks import Callback
+
+from ALP.evaluation.experimenter.LogTableObserver import LogTableObserver, SparseLogTableObserver
+from ALP.util.common import fullname
 
 
 class TimeLimitCallback(Callback):

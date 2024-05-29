@@ -1,12 +1,12 @@
-from abc import ABC, abstractmethod
-
 import time
 import warnings
+from abc import ABC, abstractmethod
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from pytorch_tabnet.callbacks import Callback
 from skactiveml.classifier import SklearnClassifier
 from skactiveml.pool import (
     BatchBALD,
@@ -20,11 +20,10 @@ from skactiveml.pool import (
 from sklearn.cluster import AgglomerativeClustering, KMeans
 from tabpfn import TabPFNClassifier
 
-from ALP.ensemble_constructor import Ensemble as Ens
-from ALP.pytorch_tabnet.tab_model import TabNetClassifier
-from ALP.transformer import TransformerModel
 from ALP.util.common import fullname
-from pytorch_tabnet.callbacks import Callback
+from ALP.util.ensemble_constructor import Ensemble as Ens
+from ALP.util.pytorch_tabnet.tab_model import TabNetClassifier
+from ALP.util.transformer import TransformerModel
 
 
 class TimeLimitCallback(Callback):

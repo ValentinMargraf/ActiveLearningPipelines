@@ -32,8 +32,9 @@ class SemiSupervisedLearningPipeline:
 
         for i in range(1, self.num_iterations + 1):
             # query labeler for more labels
-            idx_labeled, y_u_labeled = labeler.label(learner=self.learner, X_l=X_l_aug, y_l=y_l_aug, X_u=X_u_red,
-                                                     num_samples=self.num_samples_per_iteration)
+            idx_labeled, y_u_labeled = labeler.label(
+                learner=self.learner, X_l=X_l_aug, y_l=y_l_aug, X_u=X_u_red, num_samples=self.num_samples_per_iteration
+            )
 
             # get the original indices for X_u
             idx_labeled_orig = idx_available[idx_labeled]

@@ -24,14 +24,26 @@ NUMBER_OF_SAMPLES = 5
 
 @pytest.fixture
 def scenario():
-    alsetting = ActiveLearningSetting(setting_id=SETTING_ID, setting_name=SETTING_NAME,
-                                      setting_labeled_train_size=SETTING_TRAIN_SIZE,
-                                      setting_train_type=SETTING_TRAIN_TYPE, setting_test_size=SETTING_TEST_SIZE,
-                                      number_of_iterations=NUMBER_OF_IT, number_of_samples=NUMBER_OF_SAMPLES)
+    alsetting = ActiveLearningSetting(
+        setting_id=SETTING_ID,
+        setting_name=SETTING_NAME,
+        setting_labeled_train_size=SETTING_TRAIN_SIZE,
+        setting_train_type=SETTING_TRAIN_TYPE,
+        setting_test_size=SETTING_TEST_SIZE,
+        number_of_iterations=NUMBER_OF_IT,
+        number_of_samples=NUMBER_OF_SAMPLES,
+    )
 
-    return ActiveLearningScenario(scenario_id=SCENARIO_ID, openml_id=OPENML_ID, test_split_seed=TEST_SPLIT_SEED,
-                                  train_split_seed=TRAIN_SPLIT_SEED, seed=SEED, labeled_indices=LABELED_INDICES,
-                                  test_indices=TEST_INDICES, setting=alsetting)
+    return ActiveLearningScenario(
+        scenario_id=SCENARIO_ID,
+        openml_id=OPENML_ID,
+        test_split_seed=TEST_SPLIT_SEED,
+        train_split_seed=TRAIN_SPLIT_SEED,
+        seed=SEED,
+        labeled_indices=LABELED_INDICES,
+        test_indices=TEST_INDICES,
+        setting=alsetting,
+    )
 
 
 def test_get_setting_id(scenario):

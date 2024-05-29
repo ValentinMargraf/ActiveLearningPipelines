@@ -2,21 +2,6 @@
 # Click the repo and update to latest tags.
 # If things break on update, raise an issue
 repos:
-  - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        name: isort imports ALP
-        files: ALP
-        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$'
-
-
-      - id: isort
-        name: isort imports tests
-        files: tests
-        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$'
-
-
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 24.4.2
     hooks:
@@ -24,13 +9,13 @@ repos:
         name: black formatter ALP
         entry: black
         language: python
-        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$'
+        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$|^ALP/util/'
 
       - id: black-jupyter
         name: black-jupyter
         entry: black
         language: python
-        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$'
+        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$|^ALP/util/'
 
 
   - repo: local
@@ -40,7 +25,7 @@ repos:
         language: python
         types: [ python ]
         entry: ruff check --no-cache --fix
-        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$'
+        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$|^ALP/util/'
 
 
   - repo: https://github.com/pycqa/flake8
@@ -49,10 +34,10 @@ repos:
       - id: flake8
         name: flake8 ALP
         files: ALP
-        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$'
+        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$|^ALP/util/'
 
 
       - id: flake8
         name: flake8 tests
         files: tests
-        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$'
+        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$|^ALP/util/'

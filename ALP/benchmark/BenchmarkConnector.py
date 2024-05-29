@@ -1,17 +1,11 @@
-from abc import ABC, abstractmethod
-
 import json
+from abc import ABC, abstractmethod
 
 import mysql.connector
 
 from ALP.benchmark.ActiveLearningScenario import ActiveLearningScenario
 from ALP.benchmark.ActiveLearningSetting import ActiveLearningSetting
-from ALP.util.common import (
-    format_insert_query,
-    format_select_query,
-    fullname,
-    instantiate_class_by_fqn,
-)
+from ALP.util.common import format_insert_query, format_select_query, fullname, instantiate_class_by_fqn
 
 
 class BenchmarkConnector(ABC):

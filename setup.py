@@ -16,7 +16,7 @@ HERE = os.path.dirname(os.path.realpath(__file__))
 
 
 def read_file(filepath: str) -> str:
-    with open(filepath, "r", encoding="utf-8") as fh:
+    with open(filepath, encoding="utf-8") as fh:
         return fh.read()
 
 
@@ -27,7 +27,7 @@ extras_require = {
         "scikit-activeml>=0.4.1",
         "py-experimenter>=1.4.1",
         "mysql-connector-python>=8.3.0",
-        "openml>=0.14.2"
+        "openml>=0.14.2",
         # Test
         "pytest>=4.6",
         "pytest-cov",
@@ -56,9 +56,7 @@ setuptools.setup(
     version=version,
     packages=setuptools.find_packages(exclude=["tests"]),
     python_requires=">=3.8",
-    install_requires=[
-        "numpy"
-    ],
+    install_requires=["numpy"],
     extras_require=extras_require,
     test_suite="pytest",
     platforms=["Linux"],

@@ -130,3 +130,11 @@ dmypy.json
 
 # IntellijIDEA
 /.idea/
+
+# manual
+models_diff/
+*.pdf
+*.csv
+*.yml
+ALP/evaluation/analysis/
+ALP/evaluation/experimenter/

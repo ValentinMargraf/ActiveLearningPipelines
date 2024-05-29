@@ -3,32 +3,30 @@ PY_EXPERIMENTER:
 
   Database:
     provider: mysql
-    database: saltbench
+    database: ALP_evaluation
     table:
-      name: salt_experiments
+      name: test_seed_small_setting
       keyfields:
         "setting_name":
           type: VARCHAR(50)
-          # to fill from db
-          values: [ "small", "medium", "large-10", "large-20" ]
         "openml_id":
           type: INT
-          values: [ 3, 6, 8 ]
+          #values: [ 3, 6, 8 ]
         "learner_name":
           type: VARCHAR(50)
-          values: [ "svm_lin", "svm_rbf", "rf_entropy" ]
+          #values: [ "svm_lin", "svm_rbf", "rf_entropy" ]
         "sampling_strategy_name":
           type: VARCHAR(50)
-          values: [ "random", "entropy", "margin" ]
+          #values: [ "random", "entropy", "margin" ]
         "test_split_seed":
           type: INT
-          values: [ 0 ]
+          #values: [ 0 ]
         "train_split_seed":
           type: INT
-          values: [ 0 ]
+          #values: [ 0 ]
         "seed":
           type: INT
-          values: [ 0 ]
+          #values: [ 0 ]
 
     logtables:
       accuracy_log:

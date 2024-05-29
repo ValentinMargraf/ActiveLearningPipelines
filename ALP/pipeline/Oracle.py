@@ -1,5 +1,3 @@
-
-
 class Oracle:
 
     def __init__(self, X_u=None, y_u=None):

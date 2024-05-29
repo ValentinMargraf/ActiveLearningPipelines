@@ -3,7 +3,7 @@
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]             # path to the test directory
-minversion = "3.8"
+minversion = "3.10"
 
 [tool.coverage.run]
 branch = true
@@ -23,26 +23,15 @@ exclude_lines = [
 ] # These are lines to exclude from coverage
 
 [tool.black]
-target-version = ['py38']
 line-length = 120
+target-version = ['py310', 'py311']
 
-[tool.isort]
-py_version = "38"
-profile = "black" # Play nicely with black
-src_paths = ["ALP", "tests"]
-known_types = ["typing", "abc"] # We put these in their own section "types"
-known_test = ["tests"]
-known_first_party = ["ALP"]
-sections = [
-    "FUTURE",
-    "TYPES",
-    "STDLIB",
-    "THIRDPARTY",
-    "FIRSTPARTY",
-    "TEST",
-    "LOCALFOLDER",
-] # section ordering
-multi_line_output = 3 # https://pycqa.github.io/isort/docs/configuration/multi_line_output_modes.html
+[tool.ruff]
+lint.select = ["E", "F", "I", "UP"]  # https://beta.ruff.rs/docs/rules/
+lint.ignore = ["E501", "UP008", "F405", "F403"]
+line-length = 120
+target-version = "py310"
+
 
 [tool.pydocstyle]
 convention = "numpy"

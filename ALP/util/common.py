@@ -17,6 +17,7 @@ def format_select_query(table_name, where: dict = None):
 
 def instantiate_class_by_fqn(learner_fqn, learner_params=None):
     import importlib
+
     module_name, class_name = learner_fqn.rsplit(".", 1)
     LearnerClass = getattr(importlib.import_module(module_name), class_name)
     instance = LearnerClass(**learner_params)
@@ -26,6 +27,6 @@ def instantiate_class_by_fqn(learner_fqn, learner_params=None):
 def fullname(o):
     klass = o.__class__
     module = klass.__module__
-    if module == '__builtin__':
+    if module == "__builtin__":
         return klass.__name__
-    return module + '.' + klass.__name__
+    return module + "." + klass.__name__
