@@ -1,4 +1,4 @@
-# SALTBench: Self-Supervised and Active Learning with Tabular data Benchmark
+# ALPBench: A Benchmark for Active Learning Pipelines on Tabular Data
 
 
 
@@ -25,7 +25,7 @@ from sklearn.metrics import accuracy_score
 
 from ALP.benchmark.BenchmarkConnector import DataFileBenchmarkConnector
 from ALP.evaluation.experimenter.DefaultSetup import ensure_default_setup
-from ALP.pipeline.SALTEvaluator import SALTEvaluator
+from ALP.pipeline.ALTEvaluator import ALTEvaluator
 
 # create benchmark connector and establish database connection
 benchmark_connector = DataFileBenchmarkConnector()
@@ -33,12 +33,12 @@ benchmark_connector = DataFileBenchmarkConnector()
 # load some default settings and algorithm choices
 ensure_default_setup(benchmark_connector)
 
-salt = SALTEvaluator(benchmark_connector=benchmark_connector,
+evaluator = ALTEvaluator(benchmark_connector=benchmark_connector,
                      setting_name="small", openml_id=31, sampling_strategy_name="margin", learner_name="rf_gini")
-alp = salt.fit()
+alp = evaluator.fit()
 
 # fit / predict and evaluate predictions
-X_test, y_test = salt.get_test_data()
+X_test, y_test = evaluator.get_test_data()
 y_hat = alp.predict(X=X_test)
 print("final test acc", accuracy_score(y_test, y_hat))
 

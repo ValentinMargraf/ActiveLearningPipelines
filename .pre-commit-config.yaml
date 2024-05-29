@@ -8,32 +8,40 @@ repos:
       - id: isort
         name: isort imports ALP
         files: ALP
+        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$'
+
 
       - id: isort
         name: isort imports tests
         files: tests
+        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$'
 
-#  - repo: https://github.com/ambv/black
-#    rev: 22.1.0
-#    hooks:
-#      - id: black
-#        name: black formatter ALP
-#        files: ALP
-#
-#      - id: black
-#        name: black formatter tests
-#        files: tests
-#
-#      - id: black
-#        name: black formatter examples
-#        files: examples
 
-#  - repo: https://github.com/pycqa/pydocstyle
-#    rev: 6.1.1
-#    hooks:
-#      - id: pydocstyle
-#        files: ALP
-#        additional_dependencies: ["toml"] # Needed to parse pyproject.toml
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 24.4.2
+    hooks:
+      - id: black
+        name: black formatter ALP
+        entry: black
+        language: python
+        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$'
+
+      - id: black-jupyter
+        name: black-jupyter
+        entry: black
+        language: python
+        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$'
+
+
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        language: python
+        types: [ python ]
+        entry: ruff check --no-cache --fix
+        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$'
+
 
   - repo: https://github.com/pycqa/flake8
     rev: 4.0.1
@@ -41,7 +49,10 @@ repos:
       - id: flake8
         name: flake8 ALP
         files: ALP
+        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$'
+
 
       - id: flake8
         name: flake8 tests
         files: tests
+        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$'
