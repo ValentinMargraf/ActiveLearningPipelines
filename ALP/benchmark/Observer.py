@@ -82,7 +82,7 @@ class StatisticalPerformanceObserver(Observer, ABC):
 
 class PrintObserver(StatisticalPerformanceObserver):
     def __init__(self, X_test, y_test):
-        super().__init__()
+        super().__init__(X_test, y_test)
         self.X_test = X_test
         self.y_test = y_test
 

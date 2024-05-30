@@ -9,6 +9,7 @@ SETTING_TRAIN_TYPE = "proportion"
 SETTING_TEST_SIZE = 0.3
 NUMBER_OF_IT = 10
 NUMBER_OF_SAMPLES = 5
+FACTOR = None
 
 
 @pytest.fixture
@@ -21,6 +22,7 @@ def setting():
         setting_test_size=SETTING_TEST_SIZE,
         number_of_iterations=NUMBER_OF_IT,
         number_of_samples=NUMBER_OF_SAMPLES,
+        factor=FACTOR,
     )
 
 
@@ -50,3 +52,7 @@ def test_get_number_of_iterations(setting):
 
 def test_get_number_of_samples(setting):
     assert setting.get_number_of_samples() == NUMBER_OF_SAMPLES
+
+
+def test_get_factor(setting):
+    assert setting.get_factor() == FACTOR

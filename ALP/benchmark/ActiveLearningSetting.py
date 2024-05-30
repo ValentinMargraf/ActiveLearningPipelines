@@ -49,6 +49,9 @@ class ActiveLearningSetting:
     def get_setting_name(self):
         return self.setting_name
 
+    def get_factor(self):
+        return self.factor
+
     def get_setting_labeled_train_size(self):
         return self.setting_labeled_train_size
 

@@ -32,6 +32,7 @@ def scenario():
         setting_test_size=SETTING_TEST_SIZE,
         number_of_iterations=NUMBER_OF_IT,
         number_of_samples=NUMBER_OF_SAMPLES,
+        factor=None,
     )
 
     return ActiveLearningScenario(
