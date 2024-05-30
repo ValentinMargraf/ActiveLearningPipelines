@@ -1,8 +1,9 @@
 # ALPBench: A Benchmark for Active Learning Pipelines on Tabular Data
+`ALPBench` is a Python package for the specification, execution, and performance monitoring of **active learning pipelines (ALP)** consisting of a **learning algorithm** and a **query strategy** for real-world tabular classification tasks. It has built-in measures to ensure evaluations are done reproducibly, saving exact dataset splits and hyperparameter settings of used algorithms. In total, ALPBench consists of 86 real-world tabular classification datasets and 5 active learning settings, yielding 430 active learning problems. However, the benchmark allows for easy extension such as implementing your own learning algorithm and/or query strategy and benchmark it against existing approaches.
 
 
-
-## Installation
+# 🛠️ Install
+`ALPBench` is intended to work with **Python 3.10 and above**.
 ```
 git clone https://github.com/ValentinMargraf/ActiveLearningPipelines.git
 cd ActiveLearningPipelines
@@ -18,9 +19,18 @@ make install-dev
 
 Documentation at https://ValentinMargraf.github.io/ActiveLearningPipelines/main
 
-## Minimal Example
 
-```
+# ⭐ Quickstart
+You can use `ALPBench` in different ways. There already exist quite some learners and query strategies that can be
+run through accessing them with their name, as can be seen in the minimal example below. In the ALP.pipeline module you
+can also implement your own (new) query strategies.
+
+
+## 📈 Fit an Active Learning Pipeline
+
+Fit an ALP on dataset with openmlid 31, using a random forest and margin sampling.
+
+```python
 from sklearn.metrics import accuracy_score
 
 from ALP.benchmark.BenchmarkConnector import DataFileBenchmarkConnector
@@ -41,5 +51,6 @@ alp = evaluator.fit()
 X_test, y_test = evaluator.get_test_data()
 y_hat = alp.predict(X=X_test)
 print("final test acc", accuracy_score(y_test, y_hat))
+>> final test acc test acc 0.7181818181818181
 
 ```
