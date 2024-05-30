@@ -93,4 +93,5 @@ class ALTEvaluator:
             num_samples_per_iteration=self.setting.get_number_of_samples(),
         )
         alp.active_fit(X_l=X_l, y_l=y_l, X_u=X_u, oracle=oracle)
+
         return alp

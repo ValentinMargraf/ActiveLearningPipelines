@@ -30,7 +30,7 @@ class BenchmarkConnector(ABC):
 
     @abstractmethod
     def load_or_create_setting(
-        self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_samples
+        self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_samples, factor
     ):
         pass
 
@@ -93,12 +93,10 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         import os
 
         os.makedirs(DataFileBenchmarkConnector.base_folder, exist_ok=True)
-
         for file in [self.scenario_file, self.setting_file, self.learner_file, self.sampling_strategy_file]:
             if not os.path.isfile(file):
                 with open(file, "w") as f:
                     f.write("[]")
-
         with open(self.scenario_file) as f:
             self.scenarios = json.load(f)
         with open(self.setting_file) as f:
@@ -118,6 +116,7 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
             (self.learner_file, self.learners),
             (self.sampling_strategy_file, self.sampling_strategies),
         ]
+
         for dd in dump_data:
             with open(dd[0], "w") as f:
                 json.dump(obj=dd[1], fp=f, indent=4)
@@ -181,7 +180,7 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         return ActiveLearningSetting(**stored_setting)
 
     def load_or_create_setting(
-        self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_samples
+        self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_samples, factor
     ):
         setting_descriptor = {
             "setting_name": name,
@@ -190,6 +189,7 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
             "setting_test_size": test_size,
             "number_of_iterations": number_of_iterations,
             "number_of_samples": number_of_samples,
+            "factor": factor,
         }
 
         stored_setting = _fetch_data_of_descriptor(self.settings, setting_descriptor)
@@ -226,9 +226,11 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         )
 
     def load_or_create_learner(self, learner_name, obj):
+        data = obj.get_params()
+
         learner_descriptor = {
             "learner_class": fullname(obj),
-            "learner_parameterization": json.dumps(obj.get_params()),
+            "learner_parameterization": json.dumps(data, cls=CustomEncoder),
         }
 
         # check whether the specified setting already exists. if so, fetch its id from the database and return an
@@ -588,3 +590,10 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
             sampling_strategy_descriptor["sampling_strategy_name"] = res_check[0]["sampling_strategy_name"]
 
         return sampling_strategy_descriptor["sampling_strategy_name"], obj
+
+
+class CustomEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, type):
+            return str(obj)  # Convert class references to their string representation
+        return json.JSONEncoder.default(self, obj)

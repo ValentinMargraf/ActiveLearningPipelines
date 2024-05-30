@@ -1,12 +1,12 @@
 import time
 
 import numpy as np
-from pytorch_tabnet.callbacks import Callback
-from pytorch_tabnet.tab_model import TabNetClassifier
+from ALP.util.pytorch_tabnet.callbacks import Callback
+from ALP.util.pytorch_tabnet.tab_model import TabNetClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 
-from ALP.transformer_prediction_interface_ens import TabPFNClassifierEns as TabPFNEns
+from ALP.util.transformer_prediction_interface_ens import TabPFNClassifierEns as TabPFNEns
 from ALP.util.common import fullname
 
 

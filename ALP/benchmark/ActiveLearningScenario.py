@@ -72,7 +72,9 @@ class ActiveLearningScenario:
         self.setting = setting
 
         # actual data
-        ds = openml.datasets.get_dataset(openml_id)
+        ds = openml.datasets.get_dataset(
+            openml_id, download_data=True, download_qualities=True, download_features_meta_data=True
+        )
         df = ds.get_data()[0]
         # prepare label column as numpy array
         X = np.array(df.drop(columns=[ds.default_target_attribute]).values)
