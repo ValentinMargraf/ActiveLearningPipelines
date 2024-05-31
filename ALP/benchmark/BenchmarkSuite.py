@@ -52,7 +52,7 @@ class TabZillaBenchmarkSuite(BenchmarkSuite):
             41143,
             41147,
             41150,
-            41159,
+            41159
         ]
 
 
@@ -71,6 +71,11 @@ class OpenMLBenchmarkSuite(BenchmarkSuite):
 
     def get_openml_dataset_ids(self):
         return self.openml_dataset_ids
+
+
+class OpenMLCC18BenchmarkSuite(OpenMLBenchmarkSuite):
+    def __init__(self):
+        super().__init__(99, "OpenMLCC-18")
 
 
 class SALTBenchmarkSuiteLarge(BenchmarkSuite):
