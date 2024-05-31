@@ -2,6 +2,7 @@ import json
 from abc import ABC, abstractmethod
 
 import mysql.connector
+import atexit
 
 from ALP.benchmark.ActiveLearningScenario import ActiveLearningScenario
 from ALP.benchmark.ActiveLearningSetting import ActiveLearningSetting
@@ -106,7 +107,7 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         with open(self.sampling_strategy_file) as f:
             self.sampling_strategies = json.load(f)
 
-    def __del__(self):
+    def cleanup(self):
         self.dump()
 
     def dump(self):
