@@ -95,10 +95,10 @@ class ALPEvaluator:
         oracle = Oracle(X_u=X_u, y_u=y_u)
         alp = ActiveLearningPipeline(
             learner=self.learner_obj,
-            sampling_strategy=sampling_strategy,
+            query_strategy=sampling_strategy,
             num_iterations=self.setting.get_number_of_iterations(),
             observer_list=self.observer_list,
-            num_samples_per_iteration=self.setting.get_number_of_samples(),
+            num_queries_per_iteration=self.setting.get_number_of_samples(),
         )
         alp.active_fit(X_l=X_l, y_l=y_l, X_u=X_u, oracle=oracle)
 

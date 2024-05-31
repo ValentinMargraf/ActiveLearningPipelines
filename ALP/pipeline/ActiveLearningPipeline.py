@@ -11,16 +11,16 @@ class ActiveLearningPipeline:
     def __init__(
         self,
         learner,
-        sampling_strategy,
+        query_strategy,
         initializer=None,
         observer_list: list() = None,
         init_budget: int = None,
         num_iterations=10,
-        num_samples_per_iteration=10,
+        num_queries_per_iteration=10,
     ):
         self.initializer = initializer
         self.learner = learner
-        self.sampling_strategy = sampling_strategy
+        self.query_strategy = query_strategy
         self.observer_list = observer_list
 
         # the budget for sampling data points with the initialization strategy
@@ -28,7 +28,7 @@ class ActiveLearningPipeline:
         # the number of active learning rounds to carry out alternating between learning and querying the oracle
         self.num_iterations = num_iterations
         # the number of data points to select in every active learning iteration to be labeled by the oracle
-        self.num_samples_per_iteration = num_samples_per_iteration
+        self.num_queries_per_iteration = num_queries_per_iteration
 
     def active_fit(self, X_l, y_l, X_u, oracle):
         # select data points from X_u to sample additional data points for initialization (i.e., uninformed) and remove
@@ -98,18 +98,18 @@ class ActiveLearningPipeline:
 
         for i in range(1, self.num_iterations + 1):
 
-            if self.num_samples_per_iteration > len(idx_available):
+            if self.num_queries_per_iteration > len(idx_available):
                 idx_query_orig = idx_available
                 all_data_used = True
 
             else:
                 # ask query strategy for samples
-                idx_query = self.sampling_strategy.sample(
+                idx_query = self.query_strategy.sample(
                     learner=self.learner,
                     X_l=X_l_aug,
                     y_l=y_l_aug,
                     X_u=X_u_red,
-                    num_samples=self.num_samples_per_iteration,
+                    num_queries=self.num_queries_per_iteration,
                 )
                 # get the original indices for X_u
                 idx_query_orig = idx_available[idx_query]

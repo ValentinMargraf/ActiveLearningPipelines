@@ -63,11 +63,11 @@ class ExperimentRunner:
 
         ALP = ActiveLearningPipeline(
             learner=LEARNER,
-            sampling_strategy=SAMPLING_STRATEGY,
+            query_strategy=SAMPLING_STRATEGY,
             observer_list=OBSERVER,
             # init_budget=INIT_BUDGET,
             num_iterations=setting.get_number_of_iterations(),
-            num_samples_per_iteration=setting.get_number_of_samples(),
+            num_queries_per_iteration=setting.get_number_of_samples(),
         )
 
         oracle = Oracle(X_u, y_u)
