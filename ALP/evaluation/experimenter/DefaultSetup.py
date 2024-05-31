@@ -1,13 +1,12 @@
 import catboost as cb
 import xgboost as xgb
-from pytorch_tabnet.tab_model import TabNetClassifier
 from sklearn.ensemble import ExtraTreesClassifier, GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB, MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
-from tabpfn import TabPFNClassifier
+
 
 from ALP.benchmark.BenchmarkConnector import MySQLBenchmarkConnector
 from ALP.pipeline.SamplingStrategy import (

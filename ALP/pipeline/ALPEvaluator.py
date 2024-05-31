@@ -4,7 +4,7 @@ from ALP.pipeline.ActiveLearningPipeline import ActiveLearningPipeline
 from ALP.pipeline.Oracle import Oracle
 
 
-class ALTEvaluator:
+class ALPEvaluator:
     def __init__(
         self,
         benchmark_connector: BenchmarkConnector,

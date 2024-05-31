@@ -2,7 +2,7 @@ from sklearn.metrics import accuracy_score
 
 from ALP.benchmark.BenchmarkConnector import DataFileBenchmarkConnector
 from ALP.evaluation.experimenter.DefaultSetup import ensure_default_setup
-from ALP.pipeline.ALTEvaluator import ALTEvaluator
+from ALP.pipeline.ALPEvaluator import ALPEvaluator
 
 # create benchmark connector and establish database connection
 benchmark_connector = DataFileBenchmarkConnector()
@@ -10,7 +10,7 @@ benchmark_connector = DataFileBenchmarkConnector()
 # load some default settings and algorithm choices
 ensure_default_setup(benchmark_connector)
 
-salt = ALTEvaluator(
+salt = ALPEvaluator(
     benchmark_connector=benchmark_connector,
     setting_name="small",
     openml_id=31,

@@ -1,0 +1,8 @@
+py-experimenter>=1.4.1
+mysql-connector-python>=8.3.0
+openml>=0.14.2
+scikit-learn>=1.2.2
+scikit-activeml>=0.4.1
+catboost>=1.2.1
+xgboost>=2.0.0
+pytorch-tabnet>=4.1.0

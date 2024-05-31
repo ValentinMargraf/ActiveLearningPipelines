@@ -3,10 +3,6 @@ import warnings
 from abc import ABC, abstractmethod
 
 import numpy as np
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from pytorch_tabnet.callbacks import Callback
 from skactiveml.classifier import SklearnClassifier
 from skactiveml.pool import (
     BatchBALD,
@@ -18,12 +14,13 @@ from skactiveml.pool import (
     UncertaintySampling,
 )
 from sklearn.cluster import AgglomerativeClustering, KMeans
-from tabpfn import TabPFNClassifier
 
 from ALP.util.common import fullname
 from ALP.util.ensemble_constructor import Ensemble as Ens
 from ALP.util.pytorch_tabnet.tab_model import TabNetClassifier
 from ALP.util.transformer import TransformerModel
+
+from pytorch_tabnet.callbacks import Callback
 
 
 class TimeLimitCallback(Callback):
@@ -475,7 +472,6 @@ class ClusterMargin(PseudoRandomizedSamplingStrategy):
         if learner_fqn == "tabpfn.scripts.transformer_prediction_interface.TabPFNClassifier":
             clf = TabPFNEmbedder(X_l, y_l)
             X_u = clf.forward(X_u, encode=True)
-
         if learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
             clf = TabNetClassifier(verbose=0)
             clf.fit(X_l, y_l, callbacks=[TimeLimitCallback(180)])
@@ -692,6 +688,7 @@ class QBCVarianceRatioSampling(EnsemblePseudoRandomizedSampling):
 
 class TabPFNEmbedder(nn.Module):
     def __init__(self, X_train, y_train):
+        import torch.nn as nn
         super().__init__()
         self.clf = None
         self.num_samples = None
@@ -702,6 +699,8 @@ class TabPFNEmbedder(nn.Module):
         self.fc2 = nn.Linear(256, 64)
 
     def forward(self, x, encode=False):
+        import torch
+        import torch.nn.functional as F
         if encode:
             x = self.encoder.predict_embeds(x)
             return torch.Tensor.numpy(x)
@@ -709,6 +708,7 @@ class TabPFNEmbedder(nn.Module):
         return F.relu(self.fc2(x))
 
     def instantiate_tabpfn(self, X_train, y_train):
+        from tabpfn import TabPFNClassifier
         self.num_samples = X_train.shape[0]
         self.clf = TabPFNClassifier(device="cpu", N_ensemble_configurations=32)
         model = self.clf.model[2]
