@@ -4,7 +4,6 @@ import torch.nn.functional as F
 import torch.nn as nn
 import time
 
-from ALP.util.transformer import TransformerModel
 
 
 class TimeLimitCallback(Callback):
@@ -41,7 +40,7 @@ class TabPFNEmbedder(nn.Module):
         return F.relu(self.fc2(x))
 
     def instantiate_tabpfn(self, X_train, y_train):
-        from tabpfn import TabPFNClassifier
+        from ALP.util.transformer_prediction_interface import TabPFNClassifier
         self.num_samples = X_train.shape[0]
         self.clf = TabPFNClassifier(device="cpu", N_ensemble_configurations=32)
         model = self.clf.model[2]
@@ -52,6 +51,7 @@ class TabPFNEmbedder(nn.Module):
         NHID = model.nhid
         NLAYERS = model.transformer_encoder.num_layers
         Y_ENCODER = model.y_encoder
+        from ALP.util.transformer import TransformerModel
         tf = TransformerModel(ENCODER, N_OUT, NINP, NHEAD, NHID, NLAYERS, y_encoder=Y_ENCODER)
         tf.transformer_encoder = model.transformer_encoder
         tf.decoder = model.decoder

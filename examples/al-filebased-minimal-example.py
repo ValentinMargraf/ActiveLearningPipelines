@@ -1,3 +1,5 @@
+from tabpfn.scripts.transformer_prediction_interface import TabPFNClassifier
+
 from pytorch_tabnet.tab_model import TabNetClassifier
 from sklearn.metrics import accuracy_score
 
@@ -18,7 +20,6 @@ alpeval = ALPEvaluator(
     sampling_strategy_name="cluster_margin",
     learner_name="rf_gini",
 )
-alpeval.with_learner_obj(TabNetClassifier(verbose=0))
 alp = alpeval.fit()
 
 # fit / predict and evaluate predictions

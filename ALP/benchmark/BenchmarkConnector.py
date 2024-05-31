@@ -230,26 +230,33 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         data = obj.get_params()
 
         learner_descriptor = {
-            "learner_class": fullname(obj),
-            "learner_parameterization": json.dumps(data, cls=CustomEncoder),
+            "learner_name": learner_name
         }
 
-        # check whether the specified setting already exists. if so, fetch its id from the database and return an
-        # instance of that setting
-        stored_learner = _fetch_data_of_descriptor(self.learners, learner_descriptor)
+        try:
+            learner_descriptor["learner_class"] = fullname(obj)
+            learner_descriptor["learner_parameterization"] = json.dumps(data, cls=CustomEncoder)
 
-        if stored_learner is None:
-            # The specified setting does not yet exist so create it in the database and then return it to the invoker.
-            learner_descriptor["learner_name"] = learner_name
+            # check whether the specified setting already exists. if so, fetch its id from the database and return an
+            # instance of that setting
+            stored_learner = _fetch_data_of_descriptor(self.learners, learner_descriptor)
 
-            max_id = 0
-            for learner in self.learners:
-                max_id = max(learner["learner_id"], max_id)
+            if stored_learner is None:
+                # The specified setting does not yet exist so create it in the database and then return it to the invoker.
+                learner_descriptor["learner_name"] = learner_name
 
-            learner_descriptor["learner_id"] = max_id + 1
-            self.learners += [learner_descriptor]
-        else:
-            learner_descriptor["learner_name"] = stored_learner["learner_name"]
+                max_id = 0
+                for learner in self.learners:
+                    max_id = max(learner["learner_id"], max_id)
+
+                learner_descriptor["learner_id"] = max_id + 1
+                self.learners += [learner_descriptor]
+            else:
+                learner_descriptor["learner_name"] = stored_learner["learner_name"]
+        except TypeError:
+            pass
+        finally:
+            pass
 
         return learner_descriptor["learner_name"], obj
 
