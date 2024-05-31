@@ -1,29 +1,8 @@
 import time
-
 import numpy as np
-from ALP.util.pytorch_tabnet.callbacks import Callback
-from ALP.util.pytorch_tabnet.tab_model import TabNetClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
-
-from ALP.util.transformer_prediction_interface_ens import TabPFNClassifierEns as TabPFNEns
 from ALP.util.common import fullname
-
-
-class TimeLimitCallback(Callback):
-    def __init__(self, time_limit):
-        self.time_limit = time_limit
-        self.start_time = None
-
-    def on_epoch_begin(self, epoch, logs=None):
-        if self.start_time is None:
-            self.start_time = time.time()
-
-    def on_epoch_end(self, epoch, logs=None):
-        elapsed_time = time.time() - self.start_time
-        if elapsed_time > self.time_limit:
-            print(f"Stopping training as the time limit of {self.time_limit} seconds has been reached.")
-            return True  # This will stop training
 
 
 class Ensemble:
@@ -45,9 +24,11 @@ class Ensemble:
         self.estimators_ = []
 
         if self.learner_fqn == "tabpfn.scripts.transformer_prediction_interface.TabPFNClassifier":
+            from ALP.util.transformer_prediction_interface_ens import TabPFNClassifierEns as TabPFNEns
             self.estimator = TabPFNEns(N_ensemble_configurations=self.num_estimators)
         if self.learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
             for seed in self.random_states:
+                from ALP.util.pytorch_tabnet.tab_model import TabNetClassifier
                 self.estimators_.append(TabNetClassifier(seed=seed, verbose=0))
         if self.learner_fqn == "catboost.core.CatBoostClassifier":
             self.num_estimators = self.estimator.tree_count_
@@ -96,6 +77,7 @@ class Ensemble:
         else:
             for estimator in self.estimators_:
                 if self.learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
+                    from TorchUtil import TimeLimitCallback
                     estimator.fit(X, y, callbacks=[TimeLimitCallback(60)])
                 else:
                     estimator.fit(X, y)

@@ -17,26 +17,6 @@ from sklearn.cluster import AgglomerativeClustering, KMeans
 
 from ALP.util.common import fullname
 from ALP.util.ensemble_constructor import Ensemble as Ens
-from ALP.util.pytorch_tabnet.tab_model import TabNetClassifier
-from ALP.util.transformer import TransformerModel
-
-from pytorch_tabnet.callbacks import Callback
-
-
-class TimeLimitCallback(Callback):
-    def __init__(self, time_limit):
-        self.time_limit = time_limit
-        self.start_time = None
-
-    def on_epoch_begin(self, epoch, logs=None):
-        if self.start_time is None:
-            self.start_time = time.time()
-
-    def on_epoch_end(self, epoch, logs=None):
-        elapsed_time = time.time() - self.start_time
-        if elapsed_time > self.time_limit:
-            print(f"Stopping training as the time limit of {self.time_limit} seconds has been reached.")
-            return True  # This will stop training
 
 
 class SamplingStrategy(ABC):
@@ -223,7 +203,39 @@ class BatchBaldSampling(ActiveMLEnsembleSamplingStrategy):
 #########################
 # self-implemented
 #########################
-class TypicalClusterSampling(PseudoRandomizedSamplingStrategy):
+class EmbeddingBasedSampling(PseudoRandomizedSamplingStrategy):
+    def __init__(self, seed):
+        super().__init__(seed=seed)
+
+    def compute_embedding(self, learner, X_l, y_l, X_u, transform_labeled=False):
+        learner_fqn = fullname(learner)
+        if learner_fqn == "tabpfn.scripts.transformer_prediction_interface.TabPFNClassifier":
+            from ALP.util.TorchUtil import TabPFNEmbedder
+            clf = TabPFNEmbedder(X_l, y_l)
+            if not transform_labeled:
+                X_u = clf.forward(X_u, encode=True)
+            else:
+                X = np.concatenate((X_l, X_u))
+                X_embeds = clf.forward(X, encode=True)
+                X_l, X_u = X_embeds[: len(X_l)], X_embeds[len(X_l):]
+        elif learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
+            from ALP.util.pytorch_tabnet.tab_model import TabNetClassifier
+            clf = TabNetClassifier(verbose=0)
+            from ALP.util.TorchUtil import TimeLimitCallback
+            clf.fit(X_l, y_l, callbacks=[TimeLimitCallback(180)])
+            if not transform_labeled:
+                X_u = clf.predict_proba(X_u, get_embeds=True)
+            else:
+                X = np.concatenate((X_l, X_u))
+                X_embeds = clf.predict_proba(X, get_embeds=True)
+                X_l, X_u = X_embeds[: len(X_l)], X_embeds[len(X_l):]
+        if not transform_labeled:
+            return X_u
+        else:
+            return X_u, X_l
+
+
+class TypicalClusterSampling(EmbeddingBasedSampling):
     def __init__(self, seed):
         super().__init__(seed=seed)
 
@@ -231,21 +243,7 @@ class TypicalClusterSampling(PseudoRandomizedSamplingStrategy):
         # from num_saples "uncovered" cluster (there where are no X_l) select the one with highest "typicality"
         pool_size = len(y_l)
         num_cluster = pool_size + num_samples
-
-        learner_fqn = fullname(learner)
-        if learner_fqn == "tabpfn.scripts.transformer_prediction_interface.TabPFNClassifier":
-            clf = TabPFNEmbedder(X_l, y_l)
-            X = np.concatenate((X_l, X_u))
-            X_embeds = clf.forward(X, encode=True)
-            X_l, X_u = X_embeds[: len(X_l)], X_embeds[len(X_l) :]
-
-        if learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
-            clf = TabNetClassifier(verbose=0)
-            clf.fit(X_l, y_l, callbacks=[TimeLimitCallback(180)])
-            X = np.concatenate((X_l, X_u))
-            X_embeds = clf.predict_proba(X, get_embeds=True)
-            X_l, X_u = X_embeds[: len(X_l)], X_embeds[len(X_l) :]
-
+        X_u, X_l = self.compute_embedding(learner, X_l, y_l, X_u, transform_labeled=True)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             kmeans = KMeans(n_clusters=num_cluster)
@@ -332,55 +330,6 @@ class PowerMarginSampling(PseudoRandomizedSamplingStrategy):
         return original_margin_ids
 
 
-class WeightedClusterSampling(PseudoRandomizedSamplingStrategy):
-    def __init__(self, seed):
-        super().__init__(seed=seed)
-
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
-
-        scores = learner.predict_proba(X_u) + 1e-8
-        entropy = -np.sum(scores * np.log(scores), axis=1)
-        num_classes = num_samples
-        import warnings
-
-        learner_fqn = fullname(learner)
-        if learner_fqn == "tabpfn.scripts.transformer_prediction_interface.TabPFNClassifier":
-            clf = TabPFNEmbedder(X_l, y_l)
-            X_u = clf.forward(X_u, encode=True)
-        if learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
-            clf = TabNetClassifier(verbose=0)
-            clf.fit(X_l, y_l, callbacks=[TimeLimitCallback(180)])
-            X_u = clf.predict_proba(X_u, get_embeds=True)
-
-        from sklearn.cluster import KMeans
-        from sklearn.metrics.pairwise import euclidean_distances
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            kmeans = KMeans(n_clusters=num_classes)
-            kmeans.fit(X_u, sample_weight=entropy)
-            centers = kmeans.cluster_centers_
-            # for each class, find instance clostes to center
-            selected_ids = []
-
-            per_class = num_samples // num_classes + 1
-            for class_ in range(num_classes):
-                class_ids = np.argwhere(kmeans.labels_ == class_)
-                # corresponding center
-                center = centers[class_].reshape(1, -1)
-                # get nearest neighbor
-                class_neigh = np.squeeze(X_u[class_ids], axis=1)
-                dists = euclidean_distances(center, class_neigh)
-                if len(dists) < per_class:
-                    closest_instances_id = np.argsort(dists)[:][0]
-                else:
-                    closest_instances_id = np.argsort(dists)[:per_class][0]
-                for closest_instance_id in closest_instances_id:
-                    selected_ids.append(class_ids[closest_instance_id][0])
-
-            return selected_ids[0:num_samples]
-
-
 class RandomMarginSampling(PseudoRandomizedSamplingStrategy):
     def __init__(self, seed):
         super().__init__(seed=seed)
@@ -413,24 +362,95 @@ class MinMarginSampling(EnsemblePseudoRandomizedSampling):
         return margin_ids
 
 
-class KMeansSampling(PseudoRandomizedSamplingStrategy):
+class FalcunSampling(PseudoRandomizedSamplingStrategy):
     def __init__(self, seed):
         super().__init__(seed=seed)
 
     def sample(self, learner, X_l, y_l, X_u, num_samples):
+        probas = learner.predict_proba(X_u)
+        sorted_probas = np.sort(probas, axis=-1)
+        margins = sorted_probas[:, -1] - sorted_probas[:, -2]
+        div_scores = margins
+        gamma = 10
+        selected_ids = []
+        ids_to_choose_from = np.arange(len(margins))
+        mask = np.ones(len(margins), dtype=bool)  # Initialize mask
+        for round in range(num_samples):
+            relevance = margins + div_scores
+            relevance[np.isnan(relevance)] = 0
 
-        learner_fqn = fullname(learner)
-        if learner_fqn == "tabpfn.scripts.transformer_prediction_interface.TabPFNClassifier":
-            clf = TabPFNEmbedder(X_l, y_l)
-            X_u = clf.forward(X_u, encode=True)
-        if learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
-            clf = TabNetClassifier(verbose=0)
-            clf.fit(X_l, y_l, callbacks=[TimeLimitCallback(180)])
-            X_u = clf.predict_proba(X_u, get_embeds=True)
+            np.random.seed(self.seed)
+            prob = relevance[mask] ** gamma / np.sum(relevance[mask] ** gamma)
+            # set nan to 0, afterwards normalize
+            prob[np.isnan(prob)] = 0
+            prob = prob / np.sum(prob)
+            prob[np.isnan(prob)] = 0
 
+            # if still a nan
+            if np.sum(np.isnan(prob)) > 0:
+                selected_id = np.random.choice(ids_to_choose_from[mask])
+            else:
+                selected_id = np.random.choice(ids_to_choose_from[mask], p=prob)
+            selected_ids.append(selected_id)
+            # print("selected id", selected_id)
+            # update div scores
+            x_q = probas[selected_id]
+            mask[selected_id] = False
+            # remove selected id
+            distances = np.sum(abs(probas - x_q), axis=1)
+            div_scores = np.minimum(div_scores, distances)
+            # normalize
+            div_scores = (div_scores - np.min(div_scores)) / (np.max(div_scores) - np.min(div_scores) + 1e-8)
+
+        return selected_ids
+
+
+class WeightedClusterSampling(EmbeddingBasedSampling):
+    def __init__(self, seed):
+        super().__init__(seed=seed)
+
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
+        scores = learner.predict_proba(X_u) + 1e-8
+        entropy = -np.sum(scores * np.log(scores), axis=1)
+        num_classes = num_samples
+        X_u = self.compute_embedding(learner, X_l, y_l, X_u)
+
+        from sklearn.cluster import KMeans
+        from sklearn.metrics.pairwise import euclidean_distances
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            kmeans = KMeans(n_clusters=num_classes)
+            kmeans.fit(X_u, sample_weight=entropy)
+            centers = kmeans.cluster_centers_
+            # for each class, find instance clostes to center
+            selected_ids = []
+
+            per_class = num_samples // num_classes + 1
+            for class_ in range(num_classes):
+                class_ids = np.argwhere(kmeans.labels_ == class_)
+                # corresponding center
+                center = centers[class_].reshape(1, -1)
+                # get nearest neighbor
+                class_neigh = np.squeeze(X_u[class_ids], axis=1)
+                dists = euclidean_distances(center, class_neigh)
+                if len(dists) < per_class:
+                    closest_instances_id = np.argsort(dists)[:][0]
+                else:
+                    closest_instances_id = np.argsort(dists)[:per_class][0]
+                for closest_instance_id in closest_instances_id:
+                    selected_ids.append(class_ids[closest_instance_id][0])
+
+            return selected_ids[0:num_samples]
+
+
+class KMeansSampling(EmbeddingBasedSampling):
+    def __init__(self, seed):
+        super().__init__(seed=seed)
+
+    def sample(self, learner, X_l, y_l, X_u, num_samples):
+        X_u = self.compute_embedding(learner, X_l, y_l, X_u)
         num_classes = len(np.unique(y_l))
-        import warnings
-
         from sklearn.cluster import KMeans
         from sklearn.metrics.pairwise import euclidean_distances
 
@@ -467,16 +487,7 @@ class ClusterMargin(PseudoRandomizedSamplingStrategy):
     def sample(self, learner, X_l, y_l, X_u, num_samples):
         m = 10
         probas = learner.predict_proba(X_u)
-
-        learner_fqn = fullname(learner)
-        if learner_fqn == "tabpfn.scripts.transformer_prediction_interface.TabPFNClassifier":
-            clf = TabPFNEmbedder(X_l, y_l)
-            X_u = clf.forward(X_u, encode=True)
-        if learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
-            clf = TabNetClassifier(verbose=0)
-            clf.fit(X_l, y_l, callbacks=[TimeLimitCallback(180)])
-            X_u = clf.predict_proba(X_u, get_embeds=True)
-
+        X_u = self.compute_embedding(learner, X_l, y_l, X_u)
         num_clusters = min((len(X_l) + len(X_u)) // m, len(X_u))
         clustering = AgglomerativeClustering(n_clusters=num_clusters).fit(X_u)
 
@@ -525,49 +536,6 @@ class ClusterMargin(PseudoRandomizedSamplingStrategy):
         return selected_ids[:num_samples]
 
 
-class FalcunSampling(PseudoRandomizedSamplingStrategy):
-    def __init__(self, seed):
-        super().__init__(seed=seed)
-
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
-        probas = learner.predict_proba(X_u)
-        sorted_probas = np.sort(probas, axis=-1)
-        margins = sorted_probas[:, -1] - sorted_probas[:, -2]
-        div_scores = margins
-        gamma = 10
-        selected_ids = []
-        ids_to_choose_from = np.arange(len(margins))
-        mask = np.ones(len(margins), dtype=bool)  # Initialize mask
-        for round in range(num_samples):
-            relevance = margins + div_scores
-            relevance[np.isnan(relevance)] = 0
-
-            np.random.seed(self.seed)
-            prob = relevance[mask] ** gamma / np.sum(relevance[mask] ** gamma)
-            # set nan to 0, afterwards normalize
-            prob[np.isnan(prob)] = 0
-            prob = prob / np.sum(prob)
-            prob[np.isnan(prob)] = 0
-
-            # if still a nan
-            if np.sum(np.isnan(prob)) > 0:
-                selected_id = np.random.choice(ids_to_choose_from[mask])
-            else:
-                selected_id = np.random.choice(ids_to_choose_from[mask], p=prob)
-            selected_ids.append(selected_id)
-            # print("selected id", selected_id)
-            # update div scores
-            x_q = probas[selected_id]
-            mask[selected_id] = False
-            # remove selected id
-            distances = np.sum(abs(probas - x_q), axis=1)
-            div_scores = np.minimum(div_scores, distances)
-            # normalize
-            div_scores = (div_scores - np.min(div_scores)) / (np.max(div_scores) - np.min(div_scores) + 1e-8)
-
-        return selected_ids
-
-
 class MaxEntropySampling(EnsemblePseudoRandomizedSampling):
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed, ensemble_size=25)
@@ -582,26 +550,12 @@ class MaxEntropySampling(EnsemblePseudoRandomizedSampling):
         return entropy_ids
 
 
-class CoreSetSampling(PseudoRandomizedSamplingStrategy):
+class CoreSetSampling(EmbeddingBasedSampling):
     def __init__(self, seed):
         super().__init__(seed=seed)
 
     def sample(self, learner, X_l, y_l, X_u, num_samples):
-
-        learner_fqn = fullname(learner)
-        if learner_fqn == "tabpfn.scripts.transformer_prediction_interface.TabPFNClassifier":
-            clf = TabPFNEmbedder(X_l, y_l)
-            X = np.concatenate((X_l, X_u))
-            X_embeds = clf.forward(X, encode=True)
-            X_l, X_u = X_embeds[: len(X_l)], X_embeds[len(X_l) :]
-
-        if learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
-            clf = TabNetClassifier(verbose=0)
-            clf.fit(X_l, y_l, callbacks=[TimeLimitCallback(180)])
-            X = np.concatenate((X_l, X_u))
-            X_embeds = clf.predict_proba(X, get_embeds=True)
-            X_l, X_u = X_embeds[: len(X_l)], X_embeds[len(X_l) :]
-
+        X_u, X_l = self.compute_embedding(learner, X_l, y_l, X_u, transform_labeled=True)
         selected_ids = []
         for round in range(num_samples):
             active_set = X_l[:, np.newaxis, :]
@@ -686,42 +640,3 @@ class QBCVarianceRatioSampling(EnsemblePseudoRandomizedSampling):
         return vr_ids
 
 
-class TabPFNEmbedder(nn.Module):
-    def __init__(self, X_train, y_train):
-        import torch.nn as nn
-        super().__init__()
-        self.clf = None
-        self.num_samples = None
-        self.instantiate_tabpfn(X_train, y_train)
-        self.encoder = self.clf
-        self.fc1 = nn.Linear(16384, 256)
-        self.drop = nn.Dropout(p=0.25)
-        self.fc2 = nn.Linear(256, 64)
-
-    def forward(self, x, encode=False):
-        import torch
-        import torch.nn.functional as F
-        if encode:
-            x = self.encoder.predict_embeds(x)
-            return torch.Tensor.numpy(x)
-        x = F.relu(self.fc1(x))
-        return F.relu(self.fc2(x))
-
-    def instantiate_tabpfn(self, X_train, y_train):
-        from tabpfn import TabPFNClassifier
-        self.num_samples = X_train.shape[0]
-        self.clf = TabPFNClassifier(device="cpu", N_ensemble_configurations=32)
-        model = self.clf.model[2]
-        ENCODER = model.encoder
-        N_OUT = model.n_out
-        NINP = model.ninp
-        NHEAD = 4
-        NHID = model.nhid
-        NLAYERS = model.transformer_encoder.num_layers
-        Y_ENCODER = model.y_encoder
-        tf = TransformerModel(ENCODER, N_OUT, NINP, NHEAD, NHID, NLAYERS, y_encoder=Y_ENCODER)
-        tf.transformer_encoder = model.transformer_encoder
-        tf.decoder = model.decoder
-        self.clf.model = ("inf", "inf", tf)
-        self.clf.fit(X_train, y_train)
-        self.clf.no_grad = True

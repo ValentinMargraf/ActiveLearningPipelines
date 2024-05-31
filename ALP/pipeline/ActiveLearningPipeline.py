@@ -2,26 +2,8 @@ import json
 import time
 
 import numpy as np
-from pytorch_tabnet.callbacks import Callback
-
 from ALP.evaluation.experimenter.LogTableObserver import LogTableObserver, SparseLogTableObserver
 from ALP.util.common import fullname
-
-
-class TimeLimitCallback(Callback):
-    def __init__(self, time_limit):
-        self.time_limit = time_limit
-        self.start_time = None
-
-    def on_epoch_begin(self, epoch, logs=None):
-        if self.start_time is None:
-            self.start_time = time.time()
-
-    def on_epoch_end(self, epoch, logs=None):
-        elapsed_time = time.time() - self.start_time
-        if elapsed_time > self.time_limit:
-            print(f"Stopping training as the time limit of {self.time_limit} seconds has been reached.")
-            return True  # This will stop training
 
 
 class ActiveLearningPipeline:
@@ -170,6 +152,7 @@ class ActiveLearningPipeline:
                 ids = np.random.choice(len(y_l_aug), 1000)
                 self.learner.fit(X_l_aug[ids], y_l_aug[ids])
             elif learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
+                from ALP.util.TorchUtil import TimeLimitCallback
                 self.learner.fit(X_l_aug, y_l_aug, callbacks=[TimeLimitCallback(180)])
             else:
                 self.learner.fit(X_l_aug, y_l_aug)
