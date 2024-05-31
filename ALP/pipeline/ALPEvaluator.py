@@ -32,6 +32,7 @@ class ALPEvaluator:
 
         # pipeline specifications
         self.learner_name = learner_name
+        self.learner_obj = None
         self.sampling_strategy_name = sampling_strategy_name
 
     def with_setting(self, setting_name: str):
@@ -40,6 +41,10 @@ class ALPEvaluator:
 
     def with_learner(self, learner_name: str):
         self.learner_name = learner_name
+        return self
+
+    def with_learner_obj(self, learner_obj):
+        self.learner_obj = learner_obj
         return self
 
     def with_sampling_strategy(self, sampling_strategy_name: str):
@@ -81,12 +86,15 @@ class ALPEvaluator:
         self._load_setting_and_scenario()
 
         X_l, y_l, X_u, y_u, X_test, y_test = self.scenario.get_data_split()
-        learner = self.benchmark_connector.load_learner_by_name(self.learner_name)
+
+        if self.learner_obj is None:
+            self.learner_obj = self.benchmark_connector.load_learner_by_name(self.learner_name)
+
         sampling_strategy = self.benchmark_connector.load_sampling_strategy_by_name(self.sampling_strategy_name)
 
         oracle = Oracle(X_u=X_u, y_u=y_u)
         alp = ActiveLearningPipeline(
-            learner=learner,
+            learner=self.learner_obj,
             sampling_strategy=sampling_strategy,
             num_iterations=self.setting.get_number_of_iterations(),
             observer_list=self.observer_list,

@@ -219,7 +219,7 @@ class EmbeddingBasedSampling(PseudoRandomizedSamplingStrategy):
                 X_embeds = clf.forward(X, encode=True)
                 X_l, X_u = X_embeds[: len(X_l)], X_embeds[len(X_l):]
         elif learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
-            from ALP.util.pytorch_tabnet.tab_model import TabNetClassifier
+            from pytorch_tabnet.tab_model import TabNetClassifier
             clf = TabNetClassifier(verbose=0)
             from ALP.util.TorchUtil import TimeLimitCallback
             clf.fit(X_l, y_l, callbacks=[TimeLimitCallback(180)])
@@ -480,7 +480,7 @@ class KMeansSampling(EmbeddingBasedSampling):
             return selected_ids[0:num_samples]
 
 
-class ClusterMargin(PseudoRandomizedSamplingStrategy):
+class ClusterMargin(EmbeddingBasedSampling):
     def __init__(self, seed):
         super().__init__(seed=seed)
 

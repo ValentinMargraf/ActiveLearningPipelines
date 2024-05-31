@@ -2,8 +2,6 @@ import math
 
 import torch
 import torch.nn as nn
-from tabpfn.layer import TransformerEncoderLayer
-from tabpfn.utils import SeqBN, bool_mask_to_att_mask
 from torch import Tensor
 from torch.nn import Module, TransformerEncoder
 
@@ -34,6 +32,8 @@ class TransformerModel(nn.Module):
     ):
         super().__init__()
         self.model_type = "Transformer"
+        from tabpfn.layer import TransformerEncoderLayer
+        from tabpfn.utils import SeqBN, bool_mask_to_att_mask
         encoder_layer_creator = lambda: TransformerEncoderLayer(
             ninp, nhead, nhid, dropout, activation=activation, pre_norm=pre_norm, recompute_attn=recompute_attn
         )

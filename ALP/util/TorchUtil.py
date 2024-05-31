@@ -1,4 +1,4 @@
-from ALP.util.pytorch_tabnet.callbacks import Callback
+from pytorch_tabnet.callbacks import Callback
 import torch
 import torch.nn.functional as F
 import torch.nn as nn

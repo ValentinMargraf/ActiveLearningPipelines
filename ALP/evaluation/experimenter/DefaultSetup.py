@@ -1,5 +1,6 @@
 import catboost as cb
 import xgboost as xgb
+from pytorch_tabnet.tab_model import TabNetClassifier
 from sklearn.ensemble import ExtraTreesClassifier, GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB, MultinomialNB
@@ -138,8 +139,8 @@ def ensure_default_setup(dbbc: MySQLBenchmarkConnector):
         "GBT_exp": GradientBoostingClassifier(n_estimators=100, loss="exponential"),
         "GBT_logloss_large": GradientBoostingClassifier(n_estimators=250),
         "xgb": xgb.XGBClassifier(tree_method="hist", max_depth=6, n_estimators=100),
-        "catboost": cb.CatBoostClassifier(iterations=500, depth=6, verbose=0, rsm=0.1)#,
-        #"tabnet": TabNetClassifier(verbose=0),
+        "catboost": cb.CatBoostClassifier(iterations=500, depth=6, verbose=0, rsm=0.1),
+        "tabnet": TabNetClassifier(verbose=0)#,
         #"tabpfn": TabPFNClassifier(device="cpu", N_ensemble_configurations=32)
     }
 
