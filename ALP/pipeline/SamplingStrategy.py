@@ -1,4 +1,3 @@
-import time
 import warnings
 from abc import ABC, abstractmethod
 
@@ -211,24 +210,27 @@ class EmbeddingBasedSampling(PseudoRandomizedSamplingStrategy):
         learner_fqn = fullname(learner)
         if learner_fqn == "tabpfn.scripts.transformer_prediction_interface.TabPFNClassifier":
             from ALP.util.TorchUtil import TabPFNEmbedder
+
             clf = TabPFNEmbedder(X_l, y_l)
             if not transform_labeled:
                 X_u = clf.forward(X_u, encode=True)
             else:
                 X = np.concatenate((X_l, X_u))
                 X_embeds = clf.forward(X, encode=True)
-                X_l, X_u = X_embeds[: len(X_l)], X_embeds[len(X_l):]
+                X_l, X_u = X_embeds[: len(X_l)], X_embeds[len(X_l) :]
         elif learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
             from ALP.util.pytorch_tabnet.tab_model import TabNetClassifier
+
             clf = TabNetClassifier(verbose=0)
             from ALP.util.TorchUtil import TimeLimitCallback
+
             clf.fit(X_l, y_l, callbacks=[TimeLimitCallback(180)])
             if not transform_labeled:
                 X_u = clf.predict_proba(X_u, get_embeds=True)
             else:
                 X = np.concatenate((X_l, X_u))
                 X_embeds = clf.predict_proba(X, get_embeds=True)
-                X_l, X_u = X_embeds[: len(X_l)], X_embeds[len(X_l):]
+                X_l, X_u = X_embeds[: len(X_l)], X_embeds[len(X_l) :]
         if not transform_labeled:
             return X_u
         else:
@@ -244,20 +246,32 @@ class TypicalClusterSampling(EmbeddingBasedSampling):
         pool_size = len(y_l)
         num_cluster = pool_size + num_samples
         X_u, X_l = self.compute_embedding(learner, X_l, y_l, X_u, transform_labeled=True)
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            kmeans = KMeans(n_clusters=num_cluster)
-            X = np.concatenate((X_l, X_u))
-            kmeans.fit(X)
-            labeled_cluster_classes = np.unique(kmeans.labels_[:pool_size])
-            cluster_sizes = [len(np.argwhere(kmeans.labels_ == i)) for i in range(num_cluster)]
-            ids_by_size = np.argsort(-np.array(cluster_sizes))
-            label_of_ids_by_size = np.arange(num_cluster)[ids_by_size]
-            ct = 0
-            selected_ids = []
-            for idx in ids_by_size:
-                if label_of_ids_by_size[idx] not in labeled_cluster_classes:
-                    instances_ids = np.argwhere(kmeans.labels_ == label_of_ids_by_size[idx])
+
+        kmeans = KMeans(n_clusters=num_cluster)
+        X = np.concatenate((X_l, X_u))
+        kmeans.fit(X)
+
+        # we dont wan labels from this group
+        labeled_cluster_classes = np.unique(kmeans.labels_[:pool_size])
+        # array of the following type: position in array is the label, value is the size of the cluster
+        cluster_sizes = [len(np.argwhere(kmeans.labels_ == i)) for i in range(num_cluster)]
+        ids_by_size = np.argsort(-np.array(cluster_sizes))
+        labels_of_sorted_clusters = np.arange(num_cluster)[ids_by_size]
+        selected_ids = []
+
+        # iterate through # num_samples uncovered largest cluster
+        for idx in ids_by_size:
+            current_label = labels_of_sorted_clusters[idx]
+            if current_label not in labeled_cluster_classes:
+                # get neighbours within this cluster
+                instances_ids = np.argwhere(kmeans.labels_ == current_label).flatten()
+                # print("instances ids",instances_ids)
+                if len(instances_ids) == 1:
+                    selected_ids.append(instances_ids[0])
+                    if len(selected_ids) == num_samples:
+                        selected_ids = np.array(selected_ids).flatten()
+                        return selected_ids - pool_size
+                else:
                     instances = X[instances_ids]
                     # compute typicality for each instance, append the one with highest typicality
                     typicalities = []
@@ -269,15 +283,16 @@ class TypicalClusterSampling(EmbeddingBasedSampling):
                             dist = np.mean(dists)
                         else:
                             dist = np.mean(np.argsort(dists)[:K])
-                        typicality = 1 / dist
+                        typicality = 1 / (dist + 1e-8)
                         typicalities.append(typicality)
                     typicalities = np.array(typicalities)
-                    if len(typicalities) > 0:
-                        selected_id = instances_ids[np.argmax(typicalities)]
-                        selected_ids.append(selected_id[0])
-                        ct += 1
-                        if ct == num_samples:
-                            return np.array(selected_ids) - pool_size
+
+                    selected_id = instances_ids[np.argmax(typicalities)]
+                    selected_ids.append(selected_id)
+                    if len(selected_ids) == num_samples:
+                        selected_ids = np.array(selected_ids).flatten()
+
+                        return selected_ids - pool_size
 
 
 class LeastConfidentSampling(PseudoRandomizedSamplingStrategy):
@@ -480,7 +495,7 @@ class KMeansSampling(EmbeddingBasedSampling):
             return selected_ids[0:num_samples]
 
 
-class ClusterMargin(PseudoRandomizedSamplingStrategy):
+class ClusterMargin(EmbeddingBasedSampling):
     def __init__(self, seed):
         super().__init__(seed=seed)
 
@@ -488,48 +503,43 @@ class ClusterMargin(PseudoRandomizedSamplingStrategy):
         m = 10
         probas = learner.predict_proba(X_u)
         X_u = self.compute_embedding(learner, X_l, y_l, X_u)
+
         num_clusters = min((len(X_l) + len(X_u)) // m, len(X_u))
         clustering = AgglomerativeClustering(n_clusters=num_clusters).fit(X_u)
 
         sorted_probas = np.sort(probas, axis=-1)
         margins = sorted_probas[:, -1] - sorted_probas[:, -2]
 
-        # retrieve m*num_samples instances with smallest margins
+        # Retrieve m*num_samples instances with smallest margins
         num_to_retrieve = m * num_samples
         ids_to_retrieve = np.argsort(margins)[:num_to_retrieve]
-        # from those sample diversity-based through clustering
+
+        # Get labels of those that we want to retrieve
         cluster_belongings = clustering.labels_[ids_to_retrieve]
-        # sort cluster by size
+
+        # Sort clusters by size
         cluster_dict = {}
-        # get cluster sizes
         for i in set(cluster_belongings):
             cluster_dict[i] = len(np.argwhere(cluster_belongings == i))
-        # sort by size
+
         keys = np.array(list(cluster_dict.keys()))
         values = np.array(list(cluster_dict.values()))
         sorted_indices = np.argsort(values)
         sorted_keys = keys[sorted_indices]
 
         selected_ids = []
-        upperbound = len(cluster_belongings)
-        ct = 0
+        mask = np.ones(len(cluster_belongings), dtype=bool)
+
         while len(selected_ids) < num_samples:
             for key in sorted_keys:
-                to_sample_from = np.argwhere(cluster_belongings == key)
+                to_sample_from = np.argwhere((cluster_belongings == key) & mask).flatten()
                 if len(to_sample_from) == 0:
-                    ct += 1
-                    if len(selected_ids) == num_samples:
-                        return selected_ids
-                    if ct == upperbound:
-                        return selected_ids
                     continue
                 else:
                     np.random.seed(self.seed)
-                    id = np.random.choice(to_sample_from[0])
+                    id = np.random.choice(to_sample_from)
                     selected_ids.append(ids_to_retrieve[id])
-                    cluster_belongings = np.delete(cluster_belongings, id)
-                    ids_to_retrieve = np.delete(ids_to_retrieve, id)
-                    ct += 1
+                    mask[id] = False
                     if len(selected_ids) == num_samples:
                         return selected_ids
 
@@ -554,21 +564,38 @@ class CoreSetSampling(EmbeddingBasedSampling):
     def __init__(self, seed):
         super().__init__(seed=seed)
 
+    # iwas mit mask hier
+
     def sample(self, learner, X_l, y_l, X_u, num_samples):
         X_u, X_l = self.compute_embedding(learner, X_l, y_l, X_u, transform_labeled=True)
         selected_ids = []
+        # Initialize the mask to all True, meaning all samples are initially available
+        mask = np.ones(X_u.shape[0], dtype=bool)
+
         for round in range(num_samples):
             active_set = X_l[:, np.newaxis, :]
             inactive_set = X_u[np.newaxis, :, :]
-            distances = np.linalg.norm(active_set - inactive_set, axis=2)
+
+            # Apply the mask to inactive_set
+            inactive_set_masked = inactive_set[:, mask, :]
+
+            distances = np.linalg.norm(active_set - inactive_set_masked, axis=2)
+
             # compute distance to closest neighbor
             dists = distances.min(axis=0)
+
             # get the id of the instance with the highest distance
             selected_id = np.argmax(dists)
-            selected_ids.append(selected_id)
-            # remove selected id
-            X_l = np.concatenate((X_l, X_u[selected_id].reshape(1, -1)))
-            X_u = np.delete(X_u, selected_id, axis=0)
+            original_selected_id = np.where(mask)[0][selected_id]
+
+            selected_ids.append(original_selected_id)
+
+            # remove selected id from the mask
+            mask[original_selected_id] = False
+
+            # add the selected instance to X_l
+            X_l = np.concatenate((X_l, X_u[original_selected_id].reshape(1, -1)))
+
         return selected_ids
 
 
@@ -638,5 +665,3 @@ class QBCVarianceRatioSampling(EnsemblePseudoRandomizedSampling):
         variance_ratios = np.array(variance_ratios)
         vr_ids = np.argsort(variance_ratios)[-num_samples:]
         return vr_ids
-
-
