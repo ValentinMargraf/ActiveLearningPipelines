@@ -18,9 +18,9 @@ from ALP.util.common import fullname
 from ALP.util.ensemble_constructor import Ensemble as Ens
 
 
-class SamplingStrategy(ABC):
+class QueryStrategy(ABC):
     @abstractmethod
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         pass
 
     @abstractmethod
@@ -28,90 +28,90 @@ class SamplingStrategy(ABC):
         pass
 
 
-class PseudoRandomizedSamplingStrategy(SamplingStrategy):
+class PseudoRandomizedQueryStrategy(QueryStrategy):
     def __init__(self, seed):
         self.seed = seed
 
     @abstractmethod
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         pass
 
     def get_params(self):
         return {"seed": self.seed}
 
 
-class WrappedSamplingStrategy(SamplingStrategy):
-    def __init__(self, wrapped_strategy: SamplingStrategy, learner):
-        self.wrapped_strategy = wrapped_strategy
+class WrappedQueryStrategy(QueryStrategy):
+    def __init__(self, wrapped_query_strategy: QueryStrategy, learner):
+        self.wrapped_query_strategy = wrapped_query_strategy
         self.learner = learner
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         self.learner.fit(X_l, y_l)
-        self.wrapped_strategy.sample(self.learner, X_l, y_l, X_u, num_samples)
+        self.wrapped_query_strategy.sample(self.learner, X_l, y_l, X_u, num_queries)
 
     def get_params(self):
         return {
-            "wrapped_sampling_strategy": {
-                "fqn": fullname(self.wrapped_strategy),
-                "params": self.wrapped_strategy.get_params(),
+            "wrapped_query_strategy": {
+                "fqn": fullname(self.wrapped_query_strategy),
+                "params": self.wrapped_query_strategy.get_params(),
             },
             "learner": {"fqn": fullname(self.learner), "params": self.learner.get_params()},
         }
 
 
-class ActiveMLSamplingStrategy(PseudoRandomizedSamplingStrategy):
+class ActiveMLQueryStrategy(PseudoRandomizedQueryStrategy):
     def __init__(self, seed, qs):
         super().__init__(seed=seed)
         self.qs = qs
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         nan_labels = np.full(len(X_u), np.nan, dtype=float)
         queried_ids = self.qs.query(
-            X=np.concatenate([X_l, X_u]), y=np.concatenate([y_l, nan_labels]), batch_size=num_samples
+            X=np.concatenate([X_l, X_u]), y=np.concatenate([y_l, nan_labels]), batch_size=num_queries
         )
         queried_original_ids = queried_ids - len(y_l)
 
         return queried_original_ids
 
 
-class ActiveMLModelBasedSamplingStrategy(ActiveMLSamplingStrategy):
+class ActiveMLModelBasedQueryStrategy(ActiveMLQueryStrategy):
     def __init__(self, seed, qs):
         super().__init__(seed=seed, qs=qs)
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         nan_labels = np.full(len(X_u), np.nan, dtype=float)
         queried_ids = self.qs.query(
             clf=SklearnClassifier(learner),
             X=np.concatenate([X_l, X_u]),
             y=np.concatenate([y_l, nan_labels]),
-            batch_size=num_samples,
+            batch_size=num_queries,
         )
         queried_original_ids = queried_ids - len(y_l)
 
         return queried_original_ids
 
 
-class RandomSamplingStrategy(ActiveMLSamplingStrategy):
+class RandomQueryStrategy(ActiveMLQueryStrategy):
     def __init__(self, seed):
         super().__init__(seed, RandomSampling(random_state=seed))
 
 
-class UncertaintySamplingStrategy(ActiveMLModelBasedSamplingStrategy):
+class UncertaintyQueryStrategy(ActiveMLModelBasedQueryStrategy):
     def __init__(self, seed, method):
         super().__init__(seed=seed, qs=UncertaintySampling(method=method, random_state=seed))
 
 
-class ExpectedAveragePrecision(UncertaintySamplingStrategy):
+class ExpectedAveragePrecision(UncertaintyQueryStrategy):
     def __init__(self, seed):
         super().__init__(seed=seed, method="expected_average_precision")
 
 
-class EpistemicUncertaintySamplingStrategy(ActiveMLSamplingStrategy):
+class EpistemicUncertaintyQueryStrategy(ActiveMLQueryStrategy):
     def __init__(self, seed):
         super().__init__(seed, EpistemicUncertaintySampling(random_state=seed))
 
 
-class MonteCarloEERStrategy(ActiveMLModelBasedSamplingStrategy):
+class MonteCarloEERStrategy(ActiveMLModelBasedQueryStrategy):
     def __init__(self, seed, method):
         super().__init__(seed, MonteCarloEER(method=method, random_state=seed))
 
@@ -126,28 +126,28 @@ class MonteCarloEERMisclassification(MonteCarloEERStrategy):
         super().__init__(seed, method="misclassification_loss")
 
 
-class DiscriminativeSampling(ActiveMLSamplingStrategy):
+class DiscriminativeQueryStrategy(ActiveMLQueryStrategy):
     def __init__(self, seed):
         super().__init__(seed=seed, qs=DiscriminativeAL(random_state=seed))
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         nan_labels = np.full(len(X_u), np.nan, dtype=float)
         queried_ids = self.qs.query(
             X=np.concatenate([X_l, X_u]),
             y=np.concatenate([y_l, nan_labels]),
             discriminator=SklearnClassifier(learner),
-            batch_size=num_samples,
+            batch_size=num_queries,
         )
         queried_original_ids = queried_ids - len(y_l)
         return queried_original_ids
 
 
-class ActiveMLEnsembleSamplingStrategy(ActiveMLSamplingStrategy):
+class ActiveMLEnsembleQueryStrategy(ActiveMLQueryStrategy):
     def __init__(self, seed, qs, ensemble_size):
         super().__init__(seed=seed, qs=qs)
         self.ensemble_size = ensemble_size
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         learners = [SklearnClassifier(learner)] * self.ensemble_size
         nan_labels = np.full(len(X_u), np.nan, dtype=float)
         queried_ids = self.qs.query(
@@ -155,7 +155,7 @@ class ActiveMLEnsembleSamplingStrategy(ActiveMLSamplingStrategy):
             y=np.concatenate([y_l, nan_labels]),
             ensemble=learners,
             fit_ensemble=True,
-            batch_size=num_samples,
+            batch_size=num_queries,
         )
         queried_original_ids = queried_ids - len(y_l)
         return queried_original_ids
@@ -166,35 +166,35 @@ class ActiveMLEnsembleSamplingStrategy(ActiveMLSamplingStrategy):
         return params
 
 
-class QueryByCommitteeSampling(ActiveMLEnsembleSamplingStrategy):
+class QueryByCommitteeQueryStrategy(ActiveMLEnsembleQueryStrategy):
     def __init__(self, seed, method, ensemble_size):
         super().__init__(seed=seed, qs=QueryByCommittee(method=method, random_state=seed), ensemble_size=ensemble_size)
 
 
-class EnsemblePseudoRandomizedSampling(PseudoRandomizedSamplingStrategy):
+class EnsemblePseudoRandomizedQueryStrategy(PseudoRandomizedQueryStrategy):
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed)
         self.ensemble_size = ensemble_size
 
     @abstractmethod
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         pass
 
     def get_params(self):
         return {"seed": self.seed, "ensemble_size": self.ensemble_size}
 
 
-class QueryByCommitteeEntropySampling(QueryByCommitteeSampling):
+class QueryByCommitteeEntropyQueryStrategy(QueryByCommitteeQueryStrategy):
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed, method="vote_entropy", ensemble_size=ensemble_size)
 
 
-class QueryByCommitteeKLSampling(QueryByCommitteeSampling):
+class QueryByCommitteeKLQueryStrategy(QueryByCommitteeQueryStrategy):
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed, method="KL_divergence", ensemble_size=ensemble_size)
 
 
-class BatchBaldSampling(ActiveMLEnsembleSamplingStrategy):
+class BatchBaldQueryStrategy(ActiveMLEnsembleQueryStrategy):
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed, qs=BatchBALD(random_state=seed), ensemble_size=ensemble_size)
 
@@ -202,9 +202,13 @@ class BatchBaldSampling(ActiveMLEnsembleSamplingStrategy):
 #########################
 # self-implemented
 #########################
-class EmbeddingBasedSampling(PseudoRandomizedSamplingStrategy):
+class EmbeddingBasedQueryStrategy(PseudoRandomizedQueryStrategy):
     def __init__(self, seed):
         super().__init__(seed=seed)
+
+    @abstractmethod
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
+        pass
 
     def compute_embedding(self, learner, X_l, y_l, X_u, transform_labeled=False):
         learner_fqn = fullname(learner)
@@ -219,7 +223,7 @@ class EmbeddingBasedSampling(PseudoRandomizedSamplingStrategy):
                 X_embeds = clf.forward(X, encode=True)
                 X_l, X_u = X_embeds[: len(X_l)], X_embeds[len(X_l) :]
         elif learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
-            from ALP.util.pytorch_tabnet.tab_model import TabNetClassifier
+            from pytorch_tabnet.tab_model import TabNetClassifier
 
             clf = TabNetClassifier(verbose=0)
             from ALP.util.TorchUtil import TimeLimitCallback
@@ -237,14 +241,14 @@ class EmbeddingBasedSampling(PseudoRandomizedSamplingStrategy):
             return X_u, X_l
 
 
-class TypicalClusterSampling(EmbeddingBasedSampling):
+class TypicalClusterQueryStrategy(EmbeddingBasedQueryStrategy):
     def __init__(self, seed):
         super().__init__(seed=seed)
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         # from num_saples "uncovered" cluster (there where are no X_l) select the one with highest "typicality"
         pool_size = len(y_l)
-        num_cluster = pool_size + num_samples
+        num_cluster = pool_size + num_queries
         X_u, X_l = self.compute_embedding(learner, X_l, y_l, X_u, transform_labeled=True)
 
         kmeans = KMeans(n_clusters=num_cluster)
@@ -268,7 +272,7 @@ class TypicalClusterSampling(EmbeddingBasedSampling):
                 # print("instances ids",instances_ids)
                 if len(instances_ids) == 1:
                     selected_ids.append(instances_ids[0])
-                    if len(selected_ids) == num_samples:
+                    if len(selected_ids) == num_queries:
                         selected_ids = np.array(selected_ids).flatten()
                         return selected_ids - pool_size
                 else:
@@ -286,54 +290,57 @@ class TypicalClusterSampling(EmbeddingBasedSampling):
                         typicality = 1 / (dist + 1e-8)
                         typicalities.append(typicality)
                     typicalities = np.array(typicalities)
+                    if len(typicalities) > 0:
+                        selected_id = instances_ids[np.argmax(typicalities)]
+                        selected_ids.append(selected_id[0])
 
                     selected_id = instances_ids[np.argmax(typicalities)]
                     selected_ids.append(selected_id)
-                    if len(selected_ids) == num_samples:
+                    if len(selected_ids) == num_queries:
                         selected_ids = np.array(selected_ids).flatten()
 
                         return selected_ids - pool_size
 
 
-class LeastConfidentSampling(PseudoRandomizedSamplingStrategy):
+class LeastConfidentQueryStrategy(PseudoRandomizedQueryStrategy):
     def __init__(self, seed):
         super().__init__(seed=seed)
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         probas = learner.predict_proba(X_u)
         least_confidence = 1 - np.max(probas, axis=1)
-        least_confidence_ids = np.argsort(least_confidence)[-num_samples:]
+        least_confidence_ids = np.argsort(least_confidence)[-num_queries:]
         return least_confidence_ids
 
 
-class EntropySampling(PseudoRandomizedSamplingStrategy):
+class EntropyQueryStrategy(PseudoRandomizedQueryStrategy):
     def __init__(self, seed):
         super().__init__(seed=seed)
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         probas = learner.predict_proba(X_u)
         entropies = -np.sum(probas * np.log(probas + 1e-8), axis=1)
-        entropy_ids = np.argsort(entropies)[-num_samples:]
+        entropy_ids = np.argsort(entropies)[-num_queries:]
         return entropy_ids
 
 
-class MarginSampling(PseudoRandomizedSamplingStrategy):
+class MarginQueryStrategy(PseudoRandomizedQueryStrategy):
     def __init__(self, seed):
         super().__init__(seed=seed)
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         probas = learner.predict_proba(X_u)
         sorted_probas = np.sort(probas, axis=-1)
         margins = sorted_probas[:, -1] - sorted_probas[:, -2]
-        original_margin_ids = np.argsort(margins)[:num_samples]
+        original_margin_ids = np.argsort(margins)[:num_queries]
         return original_margin_ids
 
 
-class PowerMarginSampling(PseudoRandomizedSamplingStrategy):
+class PowerMarginQueryStrategy(PseudoRandomizedQueryStrategy):
     def __init__(self, seed):
         super().__init__(seed=seed)
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         probas = learner.predict_proba(X_u)
         sorted_probas = np.sort(probas, axis=-1)
         margins = sorted_probas[:, -1] - sorted_probas[:, -2]
@@ -341,31 +348,31 @@ class PowerMarginSampling(PseudoRandomizedSamplingStrategy):
         # power transform
         np.random.seed(self.seed)
         margins = np.log(margins + 1e-8) + np.random.gumbel(size=len(margins))
-        original_margin_ids = np.argsort(margins)[-num_samples:]
+        original_margin_ids = np.argsort(margins)[-num_queries:]
         return original_margin_ids
 
 
-class RandomMarginSampling(PseudoRandomizedSamplingStrategy):
+class RandomMarginQueryStrategy(PseudoRandomizedQueryStrategy):
     def __init__(self, seed):
         super().__init__(seed=seed)
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
-        num_for_margin = num_samples // 2
-        num_for_random = num_samples - num_for_margin
-        random_ids = RandomSamplingStrategy(self.seed).sample(learner, X_l, y_l, X_u, num_for_random)
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
+        num_for_margin = num_queries // 2
+        num_for_random = num_queries - num_for_margin
+        random_ids = RandomQueryStrategy(self.seed).sample(learner, X_l, y_l, X_u, num_for_random)
         if num_for_margin == 0:
             return random_ids
         else:
-            margin_ids = MarginSampling(self.seed).sample(learner, X_l, y_l, X_u, num_for_margin)
+            margin_ids = MarginQueryStrategy(self.seed).sample(learner, X_l, y_l, X_u, num_for_margin)
             return np.concatenate((margin_ids, random_ids))
 
 
-class MinMarginSampling(EnsemblePseudoRandomizedSampling):
+class MinMarginQueryStrategy(EnsemblePseudoRandomizedQueryStrategy):
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed, ensemble_size=ensemble_size)
         self.ensemble_size = ensemble_size
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         clf = Ens(estimator=learner, num_estimators=self.ensemble_size, max_neighbors=len(y_l))
         clf.fit(X_l, y_l)
         all_probas = clf.predict_proba(X_u)
@@ -373,15 +380,15 @@ class MinMarginSampling(EnsemblePseudoRandomizedSampling):
         sorted_probas = np.sort(all_probas, axis=1)
         margins = sorted_probas[:, -1, :] - sorted_probas[:, -2, :]
         margins = np.min(margins, axis=-1)
-        margin_ids = np.argsort(margins)[:num_samples]
+        margin_ids = np.argsort(margins)[:num_queries]
         return margin_ids
 
 
-class FalcunSampling(PseudoRandomizedSamplingStrategy):
+class FalcunQueryStrategy(PseudoRandomizedQueryStrategy):
     def __init__(self, seed):
         super().__init__(seed=seed)
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         probas = learner.predict_proba(X_u)
         sorted_probas = np.sort(probas, axis=-1)
         margins = sorted_probas[:, -1] - sorted_probas[:, -2]
@@ -390,7 +397,7 @@ class FalcunSampling(PseudoRandomizedSamplingStrategy):
         selected_ids = []
         ids_to_choose_from = np.arange(len(margins))
         mask = np.ones(len(margins), dtype=bool)  # Initialize mask
-        for round in range(num_samples):
+        for round in range(num_queries):
             relevance = margins + div_scores
             relevance[np.isnan(relevance)] = 0
 
@@ -420,14 +427,14 @@ class FalcunSampling(PseudoRandomizedSamplingStrategy):
         return selected_ids
 
 
-class WeightedClusterSampling(EmbeddingBasedSampling):
+class WeightedClusterQueryStrategy(EmbeddingBasedQueryStrategy):
     def __init__(self, seed):
         super().__init__(seed=seed)
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         scores = learner.predict_proba(X_u) + 1e-8
         entropy = -np.sum(scores * np.log(scores), axis=1)
-        num_classes = num_samples
+        num_classes = num_queries
         X_u = self.compute_embedding(learner, X_l, y_l, X_u)
 
         from sklearn.cluster import KMeans
@@ -441,7 +448,7 @@ class WeightedClusterSampling(EmbeddingBasedSampling):
             # for each class, find instance clostes to center
             selected_ids = []
 
-            per_class = num_samples // num_classes + 1
+            per_class = num_queries // num_classes + 1
             for class_ in range(num_classes):
                 class_ids = np.argwhere(kmeans.labels_ == class_)
                 # corresponding center
@@ -456,14 +463,14 @@ class WeightedClusterSampling(EmbeddingBasedSampling):
                 for closest_instance_id in closest_instances_id:
                     selected_ids.append(class_ids[closest_instance_id][0])
 
-            return selected_ids[0:num_samples]
+            return selected_ids[0:num_queries]
 
 
-class KMeansSampling(EmbeddingBasedSampling):
+class KMeansQueryStrategy(EmbeddingBasedQueryStrategy):
     def __init__(self, seed):
         super().__init__(seed=seed)
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         X_u = self.compute_embedding(learner, X_l, y_l, X_u)
         num_classes = len(np.unique(y_l))
         from sklearn.cluster import KMeans
@@ -478,7 +485,7 @@ class KMeansSampling(EmbeddingBasedSampling):
             # for each class, find instance clostes to center
             selected_ids = []
 
-            per_class = num_samples // num_classes + 1
+            per_class = num_queries // num_classes + 1
             for class_ in range(num_classes):
                 class_ids = np.argwhere(kmeans.labels_ == class_)
                 # corresponding center
@@ -492,36 +499,33 @@ class KMeansSampling(EmbeddingBasedSampling):
                 for closest_instance_id in closest_instances_id:
                     selected_ids.append(class_ids[closest_instance_id][0])
 
-            return selected_ids[0:num_samples]
+            return selected_ids[0:num_queries]
 
 
-class ClusterMargin(EmbeddingBasedSampling):
+class ClusterMargin(EmbeddingBasedQueryStrategy):
     def __init__(self, seed):
         super().__init__(seed=seed)
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         m = 10
         probas = learner.predict_proba(X_u)
         X_u = self.compute_embedding(learner, X_l, y_l, X_u)
-
         num_clusters = min((len(X_l) + len(X_u)) // m, len(X_u))
         clustering = AgglomerativeClustering(n_clusters=num_clusters).fit(X_u)
 
         sorted_probas = np.sort(probas, axis=-1)
         margins = sorted_probas[:, -1] - sorted_probas[:, -2]
 
-        # Retrieve m*num_samples instances with smallest margins
-        num_to_retrieve = m * num_samples
+        # retrieve m*num_queries instances with smallest margins
+        num_to_retrieve = m * num_queries
         ids_to_retrieve = np.argsort(margins)[:num_to_retrieve]
-
-        # Get labels of those that we want to retrieve
+        # from those sample diversity-based through clustering
         cluster_belongings = clustering.labels_[ids_to_retrieve]
-
-        # Sort clusters by size
+        # sort cluster by size
         cluster_dict = {}
         for i in set(cluster_belongings):
             cluster_dict[i] = len(np.argwhere(cluster_belongings == i))
-
+        # sort by size
         keys = np.array(list(cluster_dict.keys()))
         values = np.array(list(cluster_dict.values()))
         sorted_indices = np.argsort(values)
@@ -530,7 +534,7 @@ class ClusterMargin(EmbeddingBasedSampling):
         selected_ids = []
         mask = np.ones(len(cluster_belongings), dtype=bool)
 
-        while len(selected_ids) < num_samples:
+        while len(selected_ids) < num_queries:
             for key in sorted_keys:
                 to_sample_from = np.argwhere((cluster_belongings == key) & mask).flatten()
                 if len(to_sample_from) == 0:
@@ -540,39 +544,36 @@ class ClusterMargin(EmbeddingBasedSampling):
                     id = np.random.choice(to_sample_from)
                     selected_ids.append(ids_to_retrieve[id])
                     mask[id] = False
-                    if len(selected_ids) == num_samples:
+                    if len(selected_ids) == num_queries:
                         return selected_ids
 
-        return selected_ids[:num_samples]
+        return selected_ids[:num_queries]
 
 
-class MaxEntropySampling(EnsemblePseudoRandomizedSampling):
+class MaxEntropyQueryStrategy(EnsemblePseudoRandomizedQueryStrategy):
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed, ensemble_size=25)
         self.ensemble_size = ensemble_size
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         clf = Ens(estimator=learner, num_estimators=self.ensemble_size, max_neighbors=len(y_l))
         clf.fit(X_l, y_l)
         probas = clf.predict_proba(X_u).mean(axis=-1)
         entropies = -np.sum(probas * np.log(probas + 1e-8), axis=1)
-        entropy_ids = np.argsort(entropies)[-num_samples:]
+        entropy_ids = np.argsort(entropies)[-num_queries:]
         return entropy_ids
 
 
-class CoreSetSampling(EmbeddingBasedSampling):
+class CoreSetQueryStrategy(EmbeddingBasedQueryStrategy):
     def __init__(self, seed):
         super().__init__(seed=seed)
 
-    # iwas mit mask hier
-
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         X_u, X_l = self.compute_embedding(learner, X_l, y_l, X_u, transform_labeled=True)
         selected_ids = []
         # Initialize the mask to all True, meaning all samples are initially available
         mask = np.ones(X_u.shape[0], dtype=bool)
-
-        for round in range(num_samples):
+        for round in range(num_queries):
             active_set = X_l[:, np.newaxis, :]
             inactive_set = X_u[np.newaxis, :, :]
 
@@ -583,7 +584,6 @@ class CoreSetSampling(EmbeddingBasedSampling):
 
             # compute distance to closest neighbor
             dists = distances.min(axis=0)
-
             # get the id of the instance with the highest distance
             selected_id = np.argmax(dists)
             original_selected_id = np.where(mask)[0][selected_id]
@@ -599,12 +599,12 @@ class CoreSetSampling(EmbeddingBasedSampling):
         return selected_ids
 
 
-class BALDSampling(EnsemblePseudoRandomizedSampling):
+class BALDQueryStrategy(EnsemblePseudoRandomizedQueryStrategy):
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed, ensemble_size=25)
         self.ensemble_size = ensemble_size
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         clf = Ens(estimator=learner, num_estimators=self.ensemble_size, max_neighbors=len(y_l))
         clf.fit(X_l, y_l)
         probas = clf.predict_proba(X_u)
@@ -617,16 +617,16 @@ class BALDSampling(EnsemblePseudoRandomizedSampling):
             axis=0,
         )
         mutual_info = entropies - mean_entropy
-        mutual_info_ids = np.argsort(mutual_info)[-num_samples:]
+        mutual_info_ids = np.argsort(mutual_info)[-num_queries:]
         return mutual_info_ids
 
 
-class PowerBALDSampling(EnsemblePseudoRandomizedSampling):
+class PowerBALDQueryStrategy(EnsemblePseudoRandomizedQueryStrategy):
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed, ensemble_size=25)
         self.ensemble_size = ensemble_size
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         clf = Ens(estimator=learner, num_estimators=self.ensemble_size, max_neighbors=len(y_l))
         clf.fit(X_l, y_l)
         probas = clf.predict_proba(X_u)
@@ -639,16 +639,16 @@ class PowerBALDSampling(EnsemblePseudoRandomizedSampling):
             axis=0,
         )
         mutual_info = entropies - mean_entropy + np.random.gumbel(size=len(entropies))
-        mutual_info_ids = np.argsort(mutual_info)[-num_samples:]
+        mutual_info_ids = np.argsort(mutual_info)[-num_queries:]
         return mutual_info_ids
 
 
-class QBCVarianceRatioSampling(EnsemblePseudoRandomizedSampling):
+class QBCVarianceRatioQueryStrategy(EnsemblePseudoRandomizedQueryStrategy):
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed, ensemble_size=25)
         self.ensemble_size = ensemble_size
 
-    def sample(self, learner, X_l, y_l, X_u, num_samples):
+    def sample(self, learner, X_l, y_l, X_u, num_queries):
         clf = Ens(estimator=learner, num_estimators=self.ensemble_size, max_neighbors=len(y_l))
         clf.fit(X_l, y_l)
         probas = clf.predict_proba(X_u)
@@ -663,5 +663,5 @@ class QBCVarianceRatioSampling(EnsemblePseudoRandomizedSampling):
             variance_ratio = 1 - most_common_count / self.ensemble_size
             variance_ratios.append(variance_ratio)
         variance_ratios = np.array(variance_ratios)
-        vr_ids = np.argsort(variance_ratios)[-num_samples:]
+        vr_ids = np.argsort(variance_ratios)[-num_queries:]
         return vr_ids
