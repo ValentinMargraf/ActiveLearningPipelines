@@ -31,7 +31,7 @@ from sklearn.svm import SVC
 from tabpfn import TabPFNClassifier
 from pytorch_tabnet.tab_model import TabNetClassifier
 from ALP.benchmark.BenchmarkConnector import MySQLBenchmarkConnector, DataFileBenchmarkConnector
-from ALP.pipeline.SamplingStrategy import (
+from ALP.pipeline.QueryStrategy import (
     BatchBaldSampling,
     BALDSampling,
     ClusterMargin,

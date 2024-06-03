@@ -4,7 +4,7 @@ from ALP.benchmark.ActiveLearningScenario import ActiveLearningScenario
 from ALP.benchmark.ActiveLearningSetting import ActiveLearningSetting
 from ALP.pipeline.ActiveLearningPipeline import ActiveLearningPipeline
 from ALP.pipeline.Oracle import Oracle
-from ALP.pipeline.SamplingStrategy import (
+from ALP.pipeline.QueryStrategy import (
     BALDSampling,
     ClusterMargin,
     CoreSetSampling,

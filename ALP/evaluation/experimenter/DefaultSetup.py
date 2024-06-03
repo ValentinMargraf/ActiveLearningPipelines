@@ -12,7 +12,7 @@ from sklearn.svm import SVC
 
 
 from ALP.benchmark.BenchmarkConnector import MySQLBenchmarkConnector
-from ALP.pipeline.SamplingStrategy import (
+from ALP.pipeline.QueryStrategy import (
     BALDQueryStrategy,
     ClusterMargin,
     CoreSetQueryStrategy,
