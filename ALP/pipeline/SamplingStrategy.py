@@ -414,7 +414,6 @@ class FalcunQueryStrategy(PseudoRandomizedQueryStrategy):
             else:
                 selected_id = np.random.choice(ids_to_choose_from[mask], p=prob)
             selected_ids.append(selected_id)
-            # print("selected id", selected_id)
             # update div scores
             x_q = probas[selected_id]
             mask[selected_id] = False
