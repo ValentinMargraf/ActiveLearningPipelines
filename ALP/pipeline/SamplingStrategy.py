@@ -392,7 +392,7 @@ class FalcunQueryStrategy(PseudoRandomizedQueryStrategy):
         probas = learner.predict_proba(X_u)
         sorted_probas = np.sort(probas, axis=-1)
         margins = sorted_probas[:, -1] - sorted_probas[:, -2]
-        div_scores = margins
+        div_scores = 1 - margins
         gamma = 10
         selected_ids = []
         ids_to_choose_from = np.arange(len(margins))
@@ -400,14 +400,12 @@ class FalcunQueryStrategy(PseudoRandomizedQueryStrategy):
         for round in range(num_queries):
             relevance = margins + div_scores
             relevance[np.isnan(relevance)] = 0
-
-            np.random.seed(self.seed)
             prob = relevance[mask] ** gamma / np.sum(relevance[mask] ** gamma)
             # set nan to 0, afterwards normalize
             prob[np.isnan(prob)] = 0
             prob = prob / np.sum(prob)
             prob[np.isnan(prob)] = 0
-
+            np.random.seed(self.seed)
             # if still a nan
             if np.sum(np.isnan(prob)) > 0:
                 selected_id = np.random.choice(ids_to_choose_from[mask])
