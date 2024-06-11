@@ -1,7 +1,7 @@
 import json
-import time
 
 import numpy as np
+
 from ALP.evaluation.experimenter.LogTableObserver import LogTableObserver, SparseLogTableObserver
 from ALP.util.common import fullname
 
@@ -153,6 +153,7 @@ class ActiveLearningPipeline:
                 self.learner.fit(X_l_aug[ids], y_l_aug[ids])
             elif learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
                 from ALP.util.TorchUtil import TimeLimitCallback
+
                 self.learner.fit(X_l_aug, y_l_aug, callbacks=[TimeLimitCallback(180)])
             else:
                 self.learner.fit(X_l_aug, y_l_aug)

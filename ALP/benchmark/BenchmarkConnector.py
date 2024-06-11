@@ -2,7 +2,6 @@ import json
 from abc import ABC, abstractmethod
 
 import mysql.connector
-import atexit
 
 from ALP.benchmark.ActiveLearningScenario import ActiveLearningScenario
 from ALP.benchmark.ActiveLearningSetting import ActiveLearningSetting
@@ -75,6 +74,26 @@ def _fetch_data_of_descriptor(data, descriptor: dict):
 
 
 class DataFileBenchmarkConnector(BenchmarkConnector):
+    """Data File Benchmark Connector
+
+    This class is an implementation of the BenchmarkConnector interface that stores all data in files. This involves
+    the Active Learning Setting and Scenario as well as the Learner and Sampling Strategy with all used parameters.
+    The data is stored in JSON files and can be accessed by the respective methods of this class.
+
+    Args:
+        learner_file (str): path to the file storing the learner data
+        sampling_strategy_file (str): path to the file storing the sampling strategy data
+        scenario_file (str): path to the file storing the scenario data
+        setting_file (str): path to the file storing the setting data
+
+    Attributes:
+        learner_file (str): path to the file storing the learner data
+        sampling_strategy_file (str): path to the file storing the sampling strategy data
+        scenario_file (str): path to the file storing the scenario data
+        setting_file (str): path to the file storing the setting data
+
+    """
+
     base_folder = "saltbench/"
     learner_file = base_folder + "learner.json"
     sampling_strategy_file = base_folder + "sampling_strategy.json"
@@ -300,6 +319,32 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
 
 
 class MySQLBenchmarkConnector(BenchmarkConnector):
+    """MySQL Benchmark Connector
+
+    This class is an implementation of the BenchmarkConnector interface that stores all data in a MySQL database. This
+    involves the Active Learning Setting and Scenario as well as the Learner and Sampling Strategy with all used
+    parameters. The data is stored in MySQL tables and can be accessed by the respective methods of this class.
+
+    Args:
+        host (str): host of the MySQL server
+        user (str): user of the MySQL server
+        password (str): password of the MySQL server
+        database (str): database to use
+        use_ssl (bool): whether to use SSL
+
+    Attributes:
+        host (str): host of the MySQL server
+        user (str): user of the MySQL server
+        password (str): password of the MySQL server
+        database (str): database to use
+        use_ssl (bool): whether to use SSL
+        con (mysql.connector.connection.MySQLConnection): connection to the MySQL database
+        scenario_table (str): name of the table storing the scenarios
+        setting_table (str): name of the table storing the settings
+        learner_table (str): name of the table storing the learners
+        sampling_strategy_table (str): name of the table storing the sampling strategies
+    """
+
     scenario_table = "salt_scenario"
     setting_table = "salt_setting"
     learner_table = "salt_learner"

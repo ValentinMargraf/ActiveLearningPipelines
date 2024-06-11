@@ -52,8 +52,6 @@ default_sampling_strategies = {
 
 
 # import pytest
-
-
 SCENARIO_ID = 1
 OPENML_ID = 31
 TEST_SPLIT_SEED = 42

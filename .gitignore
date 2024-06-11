@@ -136,6 +136,4 @@ models_diff/
 *.pdf
 *.csv
 *.yml
-ALP/evaluation/analysis/
-ALP/evaluation/experimenter/
-ALP/evaluation/experimenter/config/
+evaluation_neurips24/
