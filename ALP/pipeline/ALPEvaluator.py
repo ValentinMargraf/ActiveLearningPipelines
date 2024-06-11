@@ -117,7 +117,7 @@ class ALPEvaluator:
         oracle = Oracle(X_u=X_u, y_u=y_u)
         alp = ActiveLearningPipeline(
             learner=learner,
-            sampling_strategy=sampling_strategy,
+            query_strategy=sampling_strategy,
             num_iterations=self.setting.get_number_of_iterations(),
             observer_list=self.observer_list,
             num_samples_per_iteration=self.setting.get_number_of_samples(),

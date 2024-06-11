@@ -110,7 +110,7 @@ def test_pipeline_executions():
         print("current sampling strategy: ", sampling_strategy)
         ALP = ActiveLearningPipeline(
             learner=learner,
-            sampling_strategy=sampling_strategy,
+            query_strategy=sampling_strategy,
             init_budget=10,
             num_iterations=1,
             num_samples_per_iteration=10,

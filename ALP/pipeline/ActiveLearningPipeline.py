@@ -11,14 +11,14 @@ class ActiveLearningPipeline:
 
     This class implements an active learning pipeline that can be used to train a model on a given labeled dataset and
     iteratively query an oracle for additional labels to improve the model's performance. The pipeline consists of an
-    initializer, a learner, a sampling strategy, and an observer. The initializer is used to select data points from
+    initializer, a learner, a query strategy, and an observer. The initializer is used to select data points from
     unlabeled data to be labeled by the oracle in the first iteration. The learner is the model that is trained on
-    labeled data. The sampling strategy is used to select data points from the unlabeled dataset to be labeled by the
+    labeled data. The query strategy is used to select data points from the unlabeled dataset to be labeled by the
     oracle in subsequent iterations. The observer is used to log the data and model at each iteration.
 
     Args:
         learner: The learner that is trained on the labeled data.
-        sampling_strategy: The sampling strategy used to select data points from the unlabeled dataset to be labeled by
+        query_strategy: The query strategy used to select data points from the unlabeled dataset to be labeled by
             the oracle.
         initializer: The initializer used to select data points from the unlabeled dataset to be labeled by the oracle
             in the first iteration.
@@ -33,7 +33,7 @@ class ActiveLearningPipeline:
         initializer: The initializer used to select data points from the unlabeled dataset to be labeled by the oracle
             in the first iteration.
         learner: The learner that is trained on the labeled data.
-        sampling_strategy: The sampling strategy used to select data points from the unlabeled dataset to be labeled by
+        query_strategy: The query strategy used to select data points from the unlabeled dataset to be labeled by
             the oracle.
         observer_list: A list of observers that are used to log the data and model at each iteration.
         init_budget: The budget for sampling data points with the initialization strategy.
@@ -46,7 +46,7 @@ class ActiveLearningPipeline:
     def __init__(
         self,
         learner,
-        sampling_strategy,
+        query_strategy,
         initializer=None,
         observer_list: list() = None,
         init_budget: int = None,
@@ -55,7 +55,7 @@ class ActiveLearningPipeline:
     ):
         self.initializer = initializer
         self.learner = learner
-        self.sampling_strategy = sampling_strategy
+        self.query_strategy = query_strategy
         self.observer_list = observer_list
 
         # the budget for sampling data points with the initialization strategy
@@ -139,7 +139,7 @@ class ActiveLearningPipeline:
 
             else:
                 # ask query strategy for samples
-                idx_query = self.sampling_strategy.sample(
+                idx_query = self.query_strategy.sample(
                     learner=self.learner,
                     X_l=X_l_aug,
                     y_l=y_l_aug,
