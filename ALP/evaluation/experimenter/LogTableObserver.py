@@ -2,6 +2,22 @@ from ALP.benchmark.Observer import StatisticalPerformanceObserver
 
 
 class LogTableObserver(StatisticalPerformanceObserver):
+    """LogTableObserver
+
+    This class observes the performance of the model and the labeling process and logs the results in the database.
+
+    Args:
+        StatisticalPerformanceObserver (class): The parent class of the LogTableObserver.
+        result_processor (class): The result processor class.
+        X_test (array): The test data.
+        y_test (array): The test labels.
+
+    Attributes:
+        model_performance_tbl (str): The name of the table where the model performance is logged.
+        labeling_log_tbl (str): The name of the table where the labeling process is logged.
+
+    """
+
     model_performance_tbl = "accuracy_log"
     labeling_log_tbl = "labeling_log"
 
@@ -21,6 +37,21 @@ class LogTableObserver(StatisticalPerformanceObserver):
 
 
 class SparseLogTableObserver(StatisticalPerformanceObserver):
+    """SparseLogTableObserver
+
+    This class observes the performance of the model and the labeling process and logs the results in the database.
+    To reduce the number of logs, the results are only logged after a whole active learning procedure is finished.
+
+    Args:
+        StatisticalPerformanceObserver (class): The parent class of the LogTableObserver.
+        result_processor (class): The result processor class.
+        X_test (array): The test data.
+        y_test (array): The test labels.
+
+    Attributes:
+        model_performance_tbl (str): The name of the table where the model performance is logged.
+        labeling_log_tbl (str): The name of the table where the labeling process is logged.
+    """
     model_performance_tbl = "accuracy_log"
     labeling_log_tbl = "labeling_log"
 

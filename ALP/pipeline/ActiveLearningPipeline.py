@@ -7,6 +7,41 @@ from ALP.util.common import fullname
 
 
 class ActiveLearningPipeline:
+    """Active Learning Pipeline
+
+    This class implements an active learning pipeline that can be used to train a model on a given labeled dataset and
+    iteratively query an oracle for additional labels to improve the model's performance. The pipeline consists of an
+    initializer, a learner, a sampling strategy, and an observer. The initializer is used to select data points from
+    unlabeled data to be labeled by the oracle in the first iteration. The learner is the model that is trained on
+    labeled data. The sampling strategy is used to select data points from the unlabeled dataset to be labeled by the
+    oracle in subsequent iterations. The observer is used to log the data and model at each iteration.
+
+    Args:
+        learner: The learner that is trained on the labeled data.
+        sampling_strategy: The sampling strategy used to select data points from the unlabeled dataset to be labeled by
+            the oracle.
+        initializer: The initializer used to select data points from the unlabeled dataset to be labeled by the oracle
+            in the first iteration.
+        observer_list: A list of observers that are used to log the data and model at each iteration.
+        init_budget: The budget for sampling data points with the initialization strategy.
+        num_iterations: The number of active learning rounds to carry out alternating between learning and querying the
+            oracle.
+        num_samples_per_iteration: The number of data points to select in every active learning iteration to be labeled
+            by the oracle.
+
+    Attributes:
+        initializer: The initializer used to select data points from the unlabeled dataset to be labeled by the oracle
+            in the first iteration.
+        learner: The learner that is trained on the labeled data.
+        sampling_strategy: The sampling strategy used to select data points from the unlabeled dataset to be labeled by
+            the oracle.
+        observer_list: A list of observers that are used to log the data and model at each iteration.
+        init_budget: The budget for sampling data points with the initialization strategy.
+        num_iterations: The number of active learning rounds to carry out alternating between learning and querying the
+            oracle.
+        num_samples_per_iteration: The number of data points to select in every active learning iteration to be labeled
+            by the oracle.
+    """
 
     def __init__(
         self,

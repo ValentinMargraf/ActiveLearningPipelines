@@ -12,6 +12,19 @@ from scipy.stats import ttest_ind as tt
 
 
 class BudgetPerformancePlot:
+    """BudgetPerformancePlot
+
+    This class plots the performance of different sampling strategies over the budget.
+
+    Args:
+        data (dict): The data to plot.
+        path_to_save (str): The path to save the plot.
+
+    Attributes:
+        data (dict): The data to plot.
+        path_to_save (str): The path to save the plot.
+
+    """
     def __init__(self, data, path_to_save = None):
         self.data = data
         self.path_to_save = path_to_save
@@ -212,6 +225,24 @@ class BudgetPerformancePlot:
 
 
 class HeatMapPlot:
+    """HeatMapPlot
+
+    This class plots a heatmap of the performance of different active learning pipelines as well as win or lose-
+    matrices for each learner comparing different query strategies.
+
+    Args:
+        data (dict): The data to plot.
+        path_to_save (str): The path to save the plot.
+        filter_ids (str): The filter ids.
+        take_statistical_insignificant (bool): Whether to take statistical insignificant values.
+
+    Attributes:
+        data (dict): The data to plot.
+        path_to_save (str): The path to save the plot.
+        filter_ids (str): The filter ids.
+        take_statistical_insignificant (bool): Whether to take statistical insignificant values.
+
+    """
     def __init__(self, data, path_to_save = None, filter_ids = "all", take_statistical_insignificant=False):
         self.data = data
         self.path_to_save = path_to_save

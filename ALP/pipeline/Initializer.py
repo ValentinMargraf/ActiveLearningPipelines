@@ -15,6 +15,16 @@ class Initializer(ABC):
 
 
 class RandomInitializer(Initializer):
+    """RandomInitializer
+
+    Randomly selects a subset of the unlabeled data to be queried.
+
+    Args:
+        seed (int): The seed for the random number generator.
+    Attributes:
+        qs (class): RandomSampling class from skactiveml.pool.
+    """
+
     def __init__(self, seed):
         self.qs = RandomSampling(random_state=seed)
 

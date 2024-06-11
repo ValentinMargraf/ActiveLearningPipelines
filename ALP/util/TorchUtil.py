@@ -8,6 +8,17 @@ from ALP.util.transformer import TransformerModel
 
 
 class TimeLimitCallback(Callback):
+    """TimeLimitCallback
+
+    This class is used for constraining TabNet classifier, such that it stops training after a certain time limit.
+
+    Args:
+        time_limit: int
+
+    Attributes:
+        time_limit: int
+        start_time: float
+    """
     def __init__(self, time_limit):
         self.time_limit = time_limit
         self.start_time = None
@@ -23,6 +34,23 @@ class TimeLimitCallback(Callback):
             return True  # This will stop training
 
 class TabPFNEmbedder(nn.Module):
+    """TabPFNEmbedder
+
+    This class is used to create a TabPFNEmbedder model. The model is used to encode the input data into a
+    lower-dimensional space.
+
+    Args:
+        X_train: numpy.ndarray
+        y_train: numpy.ndarray
+
+    Attributes:
+        clf: object
+        num_samples: int
+        encoder: object
+        fc1: object
+        drop: object
+        fc2: object
+    """
     def __init__(self, X_train, y_train):
         super().__init__()
         self.clf = None

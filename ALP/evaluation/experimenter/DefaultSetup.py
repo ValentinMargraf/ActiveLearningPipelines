@@ -37,6 +37,11 @@ from ALP.pipeline.SamplingStrategy import (
 
 
 def ensure_default_setup(dbbc: MySQLBenchmarkConnector):
+    """
+    Ensure that the default settings, sampling strategies and learners are loaded into the database.
+    This allows to later on load the default settings and strategies.
+
+    """
     # init settings
     settings = [
         {

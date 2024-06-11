@@ -24,7 +24,7 @@ pip install -r requirements_full.txt
 make install-dev
 ```
 
-Documentation at https://ValentinMargraf.github.io/ActiveLearningPipelines/main
+Documentation at https://activelearningpipelines.readthedocs.io/en/latest/
 
 
 # ⭐ Quickstart

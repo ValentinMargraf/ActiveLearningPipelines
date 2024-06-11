@@ -5,6 +5,36 @@ from ALP.pipeline.Oracle import Oracle
 
 
 class ALPEvaluator:
+    """ALPEvaluator
+
+    This class is used to evaluate an active learning pipeline (ALP) on a specific benchmark setting. This involves
+    fitting the ALP on the training data and then evaluating it on the test data.
+
+    Args:
+        benchmark_connector (BenchmarkConnector): The benchmark connector to use.
+        setting_name (str): The name of the setting to use.
+        learner_name (str): The name of the learner to use.
+        sampling_strategy_name (str): The name of the sampling strategy to use.
+        openml_id (int): The openml id of the benchmark scenario to use.
+        test_split_seed (int): The seed to use for splitting the test data.
+        train_split_seed (int): The seed to use for splitting the train data.
+        seed (int): The seed to use for the random number generator.
+
+    Attributes:
+        benchmark_connector (BenchmarkConnector): The benchmark connector to use.
+        observer_list (list): The list of observers to use.
+        setting (Setting): The setting to use.
+        scenario (Scenario): The scenario to use.
+        setting_name (str): The name of the setting to use.
+        learner_name (str): The name of the learner to use.
+        sampling_strategy_name (str): The name of the sampling strategy to use.
+        openml_id (int): The openml id of the benchmark scenario to use.
+        test_split_seed (int): The seed to use for splitting the test data.
+        train_split_seed (int): The seed to use for splitting the train data.
+        seed (int): The seed to use for the random number generator.
+
+    """
+
     def __init__(
         self,
         benchmark_connector: BenchmarkConnector,

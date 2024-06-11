@@ -1,4 +1,16 @@
 class Oracle:
+    """Oracle
+
+    This class has access to the true labels of the data and can be used to query the true labels of the data.
+
+    Args:
+        X_u (np.ndarray): The unlabeled data.
+        y_u (np.ndarray): The true labels of the unlabeled data.
+
+    Attributes:
+        X_u (np.ndarray): The unlabeled data.
+        y_u (np.ndarray): The true labels of the unlabeled data.
+    """
 
     def __init__(self, X_u=None, y_u=None):
         self.X_u = X_u
