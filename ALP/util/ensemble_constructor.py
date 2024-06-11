@@ -17,12 +17,12 @@ class Ensemble:
         max_neighbors: int (for k nearest neighbors)
 
     Attributes:
-        estimator: object
-        num_estimators: int
-        max_neighbors: int
-        random_states: list
-        estimators_: list
-        learner_fqn: str
+        estimator: object (the estimator to be used in the ensemble)
+        num_estimators: int (the number of estimators in the ensemble)
+        max_neighbors: int  (for k nearest neighbors)
+        random_states: list (random states for the ensemble members)
+        estimators_: list   (list containing the ensemble members)
+        learner_fqn: str    (fully qualified name of the estimator)
     """
 
     def __init__(self, estimator, num_estimators, max_neighbors):

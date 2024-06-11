@@ -1,4 +1,11 @@
 def format_insert_query(table_name, values: dict):
+    """
+    Format an insert query for a given table and values.
+
+
+    """
+
+
     key_list = list(values.keys())
 
     query = f"INSERT INTO {table_name}"

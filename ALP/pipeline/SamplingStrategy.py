@@ -19,20 +19,41 @@ from ALP.util.ensemble_constructor import Ensemble as Ens
 
 
 class QueryStrategy(ABC):
+    """QueryStrategy
+
+    This class is an abstract class for query strategies. The query strategies are used to sample instances from the
+    pool of unlabeled instances.
+    """
+
     @abstractmethod
     def sample(self, learner, X_l, y_l, X_u, num_queries):
+        """
+        This method samples instances from the pool of unlabeled instances. It is given a learner, that
+        is already fitted on the labeled data and potentially used to predict probabilities for the unlabeled
+        data.
+
+        Args:
+            learner: object
+            X_l: np.ndarray
+            y_l: np.ndarray
+            X_u: np.ndarray
+            num_queries: int
+        """
         pass
 
     @abstractmethod
     def get_params(self):
+        """
+        This method returns the parameters of the query strategy.
+        """
         pass
 
 
 class PseudoRandomizedQueryStrategy(QueryStrategy):
     """PseudoRandomizedQueryStrategy
 
-    This class is an abstract class for query strategies that are pseudo-randomized, meaning that they are based on a
-    seed for reproducibility.
+    This class is an abstract class for query strategies that are pseudo-randomized, meaning that they can be
+    reproduced with the same random seed.
 
     Args:
         seed (int): The seed for the random number generator.

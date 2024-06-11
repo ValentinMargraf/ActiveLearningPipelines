@@ -7,32 +7,6 @@ import time
 from ALP.util.transformer import TransformerModel
 
 
-class TimeLimitCallback(Callback):
-    """TimeLimitCallback
-
-    This class is used for constraining TabNet classifier, such that it stops training after a certain time limit.
-
-    Args:
-        time_limit: int
-
-    Attributes:
-        time_limit: int
-        start_time: float
-    """
-    def __init__(self, time_limit):
-        self.time_limit = time_limit
-        self.start_time = None
-
-    def on_epoch_begin(self, epoch, logs=None):
-        if self.start_time is None:
-            self.start_time = time.time()
-
-    def on_epoch_end(self, epoch, logs=None):
-        elapsed_time = time.time() - self.start_time
-        if elapsed_time > self.time_limit:
-            print(f"Stopping training as the time limit of {self.time_limit} seconds has been reached.")
-            return True  # This will stop training
-
 class TabPFNEmbedder(nn.Module):
     """TabPFNEmbedder
 
@@ -62,6 +36,15 @@ class TabPFNEmbedder(nn.Module):
         self.fc2 = nn.Linear(256, 64)
 
     def forward(self, x, encode=False):
+        """Returns the embeddings of the input data if encode is True, else returns the output of the model.
+
+        Args:
+            x: torch.Tensor
+            encode: bool, optional (default=False)
+
+        Returns:
+            x: numpy.ndarray if encode is True, else torch.Tensor
+        """
         if encode:
             x = self.encoder.predict_embeds(x)
             return torch.Tensor.numpy(x)
@@ -69,6 +52,18 @@ class TabPFNEmbedder(nn.Module):
         return F.relu(self.fc2(x))
 
     def instantiate_tabpfn(self, X_train, y_train):
+        """Instantiates the TabPFNClassifier model, whereas the .forward method is overwritten to return the embeddings
+        in case encode is set to True.
+
+        Args:
+            X_train: numpy.ndarray
+            y_train: numpy.ndarray
+
+        Returns:
+            None
+        """
+
+
         from tabpfn import TabPFNClassifier
         self.num_samples = X_train.shape[0]
         self.clf = TabPFNClassifier(device="cpu", N_ensemble_configurations=32)
@@ -86,3 +81,31 @@ class TabPFNEmbedder(nn.Module):
         self.clf.model = ("inf", "inf", tf)
         self.clf.fit(X_train, y_train)
         self.clf.no_grad = True
+
+
+
+class TimeLimitCallback(Callback):
+    """TimeLimitCallback
+
+    This class is used for constraining TabNet classifier, such that it stops training after a certain time limit.
+
+    Args:
+        time_limit: int
+
+    Attributes:
+        time_limit: int
+        start_time: float
+    """
+    def __init__(self, time_limit):
+        self.time_limit = time_limit
+        self.start_time = None
+
+    def on_epoch_begin(self, epoch, logs=None):
+        if self.start_time is None:
+            self.start_time = time.time()
+
+    def on_epoch_end(self, epoch, logs=None):
+        elapsed_time = time.time() - self.start_time
+        if elapsed_time > self.time_limit:
+            print(f"Stopping training as the time limit of {self.time_limit} seconds has been reached.")
+            return True  # This will stop training
