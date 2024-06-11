@@ -29,6 +29,18 @@ class QueryStrategy(ABC):
 
 
 class PseudoRandomizedQueryStrategy(QueryStrategy):
+    """PseudoRandomizedQueryStrategy
+
+    This class is an abstract class for query strategies that are pseudo-randomized, meaning that they are based on a
+    seed for reproducibility.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         self.seed = seed
 
@@ -41,6 +53,20 @@ class PseudoRandomizedQueryStrategy(QueryStrategy):
 
 
 class WrappedQueryStrategy(QueryStrategy):
+    """WrappedQueryStrategy
+
+    This class is used to wrap a query strategy with a learner. The wrapped query strategy is used to sample instances
+    from the pool of unlabeled instances.
+
+    Args:
+        wrapped_query_strategy: object
+        learner: object
+
+    Attributes:
+        wrapped_query_strategy: object
+        learner: object
+    """
+
     def __init__(self, wrapped_query_strategy: QueryStrategy, learner):
         self.wrapped_query_strategy = wrapped_query_strategy
         self.learner = learner
@@ -60,6 +86,20 @@ class WrappedQueryStrategy(QueryStrategy):
 
 
 class ActiveMLQueryStrategy(PseudoRandomizedQueryStrategy):
+    """ActiveMLQueryStrategy
+
+    This class is an abstract class for active learning query strategies. The query strategies are used to sample
+    instances from the pool of unlabeled instances.
+
+    Args:
+        seed (int): The seed for the random number generator.
+        qs: object
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+        qs: object
+    """
+
     def __init__(self, seed, qs):
         super().__init__(seed=seed)
         self.qs = qs
@@ -75,6 +115,20 @@ class ActiveMLQueryStrategy(PseudoRandomizedQueryStrategy):
 
 
 class ActiveMLModelBasedQueryStrategy(ActiveMLQueryStrategy):
+    """ActiveMLModelBasedQueryStrategy
+
+    This class is an abstract class for active learning query strategies that are model-based. The query strategies are
+    used to sample instances from the pool of unlabeled instances.
+
+    Args:
+        seed (int): The seed for the random number generator.
+        qs: object
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+        qs: object
+    """
+
     def __init__(self, seed, qs):
         super().__init__(seed=seed, qs=qs)
 
@@ -92,36 +146,119 @@ class ActiveMLModelBasedQueryStrategy(ActiveMLQueryStrategy):
 
 
 class RandomQueryStrategy(ActiveMLQueryStrategy):
+    """RandomQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances randomly.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         super().__init__(seed, RandomSampling(random_state=seed))
 
 
 class UncertaintyQueryStrategy(ActiveMLModelBasedQueryStrategy):
+    """UncertaintyQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on uncertainty.
+
+    Args:
+        seed (int): The seed for the random number generator.
+        method (str): The method for uncertainty sampling.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+        qs: object
+    """
+
     def __init__(self, seed, method):
         super().__init__(seed=seed, qs=UncertaintySampling(method=method, random_state=seed))
 
 
 class ExpectedAveragePrecision(UncertaintyQueryStrategy):
+    """ExpectedAveragePrecision
+
+    This class is used to sample instances from the pool of unlabeled instances based on the expected average precision.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         super().__init__(seed=seed, method="expected_average_precision")
 
 
 class EpistemicUncertaintyQueryStrategy(ActiveMLQueryStrategy):
+    """EpistemicUncertaintyQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on epistemic uncertainty.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         super().__init__(seed, EpistemicUncertaintySampling(random_state=seed))
 
 
 class MonteCarloEERStrategy(ActiveMLModelBasedQueryStrategy):
+    """MonteCarloEERStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on the Monte Carlo EER method.
+
+    Args:
+        seed (int): The seed for the random number generator.
+        method (str): The method for Monte Carlo EER.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+        qs: object
+    """
+
     def __init__(self, seed, method):
         super().__init__(seed, MonteCarloEER(method=method, random_state=seed))
 
 
 class MonteCarloEERLogLoss(MonteCarloEERStrategy):
+    """MonteCarloEERLogLoss
+
+    This class is used to sample instances from the pool of unlabeled instances based on the Monte Carlo EER method with
+    the log loss method.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         super().__init__(seed, method="log_loss")
 
 
 class MonteCarloEERMisclassification(MonteCarloEERStrategy):
+    """MonteCarloEERMisclassification
+
+    This class is used to sample instances from the pool of unlabeled instances based on the Monte Carlo EER method with
+    the misclassification loss method.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         super().__init__(seed, method="misclassification_loss")
 
@@ -143,6 +280,22 @@ class DiscriminativeQueryStrategy(ActiveMLQueryStrategy):
 
 
 class ActiveMLEnsembleQueryStrategy(ActiveMLQueryStrategy):
+    """ActiveMLEnsembleQueryStrategy
+
+    This class is an abstract class for active learning query strategies that are ensemble-based. The query strategies
+    are used to sample instances from the pool of unlabeled instances.
+
+    Args:
+        seed (int): The seed for the random number generator.
+        qs: object
+        ensemble_size (int): The size of the ensemble.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+        qs: object
+        ensemble_size (int): The size of the ensemble.
+    """
+
     def __init__(self, seed, qs, ensemble_size):
         super().__init__(seed=seed, qs=qs)
         self.ensemble_size = ensemble_size
@@ -167,6 +320,21 @@ class ActiveMLEnsembleQueryStrategy(ActiveMLQueryStrategy):
 
 
 class QueryByCommitteeQueryStrategy(ActiveMLEnsembleQueryStrategy):
+    """QueryByCommitteeQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on the Query by Committee method.
+
+    Args:
+        seed (int): The seed for the random number generator.
+        method (str): The method for Query by Committee.
+        ensemble_size (int): The size of the ensemble.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+        qs: object
+        ensemble_size (int): The size of the ensemble.
+    """
+
     def __init__(self, seed, method, ensemble_size):
         super().__init__(seed=seed, qs=QueryByCommittee(method=method, random_state=seed), ensemble_size=ensemble_size)
 
@@ -185,16 +353,57 @@ class EnsemblePseudoRandomizedQueryStrategy(PseudoRandomizedQueryStrategy):
 
 
 class QueryByCommitteeEntropyQueryStrategy(QueryByCommitteeQueryStrategy):
+    """QueryByCommitteeEntropyQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on the Query by Committee method
+    with entropy as measure of ensemble disagreement.
+
+    Args:
+        seed (int): The seed for the random number generator.
+        ensemble_size (int): The size of the ensemble.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+        ensemble_size (int): The size of the ensemble.
+    """
+
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed, method="vote_entropy", ensemble_size=ensemble_size)
 
 
 class QueryByCommitteeKLQueryStrategy(QueryByCommitteeQueryStrategy):
+    """QueryByCommitteeKLQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on the Query by Committee method
+    with KL-divergence as measure of ensemble disagreement.
+
+    Args:
+        seed (int): The seed for the random number generator.
+        ensemble_size (int): The size of the ensemble.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+        ensemble_size (int): The size of the ensemble.
+    """
+
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed, method="KL_divergence", ensemble_size=ensemble_size)
 
 
 class BatchBaldQueryStrategy(ActiveMLEnsembleQueryStrategy):
+    """BatchBaldQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on the BatchBALD method.
+
+    Args:
+        seed (int): The seed for the random number generator.
+        ensemble_size (int): The size of the ensemble.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+        ensemble_size (int): The size of the ensemble.
+    """
+
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed, qs=BatchBALD(random_state=seed), ensemble_size=ensemble_size)
 
@@ -203,6 +412,18 @@ class BatchBaldQueryStrategy(ActiveMLEnsembleQueryStrategy):
 # self-implemented
 #########################
 class EmbeddingBasedQueryStrategy(PseudoRandomizedQueryStrategy):
+    """EmbeddingBasedQueryStrategy
+
+    This class is an abstract class for query strategies that are based on embeddings. The query strategies are used to
+    sample instances from the pool of unlabeled instances.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         super().__init__(seed=seed)
 
@@ -214,24 +435,27 @@ class EmbeddingBasedQueryStrategy(PseudoRandomizedQueryStrategy):
         learner_fqn = fullname(learner)
         if learner_fqn == "tabpfn.scripts.transformer_prediction_interface.TabPFNClassifier":
             from ALP.util.TorchUtil import TabPFNEmbedder
+
             clf = TabPFNEmbedder(X_l, y_l)
             if not transform_labeled:
                 X_u = clf.forward(X_u, encode=True)
             else:
                 X = np.concatenate((X_l, X_u))
                 X_embeds = clf.forward(X, encode=True)
-                X_l, X_u = X_embeds[: len(X_l)], X_embeds[len(X_l):]
+                X_l, X_u = X_embeds[: len(X_l)], X_embeds[len(X_l) :]
         elif learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
             from pytorch_tabnet.tab_model import TabNetClassifier
+
             clf = TabNetClassifier(verbose=0)
             from ALP.util.TorchUtil import TimeLimitCallback
+
             clf.fit(X_l, y_l, callbacks=[TimeLimitCallback(180)])
             if not transform_labeled:
                 X_u = clf.predict_proba(X_u, get_embeds=True)
             else:
                 X = np.concatenate((X_l, X_u))
                 X_embeds = clf.predict_proba(X, get_embeds=True)
-                X_l, X_u = X_embeds[: len(X_l)], X_embeds[len(X_l):]
+                X_l, X_u = X_embeds[: len(X_l)], X_embeds[len(X_l) :]
         if not transform_labeled:
             return X_u
         else:
@@ -239,6 +463,18 @@ class EmbeddingBasedQueryStrategy(PseudoRandomizedQueryStrategy):
 
 
 class TypicalClusterQueryStrategy(EmbeddingBasedQueryStrategy):
+    """TypicalClusterQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on the typicality of the instances
+    in the clusters.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         super().__init__(seed=seed)
 
@@ -247,20 +483,32 @@ class TypicalClusterQueryStrategy(EmbeddingBasedQueryStrategy):
         pool_size = len(y_l)
         num_cluster = pool_size + num_queries
         X_u, X_l = self.compute_embedding(learner, X_l, y_l, X_u, transform_labeled=True)
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            kmeans = KMeans(n_clusters=num_cluster)
-            X = np.concatenate((X_l, X_u))
-            kmeans.fit(X)
-            labeled_cluster_classes = np.unique(kmeans.labels_[:pool_size])
-            cluster_sizes = [len(np.argwhere(kmeans.labels_ == i)) for i in range(num_cluster)]
-            ids_by_size = np.argsort(-np.array(cluster_sizes))
-            label_of_ids_by_size = np.arange(num_cluster)[ids_by_size]
-            ct = 0
-            selected_ids = []
-            for idx in ids_by_size:
-                if label_of_ids_by_size[idx] not in labeled_cluster_classes:
-                    instances_ids = np.argwhere(kmeans.labels_ == label_of_ids_by_size[idx])
+
+        kmeans = KMeans(n_clusters=num_cluster)
+        X = np.concatenate((X_l, X_u))
+        kmeans.fit(X)
+
+        # we dont wan labels from this group
+        labeled_cluster_classes = np.unique(kmeans.labels_[:pool_size])
+        # array of the following type: position in array is the label, value is the size of the cluster
+        cluster_sizes = [len(np.argwhere(kmeans.labels_ == i)) for i in range(num_cluster)]
+        ids_by_size = np.argsort(-np.array(cluster_sizes))
+        labels_of_sorted_clusters = np.arange(num_cluster)[ids_by_size]
+        selected_ids = []
+
+        # iterate through # num_samples uncovered largest cluster
+        for idx in ids_by_size:
+            current_label = labels_of_sorted_clusters[idx]
+            if current_label not in labeled_cluster_classes:
+                # get neighbours within this cluster
+                instances_ids = np.argwhere(kmeans.labels_ == current_label).flatten()
+                # print("instances ids",instances_ids)
+                if len(instances_ids) == 1:
+                    selected_ids.append(instances_ids[0])
+                    if len(selected_ids) == num_queries:
+                        selected_ids = np.array(selected_ids).flatten()
+                        return selected_ids - pool_size
+                else:
                     instances = X[instances_ids]
                     # compute typicality for each instance, append the one with highest typicality
                     typicalities = []
@@ -272,18 +520,33 @@ class TypicalClusterQueryStrategy(EmbeddingBasedQueryStrategy):
                             dist = np.mean(dists)
                         else:
                             dist = np.mean(np.argsort(dists)[:K])
-                        typicality = 1 / dist
+                        typicality = 1 / (dist + 1e-8)
                         typicalities.append(typicality)
                     typicalities = np.array(typicalities)
                     if len(typicalities) > 0:
                         selected_id = instances_ids[np.argmax(typicalities)]
                         selected_ids.append(selected_id[0])
-                        ct += 1
-                        if ct == num_queries:
-                            return np.array(selected_ids) - pool_size
+
+                    selected_id = instances_ids[np.argmax(typicalities)]
+                    selected_ids.append(selected_id)
+                    if len(selected_ids) == num_queries:
+                        selected_ids = np.array(selected_ids).flatten()
+
+                        return selected_ids - pool_size
 
 
 class LeastConfidentQueryStrategy(PseudoRandomizedQueryStrategy):
+    """LeastConfidentQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on least confidence.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         super().__init__(seed=seed)
 
@@ -295,6 +558,17 @@ class LeastConfidentQueryStrategy(PseudoRandomizedQueryStrategy):
 
 
 class EntropyQueryStrategy(PseudoRandomizedQueryStrategy):
+    """EntropyQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on entropy.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         super().__init__(seed=seed)
 
@@ -306,6 +580,17 @@ class EntropyQueryStrategy(PseudoRandomizedQueryStrategy):
 
 
 class MarginQueryStrategy(PseudoRandomizedQueryStrategy):
+    """MarginQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on the margin method.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         super().__init__(seed=seed)
 
@@ -318,6 +603,17 @@ class MarginQueryStrategy(PseudoRandomizedQueryStrategy):
 
 
 class PowerMarginQueryStrategy(PseudoRandomizedQueryStrategy):
+    """PowerMarginQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on the power margin method.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         super().__init__(seed=seed)
 
@@ -334,6 +630,17 @@ class PowerMarginQueryStrategy(PseudoRandomizedQueryStrategy):
 
 
 class RandomMarginQueryStrategy(PseudoRandomizedQueryStrategy):
+    """RandomMarginQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on the random margin method.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         super().__init__(seed=seed)
 
@@ -349,6 +656,19 @@ class RandomMarginQueryStrategy(PseudoRandomizedQueryStrategy):
 
 
 class MinMarginQueryStrategy(EnsemblePseudoRandomizedQueryStrategy):
+    """MinMarginQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on the minimum margin method.
+
+    Args:
+        seed (int): The seed for the random number generator.
+        ensemble_size (int): The size of the ensemble.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+        ensemble_size (int): The size of the ensemble.
+    """
+
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed, ensemble_size=ensemble_size)
         self.ensemble_size = ensemble_size
@@ -366,6 +686,17 @@ class MinMarginQueryStrategy(EnsemblePseudoRandomizedQueryStrategy):
 
 
 class FalcunQueryStrategy(PseudoRandomizedQueryStrategy):
+    """FalcunQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on the FALCUN method.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         super().__init__(seed=seed)
 
@@ -373,7 +704,7 @@ class FalcunQueryStrategy(PseudoRandomizedQueryStrategy):
         probas = learner.predict_proba(X_u)
         sorted_probas = np.sort(probas, axis=-1)
         margins = sorted_probas[:, -1] - sorted_probas[:, -2]
-        div_scores = margins
+        div_scores = 1 - margins
         gamma = 10
         selected_ids = []
         ids_to_choose_from = np.arange(len(margins))
@@ -381,21 +712,18 @@ class FalcunQueryStrategy(PseudoRandomizedQueryStrategy):
         for round in range(num_queries):
             relevance = margins + div_scores
             relevance[np.isnan(relevance)] = 0
-
-            np.random.seed(self.seed)
             prob = relevance[mask] ** gamma / np.sum(relevance[mask] ** gamma)
             # set nan to 0, afterwards normalize
             prob[np.isnan(prob)] = 0
             prob = prob / np.sum(prob)
             prob[np.isnan(prob)] = 0
-
+            np.random.seed(self.seed)
             # if still a nan
             if np.sum(np.isnan(prob)) > 0:
                 selected_id = np.random.choice(ids_to_choose_from[mask])
             else:
                 selected_id = np.random.choice(ids_to_choose_from[mask], p=prob)
             selected_ids.append(selected_id)
-            # print("selected id", selected_id)
             # update div scores
             x_q = probas[selected_id]
             mask[selected_id] = False
@@ -409,6 +737,17 @@ class FalcunQueryStrategy(PseudoRandomizedQueryStrategy):
 
 
 class WeightedClusterQueryStrategy(EmbeddingBasedQueryStrategy):
+    """WeightedClusterQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on the weighted cluster method.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         super().__init__(seed=seed)
 
@@ -448,6 +787,17 @@ class WeightedClusterQueryStrategy(EmbeddingBasedQueryStrategy):
 
 
 class KMeansQueryStrategy(EmbeddingBasedQueryStrategy):
+    """KMeansQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on the KMeans method.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         super().__init__(seed=seed)
 
@@ -484,6 +834,17 @@ class KMeansQueryStrategy(EmbeddingBasedQueryStrategy):
 
 
 class ClusterMargin(EmbeddingBasedQueryStrategy):
+    """ClusterMargin
+
+    This class is used to sample instances from the pool of unlabeled instances based on the cluster margin method.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         super().__init__(seed=seed)
 
@@ -504,7 +865,6 @@ class ClusterMargin(EmbeddingBasedQueryStrategy):
         cluster_belongings = clustering.labels_[ids_to_retrieve]
         # sort cluster by size
         cluster_dict = {}
-        # get cluster sizes
         for i in set(cluster_belongings):
             cluster_dict[i] = len(np.argwhere(cluster_belongings == i))
         # sort by size
@@ -514,25 +874,18 @@ class ClusterMargin(EmbeddingBasedQueryStrategy):
         sorted_keys = keys[sorted_indices]
 
         selected_ids = []
-        upperbound = len(cluster_belongings)
-        ct = 0
+        mask = np.ones(len(cluster_belongings), dtype=bool)
+
         while len(selected_ids) < num_queries:
             for key in sorted_keys:
-                to_sample_from = np.argwhere(cluster_belongings == key)
+                to_sample_from = np.argwhere((cluster_belongings == key) & mask).flatten()
                 if len(to_sample_from) == 0:
-                    ct += 1
-                    if len(selected_ids) == num_queries:
-                        return selected_ids
-                    if ct == upperbound:
-                        return selected_ids
                     continue
                 else:
                     np.random.seed(self.seed)
-                    id = np.random.choice(to_sample_from[0])
+                    id = np.random.choice(to_sample_from)
                     selected_ids.append(ids_to_retrieve[id])
-                    cluster_belongings = np.delete(cluster_belongings, id)
-                    ids_to_retrieve = np.delete(ids_to_retrieve, id)
-                    ct += 1
+                    mask[id] = False
                     if len(selected_ids) == num_queries:
                         return selected_ids
 
@@ -540,6 +893,19 @@ class ClusterMargin(EmbeddingBasedQueryStrategy):
 
 
 class MaxEntropyQueryStrategy(EnsemblePseudoRandomizedQueryStrategy):
+    """MaxEntropyQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on the maximum entropy method.
+
+    Args:
+        seed (int): The seed for the random number generator.
+        ensemble_size (int): The size of the ensemble.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+        ensemble_size (int): The size of the ensemble.
+    """
+
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed, ensemble_size=25)
         self.ensemble_size = ensemble_size
@@ -554,28 +920,65 @@ class MaxEntropyQueryStrategy(EnsemblePseudoRandomizedQueryStrategy):
 
 
 class CoreSetQueryStrategy(EmbeddingBasedQueryStrategy):
+    """CoreSetQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on the core set method.
+
+    Args:
+        seed (int): The seed for the random number generator.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+    """
+
     def __init__(self, seed):
         super().__init__(seed=seed)
 
     def sample(self, learner, X_l, y_l, X_u, num_queries):
         X_u, X_l = self.compute_embedding(learner, X_l, y_l, X_u, transform_labeled=True)
         selected_ids = []
+        # Initialize the mask to all True, meaning all samples are initially available
+        mask = np.ones(X_u.shape[0], dtype=bool)
         for round in range(num_queries):
             active_set = X_l[:, np.newaxis, :]
             inactive_set = X_u[np.newaxis, :, :]
-            distances = np.linalg.norm(active_set - inactive_set, axis=2)
+
+            # Apply the mask to inactive_set
+            inactive_set_masked = inactive_set[:, mask, :]
+
+            distances = np.linalg.norm(active_set - inactive_set_masked, axis=2)
+
             # compute distance to closest neighbor
             dists = distances.min(axis=0)
             # get the id of the instance with the highest distance
             selected_id = np.argmax(dists)
-            selected_ids.append(selected_id)
-            # remove selected id
-            X_l = np.concatenate((X_l, X_u[selected_id].reshape(1, -1)))
-            X_u = np.delete(X_u, selected_id, axis=0)
+            original_selected_id = np.where(mask)[0][selected_id]
+
+            selected_ids.append(original_selected_id)
+
+            # remove selected id from the mask
+            mask[original_selected_id] = False
+
+            # add the selected instance to X_l
+            X_l = np.concatenate((X_l, X_u[original_selected_id].reshape(1, -1)))
+
         return selected_ids
 
 
 class BALDQueryStrategy(EnsemblePseudoRandomizedQueryStrategy):
+    """BALDQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on the BALD method.
+
+    Args:
+        seed (int): The seed for the random number generator.
+        ensemble_size (int): The size of the ensemble.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+        ensemble_size (int): The size of the ensemble.
+    """
+
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed, ensemble_size=25)
         self.ensemble_size = ensemble_size
@@ -598,6 +1001,19 @@ class BALDQueryStrategy(EnsemblePseudoRandomizedQueryStrategy):
 
 
 class PowerBALDQueryStrategy(EnsemblePseudoRandomizedQueryStrategy):
+    """PowerBALDQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on a power version of BALD.
+
+    Args:
+        seed (int): The seed for the random number generator.
+        ensemble_size (int): The size of the ensemble.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+        ensemble_size (int): The size of the ensemble.
+    """
+
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed, ensemble_size=25)
         self.ensemble_size = ensemble_size
@@ -620,6 +1036,20 @@ class PowerBALDQueryStrategy(EnsemblePseudoRandomizedQueryStrategy):
 
 
 class QBCVarianceRatioQueryStrategy(EnsemblePseudoRandomizedQueryStrategy):
+    """QBCVarianceRatioQueryStrategy
+
+    This class is used to sample instances from the pool of unlabeled instances based on QBC method with variance
+    ratio as measure of ensemble disagreement.
+
+    Args:
+        seed (int): The seed for the random number generator.
+        ensemble_size (int): The size of the ensemble.
+
+    Attributes:
+        seed (int): The seed for the random number generator.
+        ensemble_size (int): The size of the ensemble.
+    """
+
     def __init__(self, seed, ensemble_size):
         super().__init__(seed=seed, ensemble_size=25)
         self.ensemble_size = ensemble_size
@@ -641,5 +1071,3 @@ class QBCVarianceRatioQueryStrategy(EnsemblePseudoRandomizedQueryStrategy):
         variance_ratios = np.array(variance_ratios)
         vr_ids = np.argsort(variance_ratios)[-num_queries:]
         return vr_ids
-
-

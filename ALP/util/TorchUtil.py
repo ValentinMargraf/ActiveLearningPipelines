@@ -1,12 +1,24 @@
-from pytorch_tabnet.callbacks import Callback
+from ALP.util.pytorch_tabnet.callbacks import Callback
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
 import time
 
+from ALP.util.transformer import TransformerModel
 
 
 class TimeLimitCallback(Callback):
+    """TimeLimitCallback
+
+    This class is used for constraining TabNet classifier, such that it stops training after a certain time limit.
+
+    Args:
+        time_limit: int
+
+    Attributes:
+        time_limit: int
+        start_time: float
+    """
     def __init__(self, time_limit):
         self.time_limit = time_limit
         self.start_time = None
@@ -22,6 +34,23 @@ class TimeLimitCallback(Callback):
             return True  # This will stop training
 
 class TabPFNEmbedder(nn.Module):
+    """TabPFNEmbedder
+
+    This class is used to create a TabPFNEmbedder model. The model is used to encode the input data into a
+    lower-dimensional space.
+
+    Args:
+        X_train: numpy.ndarray
+        y_train: numpy.ndarray
+
+    Attributes:
+        clf: object
+        num_samples: int
+        encoder: object
+        fc1: object
+        drop: object
+        fc2: object
+    """
     def __init__(self, X_train, y_train):
         super().__init__()
         self.clf = None
@@ -40,7 +69,7 @@ class TabPFNEmbedder(nn.Module):
         return F.relu(self.fc2(x))
 
     def instantiate_tabpfn(self, X_train, y_train):
-        from ALP.util.transformer_prediction_interface import TabPFNClassifier
+        from tabpfn import TabPFNClassifier
         self.num_samples = X_train.shape[0]
         self.clf = TabPFNClassifier(device="cpu", N_ensemble_configurations=32)
         model = self.clf.model[2]
@@ -51,7 +80,6 @@ class TabPFNEmbedder(nn.Module):
         NHID = model.nhid
         NLAYERS = model.transformer_encoder.num_layers
         Y_ENCODER = model.y_encoder
-        from ALP.util.transformer import TransformerModel
         tf = TransformerModel(ENCODER, N_OUT, NINP, NHEAD, NHID, NLAYERS, y_encoder=Y_ENCODER)
         tf.transformer_encoder = model.transformer_encoder
         tf.decoder = model.decoder

@@ -6,9 +6,23 @@ from ALP.util.common import fullname
 
 
 class Ensemble:
-    """
-    An ensemble random forest classifiers that can be used for uncertainty quantification,
-    both aleatoric and epistemic, based on entropy.
+    """Ensemble
+
+    This class is used to create an ensemble of estimators. The ensemble can be used to predict the probabilities of the
+    ensemble members and the classes of the ensemble members.
+
+    Args:
+        estimator: object
+        num_estimators: int
+        max_neighbors: int (for k nearest neighbors)
+
+    Attributes:
+        estimator: object
+        num_estimators: int
+        max_neighbors: int
+        random_states: list
+        estimators_: list
+        learner_fqn: str
     """
 
     def __init__(self, estimator, num_estimators, max_neighbors):

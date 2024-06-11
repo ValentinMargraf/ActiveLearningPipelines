@@ -5,6 +5,36 @@ from ALP.pipeline.Oracle import Oracle
 
 
 class ALPEvaluator:
+    """ALPEvaluator
+
+    This class is used to evaluate an active learning pipeline (ALP) on a specific benchmark setting. This involves
+    fitting the ALP on the training data and then evaluating it on the test data.
+
+    Args:
+        benchmark_connector (BenchmarkConnector): The benchmark connector to use.
+        setting_name (str): The name of the setting to use.
+        learner_name (str): The name of the learner to use.
+        sampling_strategy_name (str): The name of the sampling strategy to use.
+        openml_id (int): The openml id of the benchmark scenario to use.
+        test_split_seed (int): The seed to use for splitting the test data.
+        train_split_seed (int): The seed to use for splitting the train data.
+        seed (int): The seed to use for the random number generator.
+
+    Attributes:
+        benchmark_connector (BenchmarkConnector): The benchmark connector to use.
+        observer_list (list): The list of observers to use.
+        setting (Setting): The setting to use.
+        scenario (Scenario): The scenario to use.
+        setting_name (str): The name of the setting to use.
+        learner_name (str): The name of the learner to use.
+        sampling_strategy_name (str): The name of the sampling strategy to use.
+        openml_id (int): The openml id of the benchmark scenario to use.
+        test_split_seed (int): The seed to use for splitting the test data.
+        train_split_seed (int): The seed to use for splitting the train data.
+        seed (int): The seed to use for the random number generator.
+
+    """
+
     def __init__(
         self,
         benchmark_connector: BenchmarkConnector,
@@ -32,7 +62,6 @@ class ALPEvaluator:
 
         # pipeline specifications
         self.learner_name = learner_name
-        self.learner_obj = None
         self.sampling_strategy_name = sampling_strategy_name
 
     def with_setting(self, setting_name: str):
@@ -41,10 +70,6 @@ class ALPEvaluator:
 
     def with_learner(self, learner_name: str):
         self.learner_name = learner_name
-        return self
-
-    def with_learner_obj(self, learner_obj):
-        self.learner_obj = learner_obj
         return self
 
     def with_sampling_strategy(self, sampling_strategy_name: str):
@@ -86,19 +111,16 @@ class ALPEvaluator:
         self._load_setting_and_scenario()
 
         X_l, y_l, X_u, y_u, X_test, y_test = self.scenario.get_data_split()
-
-        if self.learner_obj is None:
-            self.learner_obj = self.benchmark_connector.load_learner_by_name(self.learner_name)
-
+        learner = self.benchmark_connector.load_learner_by_name(self.learner_name)
         sampling_strategy = self.benchmark_connector.load_sampling_strategy_by_name(self.sampling_strategy_name)
 
         oracle = Oracle(X_u=X_u, y_u=y_u)
         alp = ActiveLearningPipeline(
-            learner=self.learner_obj,
-            query_strategy=sampling_strategy,
+            learner=learner,
+            sampling_strategy=sampling_strategy,
             num_iterations=self.setting.get_number_of_iterations(),
             observer_list=self.observer_list,
-            num_queries_per_iteration=self.setting.get_number_of_samples(),
+            num_samples_per_iteration=self.setting.get_number_of_samples(),
         )
         alp.active_fit(X_l=X_l, y_l=y_l, X_u=X_u, oracle=oracle)
 

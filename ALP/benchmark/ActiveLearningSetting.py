@@ -1,6 +1,32 @@
 class ActiveLearningSetting:
-    """
-    The active learning setting defines constraints and design choices of one active learning setup.
+    """Active Learning Setting
+
+    The active learning setting defines constraints and design choices of one active learning setup. This involves the
+    size of the labeled training data, the size of the test data, the number of iterations, the number of samples
+    queried per iteration, and a task-dependent factor in case a dynamic setting is considered (i.e. number of samples
+    queried depends on the number of classes of the given dataset).
+
+    Args:
+        setting_id (int): id of the setting in the database
+        setting_name (str): descriptor of the setting
+        setting_labeled_train_size (float): size of the labeled training size
+        setting_train_type (str): type of the size parameter: number of data points or share of the (training) dataset
+        setting_test_size (float): size of the test data (always given as a share of the full dataset)
+        number_of_iterations (int): number of iterations
+        number_of_samples (int): number of samples queried per iteration
+        factor (int): task-dependent factor
+
+    Attributes:
+        setting_id (int): id of the setting in the database
+        setting_name (str): descriptor of the setting
+        setting_labeled_train_size (float): size of the labeled training size
+        setting_train_type (str): type of the size parameter: number of data points or share of the (training) dataset
+        setting_test_size (float): size of the test data (always given as a share of the full dataset)
+        number_of_iterations (int): number of iterations
+        number_of_samples (int): number of samples queried per iteration
+        factor (int): task-dependent factor
+
+
     """
 
     def __init__(

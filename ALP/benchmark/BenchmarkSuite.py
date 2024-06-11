@@ -4,11 +4,8 @@ import openml
 
 
 class BenchmarkSuite(ABC):
-    """
-    A BenchmarkSuite is a collection of openml dataset ids to be paired with different active learning problems.
-    """
 
-    def __init__(self, name="ALPBench-BenchmarkSuite"):
+    def __init__(self, name="SALTBench-Suite"):
         self.name = name
 
     @abstractmethod
@@ -17,9 +14,18 @@ class BenchmarkSuite(ABC):
 
 
 class TabZillaBenchmarkSuite(BenchmarkSuite):
+    """TabZilla Benchmark Suite
+
+    This benchmark suite contains the dataset ids of the TabZilla benchmark suite
+    (https://github.com/naszilla/tabzilla).
+
+    Args:
+        None
+
+    Attributes:
+        name (str): name of the benchmark suite
     """
-    This is a benchmark suite consisting of the datasets that have been used in the TabZilla paper.
-    """
+
     def __init__(self):
         super().__init__(name="TabZilla")
 
@@ -58,14 +64,23 @@ class TabZillaBenchmarkSuite(BenchmarkSuite):
             41143,
             41147,
             41150,
-            41159
+            41159,
         ]
 
 
 class OpenMLBenchmarkSuite(BenchmarkSuite):
-    """
-    This benchmark suite allows for easy access to all datasets contained in an OpenML benchmark, which is identified
-    via a openml_benchmark_id.
+    """OpenML Benchmark Suite
+
+    This benchmark suite contains the dataset ids of the OpenML-CC18 benchmark suite
+    (https://openml.github.io/openml-python/main/examples/20_basic/simple_suites_tutorial.html).
+
+    Args:
+        openml_benchmark_id (int): id of the OpenML benchmark suite
+
+    Attributes:
+        openml_benchmark_id (int): id of the OpenML benchmark suite
+        name (str): name of the benchmark suite
+        openml_dataset_ids (list): list of OpenML dataset ids
     """
 
     def __init__(self, openml_benchmark_id, name="OpenML-BenchmarkSuite"):
@@ -81,12 +96,3 @@ class OpenMLBenchmarkSuite(BenchmarkSuite):
 
     def get_openml_dataset_ids(self):
         return self.openml_dataset_ids
-
-
-class OpenMLCC18BenchmarkSuite(OpenMLBenchmarkSuite):
-    """
-    This is a short-handle to access the OpenMLCC-18 benchmark suite from OpenML's team.
-    """
-    def __init__(self):
-        super().__init__(99, "OpenMLCC-18")
-

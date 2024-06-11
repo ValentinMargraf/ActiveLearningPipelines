@@ -10,8 +10,13 @@ benchmark_connector = MySQLBenchmarkConnector("host", "user", "password", "datab
 # load some default settings and algorithm choices
 ensure_default_setup(benchmark_connector)
 
-salt = ALPEvaluator(benchmark_connector=benchmark_connector, setting_name="small", openml_id=31,
-                    sampling_strategy_name="margin", learner_name="rf_gini")
+salt = ALPEvaluator(
+    benchmark_connector=benchmark_connector,
+    setting_name="small",
+    openml_id=31,
+    sampling_strategy_name="margin",
+    learner_name="rf_gini",
+)
 alp = salt.fit()
 
 # fit / predict and evaluate predictions

@@ -13,14 +13,18 @@ cd ActiveLearningPipelines
 conda create --name ALP python=3.10
 conda activate ALP
 
-# Install for usage
-pip install -r req.txt
+# Install for usage (without TabNet and TabPFN)
+pip install -r requirements.txt
+
+# OR
+# Install for usage (with TabNet and TabPFN)
+pip install -r requirements_full.txt
 
 # Install for development
 make install-dev
 ```
 
-Documentation at https://ValentinMargraf.github.io/ActiveLearningPipelines/main
+Documentation at https://activelearningpipelines.readthedocs.io/en/latest/
 
 
 # ⭐ Quickstart

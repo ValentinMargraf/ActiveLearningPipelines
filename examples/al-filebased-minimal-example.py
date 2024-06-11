@@ -1,6 +1,3 @@
-from tabpfn.scripts.transformer_prediction_interface import TabPFNClassifier
-
-from pytorch_tabnet.tab_model import TabNetClassifier
 from sklearn.metrics import accuracy_score
 
 from ALP.benchmark.BenchmarkConnector import DataFileBenchmarkConnector
@@ -13,16 +10,16 @@ benchmark_connector = DataFileBenchmarkConnector()
 # load some default settings and algorithm choices
 ensure_default_setup(benchmark_connector)
 
-alpeval = ALPEvaluator(
+salt = ALPEvaluator(
     benchmark_connector=benchmark_connector,
     setting_name="small",
     openml_id=31,
-    sampling_strategy_name="cluster_margin",
+    sampling_strategy_name="margin",
     learner_name="rf_gini",
 )
-alp = alpeval.fit()
+alp = salt.fit()
 
 # fit / predict and evaluate predictions
-X_test, y_test = alpeval.get_test_data()
+X_test, y_test = salt.get_test_data()
 y_hat = alp.predict(X=X_test)
 print("test acc", accuracy_score(y_test, y_hat))

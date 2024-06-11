@@ -52,8 +52,6 @@ default_sampling_strategies = {
 
 
 # import pytest
-
-
 SCENARIO_ID = 1
 OPENML_ID = 31
 TEST_SPLIT_SEED = 42
@@ -112,10 +110,10 @@ def test_pipeline_executions():
         print("current sampling strategy: ", sampling_strategy)
         ALP = ActiveLearningPipeline(
             learner=learner,
-            query_strategy=sampling_strategy,
+            sampling_strategy=sampling_strategy,
             init_budget=10,
             num_iterations=1,
-            num_queries_per_iteration=10,
+            num_samples_per_iteration=10,
         )
 
         oracle = Oracle(X_u, y_u)

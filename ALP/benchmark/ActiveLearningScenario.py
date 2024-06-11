@@ -10,6 +10,23 @@ from ALP.benchmark.ActiveLearningSetting import ActiveLearningSetting
 def create_dataset_split(
     X, y, test_split_seed, test_split_size: float, train_split_seed, train_split_size, train_split_type, factor
 ):
+    """Create dataset split.
+
+    Args:
+        X (numpy.ndarray): data
+        y (numpy.ndarray): labels
+        test_split_seed (int): seed for the test split
+        test_split_size (float): size of the test data
+        train_split_seed (int): seed for the train split
+        train_split_size (float): size of the labeled training data
+        train_split_type (str): type of the size parameter: number of data points or share of the (training) dataset
+        factor (int): task-dependent factor
+
+    Returns:
+        labeled_indices (list): indices of the labeled data
+        test_indices (list): indices of the test data
+    """
+
     # initialize list of indices
     indices = np.arange(0, len(X))
 
@@ -50,6 +67,33 @@ def create_dataset_split(
 
 
 class ActiveLearningScenario:
+    """Active Learning Scenario
+
+    The active learning scenario defines the data and the setting of one active learning setup.  The scenario is
+    initialized with the openml id of the dataset, the test split, train split and the seed for reproducibility, the
+    setting, and optionally labeled and test indices.
+
+    Args:
+        scenario_id (int): id of the scenario in the database
+        openml_id (int): id of the dataset on openml
+        test_split_seed (int): seed for the test split
+        train_split_seed (int): seed for the train split
+        seed (int): seed for reproducibility
+        setting (ActiveLearningSetting): active learning setting
+        labeled_indices (list): indices of the labeled data
+        test_indices (list): indices of the test data
+
+    Attributes:
+        scenario_id (int): id of the scenario in the database
+        openml_id (int): id of the dataset on openml
+        test_split_seed (int): seed for the test split
+        train_split_seed (int): seed for the train split
+        seed (int): seed for reproducibility
+        setting (ActiveLearningSetting): active learning setting
+        labeled_indices (list): indices of the labeled data
+        test_indices (list): indices of the test data
+
+    """
 
     def __init__(
         self,

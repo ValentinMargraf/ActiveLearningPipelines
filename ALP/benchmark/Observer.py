@@ -19,6 +19,21 @@ class Observer(ABC):
 
 
 class StatisticalPerformanceObserver(Observer, ABC):
+    """StatisticalPerformanceObserver
+
+    Observer class for statistical performance evaluation of the active learning process such as the distribution of
+    the labeled and selected data, and the model performance on the test data.
+
+    Args:
+        X_test (np.array): test data
+        y_test (np.array): test labels
+
+    Attributes:
+        X_test (np.array): test data
+        y_test (np.array): test labels
+        precision (int): precision of the floating point numbers
+    """
+
     precision = 8
 
     def __init__(self, X_test, y_test):
@@ -26,6 +41,22 @@ class StatisticalPerformanceObserver(Observer, ABC):
         self.y_test = y_test
 
     def compute_labeling_statistics(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red):
+        """
+        Compute the distribution of the data, which involves the ids of the selected data in each iteration, the
+        overall labeled and unlabeled data.
+
+        Args:
+            iteration (int): iteration number
+            X_u_selected (np.array): selected data
+            y_u_selected (np.array): selected labels
+            X_l_aug (np.array): labeled data
+            y_l_aug (np.array): labeled labels
+            X_u_red (np.array): unlabeled data
+
+        Returns:
+            eval_scores (dict): dictionary with the distribution of the labeled and selected data
+
+        """
         if len(y_u_selected) > 1:
             unique_values, counts = np.unique(np.array(y_u_selected), return_counts=True)
             selected_dist = dict(zip(unique_values, (counts / len(y_u_selected))))
@@ -50,6 +81,17 @@ class StatisticalPerformanceObserver(Observer, ABC):
         return eval_scores
 
     def compute_model_performances(self, iteration, model):
+        """
+        Compute the model performance on the test data, which involves the f1, precision, recall, log loss, accuracy,
+        and AUC scores.
+
+        Args:
+            iteration (int): iteration number
+            model (object): trained model
+
+        Returns:
+            eval_scores (dict): dictionary with the model performance on the test data
+        """
         eval_scores = {"iteration": iteration}
         y_hat = model.predict(self.X_test)
         y_hat_proba = model.predict_proba(self.X_test)
