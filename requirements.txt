@@ -1,5 +1,6 @@
 py-experimenter>=1.4.1
 mysql-connector-python>=8.3.0
 openml>=0.14.2
+pytest>=8.1.1
 scikit-learn>=1.2.2
 scikit-activeml>=0.4.1
