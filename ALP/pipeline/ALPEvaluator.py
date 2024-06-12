@@ -120,7 +120,7 @@ class ALPEvaluator:
             query_strategy=sampling_strategy,
             num_iterations=self.setting.get_number_of_iterations(),
             observer_list=self.observer_list,
-            num_samples_per_iteration=self.setting.get_number_of_samples(),
+            num_queries_per_iteration=self.setting.get_number_of_samples(),
         )
         alp.active_fit(X_l=X_l, y_l=y_l, X_u=X_u, oracle=oracle)
 

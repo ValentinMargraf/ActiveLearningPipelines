@@ -26,7 +26,7 @@ class ActiveLearningPipeline:
         init_budget: The budget for sampling data points with the initialization strategy.
         num_iterations: The number of active learning rounds to carry out alternating between learning and querying the
             oracle.
-        num_samples_per_iteration: The number of data points to select in every active learning iteration to be labeled
+        num_queries_per_iteration: The number of data points to select in every active learning iteration to be labeled
             by the oracle.
 
     Attributes:
@@ -39,7 +39,7 @@ class ActiveLearningPipeline:
         init_budget: The budget for sampling data points with the initialization strategy.
         num_iterations: The number of active learning rounds to carry out alternating between learning and querying the
             oracle.
-        num_samples_per_iteration: The number of data points to select in every active learning iteration to be labeled
+        num_queries_per_iteration: The number of data points to select in every active learning iteration to be labeled
             by the oracle.
     """
 
@@ -51,7 +51,7 @@ class ActiveLearningPipeline:
         observer_list: list() = None,
         init_budget: int = None,
         num_iterations=10,
-        num_samples_per_iteration=10,
+        num_queries_per_iteration=10,
     ):
         self.initializer = initializer
         self.learner = learner
@@ -63,7 +63,7 @@ class ActiveLearningPipeline:
         # the number of active learning rounds to carry out alternating between learning and querying the oracle
         self.num_iterations = num_iterations
         # the number of data points to select in every active learning iteration to be labeled by the oracle
-        self.num_samples_per_iteration = num_samples_per_iteration
+        self.num_queries_per_iteration = num_queries_per_iteration
 
     def active_fit(self, X_l, y_l, X_u, oracle):
         """
@@ -149,7 +149,7 @@ class ActiveLearningPipeline:
 
         for i in range(1, self.num_iterations + 1):
 
-            if self.num_samples_per_iteration > len(idx_available):
+            if self.num_queries_per_iteration > len(idx_available):
                 idx_query_orig = idx_available
                 all_data_used = True
 
@@ -160,7 +160,7 @@ class ActiveLearningPipeline:
                     X_l=X_l_aug,
                     y_l=y_l_aug,
                     X_u=X_u_red,
-                    num_samples=self.num_samples_per_iteration,
+                    num_queries=self.num_queries_per_iteration,
                 )
                 # get the original indices for X_u
                 idx_query_orig = idx_available[idx_query]
