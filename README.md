@@ -1,5 +1,6 @@
 [![License](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 [![Coverage Status](https://coveralls.io/repos/github/ValentinMargraf/ActiveLearningPipelines/badge.svg)](https://coveralls.io/github/ValentinMargraf/ActiveLearningPipelines)
+[![Tests](https://github.com/ValentinMargraf/ActiveLearningPipelines/actions/workflows/pytest.yml/badge.svg)](https://github.com/ValentinMargraf/ActiveLearningPipelines/actions/workflows/pytest.yml)
 [![Read the Docs](https://readthedocs.org/projects/shapiq/badge/?version=latest)](https://activelearningpipelines.readthedocs.io/en/latest/?badge=latest)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
