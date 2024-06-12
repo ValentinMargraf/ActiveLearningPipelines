@@ -8,7 +8,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 
 
-from ALP.benchmark.BenchmarkConnector import MySQLBenchmarkConnector
+from ALP.benchmark.BenchmarkConnector import BenchmarkConnector
 
 from ALP.pipeline.QueryStrategy import (
     BALDQueryStrategy,
@@ -36,7 +36,8 @@ from ALP.pipeline.QueryStrategy import (
     WeightedClusterQueryStrategy
 )
 
-def ensure_default_setup(dbbc: MySQLBenchmarkConnector):
+
+def ensure_default_setup(dbbc: BenchmarkConnector):
     """
     Ensures that the default settings, sampling strategies and learners are loaded into the database.
     This allows to later on load the default settings and strategies.
