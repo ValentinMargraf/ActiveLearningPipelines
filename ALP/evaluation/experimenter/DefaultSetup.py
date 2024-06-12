@@ -23,7 +23,7 @@ from ALP.pipeline.QueryStrategy import (
     MarginQueryStrategy,
     MaxEntropyQueryStrategy,
     MinMarginQueryStrategy,
-    MonteCarloEERStrategy,
+    MonteCarloEERLogLoss,
     MonteCarloEERMisclassification,
     PowerBALDQueryStrategy,
     PowerMarginQueryStrategy,
@@ -48,7 +48,7 @@ def ensure_default_setup(dbbc: MySQLBenchmarkConnector):
             "labeled_train_size": 30,
             "train_type": "absolute",
             "test_size": 0.33,
-            "number_of_samples": 10,
+            "number_of_queries": 10,
             "number_of_iterations": 20,
             "factor": None,
         },
@@ -57,7 +57,7 @@ def ensure_default_setup(dbbc: MySQLBenchmarkConnector):
             "labeled_train_size": 100,
             "train_type": "absolute",
             "test_size": 0.33,
-            "number_of_samples": 50,
+            "number_of_queries": 50,
             "number_of_iterations": 20,
             "factor": None,
         },
@@ -66,7 +66,7 @@ def ensure_default_setup(dbbc: MySQLBenchmarkConnector):
             "labeled_train_size": 300,
             "train_type": "absolute",
             "test_size": 0.33,
-            "number_of_samples": 200,
+            "number_of_queries": 200,
             "number_of_iterations": 20,
             "factor": None,
         },
@@ -75,7 +75,7 @@ def ensure_default_setup(dbbc: MySQLBenchmarkConnector):
             "labeled_train_size": 10,
             "train_type": "absolute",
             "test_size": 0.33,
-            "number_of_samples": 10,
+            "number_of_queries": 10,
             "number_of_iterations": 20,
             "factor": 5,
         },
@@ -84,7 +84,7 @@ def ensure_default_setup(dbbc: MySQLBenchmarkConnector):
             "labeled_train_size": 10,
             "train_type": "absolute",
             "test_size": 0.33,
-            "number_of_samples": 10,
+            "number_of_queries": 10,
             "number_of_iterations": 20,
             "factor": 20,
         },
@@ -92,7 +92,7 @@ def ensure_default_setup(dbbc: MySQLBenchmarkConnector):
     for setting in settings:
         dbbc.load_or_create_setting(**setting)
 
-    default_sampling_strategies = {
+    default_query_strategies = {
         "random": RandomQueryStrategy(42),
         "random_margin": RandomMarginQueryStrategy(42),
         "cluster_margin": ClusterMargin(42),
@@ -103,7 +103,7 @@ def ensure_default_setup(dbbc: MySQLBenchmarkConnector):
         "margin": MarginQueryStrategy(42),
         "max_entropy": MaxEntropyQueryStrategy(42, 10),
         "least_confident": LeastConfidentQueryStrategy(42),
-        "mc_logloss": MonteCarloEERStrategy(42),
+        "mc_logloss": MonteCarloEERLogLoss(42),
         "mc_misclass": MonteCarloEERMisclassification(42),
         "kmeans": KMeansQueryStrategy(42),
         "discrim": DiscriminativeQueryStrategy(42),
@@ -118,8 +118,8 @@ def ensure_default_setup(dbbc: MySQLBenchmarkConnector):
         "power_bald": PowerBALDQueryStrategy(42, 10),
     }
 
-    for k, obj in default_sampling_strategies.items():
-        dbbc.load_or_create_sampling_strategy(k, obj)
+    for k, obj in default_query_strategies.items():
+        dbbc.load_or_create_query_strategy(k, obj)
 
     default_learners = {
         "svm_lin": SVC(kernel="linear", probability=True),

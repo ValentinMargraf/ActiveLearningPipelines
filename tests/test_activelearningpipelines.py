@@ -7,6 +7,7 @@ from ALP.pipeline.Oracle import Oracle
 from ALP.pipeline.QueryStrategy import RandomQueryStrategy
 
 
+
 class DummyObserver(Observer):
     def __init__(self):
         self.data_logs = False

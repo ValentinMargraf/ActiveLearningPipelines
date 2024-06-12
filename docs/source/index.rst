@@ -18,7 +18,9 @@ Contents
    :maxdepth: 1
    :caption: TUTORIALS
 
-   notebooks/TODO
+   notebooks/test_active_learning_pipeline
+   notebooks/test_active_learning_pipeline_evaluator
+   notebooks/run_experiments
 
 .. toctree::
    :maxdepth: 2

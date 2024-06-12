@@ -13,7 +13,7 @@ class ActiveLearningSetting:
         setting_train_type (str): type of the size parameter: number of data points or share of the (training) dataset
         setting_test_size (float): size of the test data (always given as a share of the full dataset)
         number_of_iterations (int): number of iterations
-        number_of_samples (int): number of samples queried per iteration
+        number_of_queries (int): number of queries queried per iteration
         factor (int): task-dependent factor
 
     Attributes:
@@ -23,7 +23,7 @@ class ActiveLearningSetting:
         setting_train_type (str): type of the size parameter: number of data points or share of the (training) dataset
         setting_test_size (float): size of the test data (always given as a share of the full dataset)
         number_of_iterations (int): number of iterations
-        number_of_samples (int): number of samples queried per iteration
+        number_of_queries (int): number of queries queried per iteration
         factor (int): task-dependent factor
     """
 
@@ -35,7 +35,7 @@ class ActiveLearningSetting:
         setting_train_type,
         setting_test_size,
         number_of_iterations,
-        number_of_samples,
+        number_of_queries,
         factor,
     ):
         # id of the setting in the database
@@ -51,9 +51,10 @@ class ActiveLearningSetting:
         # number of iterations
         self.number_of_iterations = number_of_iterations
         # number of samples queried per iteration
-        self.number_of_samples = number_of_samples
+        self.number_of_queries = number_of_queries
         # task-dependent factor
         self.factor = factor
+
 
     def get_setting_id(self):
         """
@@ -97,11 +98,11 @@ class ActiveLearningSetting:
         """
         return self.number_of_iterations
 
-    def get_number_of_samples(self):
+    def get_number_of_queries(self):
         """
         Get the number of samples queried per iteration.
         """
-        return self.number_of_samples
+        return self.number_of_queries
 
     def __repr__(self):
         return "<ActiveLearningSetting> " + str(self.__dict__)

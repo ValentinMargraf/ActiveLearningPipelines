@@ -13,7 +13,7 @@ class BenchmarkConnector(ABC):
 
     This abstract class defines the interface for a benchmark connector. A benchmark connector is responsible for
     storing and loading all data related to the active learning benchmark. This includes the active learning setting and
-    scenario as well as the learner and sampling strategy with all used parameters. The data is stored in a database or
+    scenario as well as the learner and query strategy with all used parameters. The data is stored in a database or
     file and can be accessed by the respective methods of this class.
 
     """
@@ -52,7 +52,7 @@ class BenchmarkConnector(ABC):
 
     @abstractmethod
     def load_or_create_setting(
-        self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_samples, factor
+        self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_queries, factor
     ):
         """
         Abstract method that loads the setting with the specified parameters from the database. If the setting does
@@ -83,24 +83,24 @@ class BenchmarkConnector(ABC):
         pass
 
     @abstractmethod
-    def load_sampling_strategy_by_name(self, sampling_strategy_name):
+    def load_query_strategy_by_name(self, query_strategy_name):
         """
-        Abstract method that loads the sampling strategy with the specified name from the database.
-        """
-        pass
-
-    @abstractmethod
-    def load_sampling_strategy(self, sampling_strategy_id):
-        """
-        Abstract method that loads the sampling strategy with the specified ID from the database.
+        Abstract method that loads the query strategy with the specified name from the database.
         """
         pass
 
     @abstractmethod
-    def load_or_create_sampling_strategy(self, sampling_strategy_name, obj):
+    def load_query_strategy(self, query_strategy_id):
         """
-        Abstract method that loads the sampling strategy with the specified parameters from the database. If the
-        sampling strategy does not exist yet, it is created and then returned to the invoker.
+        Abstract method that loads the query strategy with the specified ID from the database.
+        """
+        pass
+
+    @abstractmethod
+    def load_or_create_query_strategy(self, query_strategy_name, obj):
+        """
+        Abstract method that loads the query strategy with the specified parameters from the database. If the
+        query strategy does not exist yet, it is created and then returned to the invoker.
         """
         pass
 
@@ -134,35 +134,35 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
     """Data File Benchmark Connector
 
     This class is an implementation of the BenchmarkConnector interface that stores all data in files. This involves
-    the Active Learning Setting and Scenario as well as the Learner and Sampling Strategy with all used parameters.
+    the Active Learning Setting and Scenario as well as the Learner and query Strategy with all used parameters.
     The data is stored in JSON files and can be accessed by the respective methods of this class.
 
     Args:
         learner_file (str): path to the file storing the learner data
-        sampling_strategy_file (str): path to the file storing the sampling strategy data
+        query_strategy_file (str): path to the file storing the query strategy data
         scenario_file (str): path to the file storing the scenario data
         setting_file (str): path to the file storing the setting data
 
     Attributes:
         learner_file (str): path to the file storing the learner data
-        sampling_strategy_file (str): path to the file storing the sampling strategy data
+        query_strategy_file (str): path to the file storing the query strategy data
         scenario_file (str): path to the file storing the scenario data
         setting_file (str): path to the file storing the setting data
 
     """
 
-    base_folder = "saltbench/"
+    base_folder = "alpbench/"
     learner_file = base_folder + "learner.json"
-    sampling_strategy_file = base_folder + "sampling_strategy.json"
+    query_strategy_file = base_folder + "query_strategy.json"
     scenario_file = base_folder + "scenario.json"
     setting_file = base_folder + "setting.json"
 
-    def __init__(self, learner_file=None, sampling_strategy_file=None, scenario_file=None, setting_file=None):
+    def __init__(self, learner_file=None, query_strategy_file=None, scenario_file=None, setting_file=None):
         self.learner_file = learner_file if learner_file is not None else DataFileBenchmarkConnector.learner_file
-        if sampling_strategy_file is not None:
-            self.sampling_strategy_file = sampling_strategy_file
+        if query_strategy_file is not None:
+            self.query_strategy_file = query_strategy_file
         else:
-            self.sampling_strategy_file = DataFileBenchmarkConnector.sampling_strategy_file
+            self.query_strategy_file = DataFileBenchmarkConnector.query_strategy_file
         self.scenario_file = scenario_file if scenario_file is not None else DataFileBenchmarkConnector.scenario_file
         self.setting_file = setting_file if setting_file is not None else DataFileBenchmarkConnector.setting_file
 
@@ -170,7 +170,7 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         import os
 
         os.makedirs(DataFileBenchmarkConnector.base_folder, exist_ok=True)
-        for file in [self.scenario_file, self.setting_file, self.learner_file, self.sampling_strategy_file]:
+        for file in [self.scenario_file, self.setting_file, self.learner_file, self.query_strategy_file]:
             if not os.path.isfile(file):
                 with open(file, "w") as f:
                     f.write("[]")
@@ -180,8 +180,8 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
             self.settings = json.load(f)
         with open(self.learner_file) as f:
             self.learners = json.load(f)
-        with open(self.sampling_strategy_file) as f:
-            self.sampling_strategies = json.load(f)
+        with open(self.query_strategy_file) as f:
+            self.query_strategies = json.load(f)
 
     def cleanup(self):
         self.dump()
@@ -191,9 +191,8 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
             (self.setting_file, self.settings),
             (self.scenario_file, self.scenarios),
             (self.learner_file, self.learners),
-            (self.sampling_strategy_file, self.sampling_strategies),
+            (self.query_strategy_file, self.query_strategies),
         ]
-
         for dd in dump_data:
             with open(dd[0], "w") as f:
                 json.dump(obj=dd[1], fp=f, indent=4)
@@ -293,12 +292,12 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         stored_setting = _fetch_data_of_descriptor(self.settings, {"setting_name": setting_name})
 
         if stored_setting is None:
-            raise BaseException("No setting could be found with ID " + setting_name)
+            raise BaseException("No setting could be found with name " + setting_name)
 
         return ActiveLearningSetting(**stored_setting)
 
     def load_or_create_setting(
-        self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_samples, factor
+        self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_queries, factor
     ):
         """
         This method checks whether the specified setting already exists. If so, it just fetches the data from the
@@ -310,7 +309,7 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
             train_type (str): type of training
             test_size (str): test size
             number_of_iterations (int): number of iterations
-            number_of_samples (int): number of samples
+            number_of_queries (int): number of queries
             factor (int): factor
 
         Returns:
@@ -322,7 +321,7 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
             "setting_train_type": train_type,
             "setting_test_size": test_size,
             "number_of_iterations": number_of_iterations,
-            "number_of_samples": number_of_samples,
+            "number_of_queries": number_of_queries,
             "factor": factor,
         }
 
@@ -415,86 +414,86 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
 
         return learner_descriptor["learner_name"], obj
 
-    def load_sampling_strategy_by_name(self, sampling_strategy_name):
+    def load_query_strategy_by_name(self, query_strategy_name):
         """
-        This method loads the sampling strategy with the specified name from the database.
+        This method loads the query strategy with the specified name from the database.
 
         Parameters:
-            sampling_strategy_name (str): name of the sampling strategy to load
+            query_strategy_name (str): name of the query strategy to load
 
         Returns:
-            object: the loaded sampling strategy
+            object: the loaded query strategy
         """
-        stored_sampling_strategy = _fetch_data_of_descriptor(
-            self.sampling_strategies, {"sampling_strategy_name": sampling_strategy_name}
+        stored_query_strategy = _fetch_data_of_descriptor(
+            self.query_strategies, {"query_strategy_name": query_strategy_name}
         )
 
-        if stored_sampling_strategy is None:
-            raise BaseException("No sampling strategy could be found with ID " + sampling_strategy_name)
+        if stored_query_strategy is None:
+            raise BaseException("No query strategy could be found with ID " + query_strategy_name)
 
         return instantiate_class_by_fqn(
-            stored_sampling_strategy["sampling_strategy_class"],
-            json.loads(stored_sampling_strategy["sampling_strategy_parameterization"]),
+            stored_query_strategy["query_strategy_class"],
+            json.loads(stored_query_strategy["query_strategy_parameterization"]),
         )
 
-    def load_sampling_strategy(self, sampling_strategy_id):
+    def load_query_strategy(self, query_strategy_id):
         """
-        This method loads the sampling strategy with the specified ID from the database.
+        This method loads the query strategy with the specified ID from the database.
 
         Parameters:
-            sampling_strategy_id (int): ID of the sampling strategy to load
+            query_strategy_id (int): ID of the query strategy to load
 
         Returns:
-            object: the loaded sampling strategy
+            object: the loaded query strategy
         """
-        stored_sampling_strategy = _fetch_data_of_descriptor(
-            self.sampling_strategies, {"sampling_strategy_id": sampling_strategy_id}
+        stored_query_strategy = _fetch_data_of_descriptor(
+            self.query_strategies, {"query_strategy_id": query_strategy_id}
         )
 
-        if stored_sampling_strategy is None:
-            raise BaseException("No sampling strategy could be found with ID " + str(sampling_strategy_id))
+        if stored_query_strategy is None:
+            raise BaseException("No query strategy could be found with ID " + str(query_strategy_id))
 
         return instantiate_class_by_fqn(
-            stored_sampling_strategy["sampling_strategy_class"],
-            json.loads(stored_sampling_strategy["sampling_strategy_parameterization"]),
+            stored_query_strategy["query_strategy_class"],
+            json.loads(stored_query_strategy["query_strategy_parameterization"]),
         )
 
-    def load_or_create_sampling_strategy(self, sampling_strategy_name, obj):
+    def load_or_create_query_strategy(self, query_strategy_name, obj):
         """
-        This method checks whether the specified sampling strategy already exists in the database. If not, the specified
-        sampling strategy including its parameterization is added to the database and then also returned to the invoker.
+        This method checks whether the specified query strategy already exists in the database. If not, the specified
+        query strategy including its parameterization is added to the database and then also returned to the invoker.
 
         Parameters:
-            sampling_strategy_name (str): name of the sampling strategy
-            obj (object): the sampling strategy to load or create
+            query_strategy_name (str): name of the query strategy
+            obj (object): the query strategy to load or create
 
         Returns:
-            object: the loaded or created sampling strategy
+            object: the loaded or created query strategy
         """
-        sampling_strategy_descriptor = {
-            "sampling_strategy_class": fullname(obj),
-            "sampling_strategy_parameterization": json.dumps(obj.get_params()),
+        query_strategy_descriptor = {
+            "query_strategy_class": fullname(obj),
+            "query_strategy_parameterization": json.dumps(obj.get_params()),
         }
-        stored_sampling_strategy = _fetch_data_of_descriptor(self.sampling_strategies, sampling_strategy_descriptor)
+        stored_query_strategy = _fetch_data_of_descriptor(self.query_strategies, query_strategy_descriptor)
 
         # check whether the specified setting already exists. if so, fetch its id from the database and return an
         # instance of that setting
 
-        if stored_sampling_strategy is None:
+        if stored_query_strategy is None:
             # The specified setting does not yet exist so create it in the database and then return it to the invoker.
-            sampling_strategy_descriptor["sampling_strategy_name"] = sampling_strategy_name
-            self.sampling_strategies += [sampling_strategy_descriptor]
+            query_strategy_descriptor["query_strategy_name"] = query_strategy_name
+            self.query_strategies += [query_strategy_descriptor]
         else:
-            sampling_strategy_descriptor["sampling_strategy_name"] = stored_sampling_strategy["sampling_strategy_name"]
+            query_strategy_descriptor["query_strategy_name"] = stored_query_strategy["query_strategy_name"]
 
-        return sampling_strategy_descriptor["sampling_strategy_name"], obj
+        return query_strategy_descriptor["query_strategy_name"], obj
 
 
 class MySQLBenchmarkConnector(BenchmarkConnector):
     """MySQL Benchmark Connector
 
     This class is an implementation of the BenchmarkConnector interface that stores all data in a MySQL database. This
-    involves the Active Learning Setting and Scenario as well as the Learner and Sampling Strategy with all used
+    involves the Active Learning Setting and Scenario as well as the Learner and query Strategy with all used
     parameters. The data is stored in MySQL tables and can be accessed by the respective methods of this class.
 
     Args:
@@ -514,13 +513,13 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         scenario_table (str): name of the table storing the scenarios
         setting_table (str): name of the table storing the settings
         learner_table (str): name of the table storing the learners
-        sampling_strategy_table (str): name of the table storing the sampling strategies
+        query_strategy_table (str): name of the table storing the query strategies
     """
 
     scenario_table = "salt_scenario"
     setting_table = "salt_setting"
     learner_table = "salt_learner"
-    sampling_strategy_table = "salt_sampling_strategy"
+    query_strategy_table = "salt_query_strategy"
 
     def __init__(self, host, user, password, database, use_ssl):
         super().__init__()
@@ -539,7 +538,7 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
             f"setting_id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY, "
             f"setting_name VARCHAR(250) UNIQUE, setting_labeled_train_size VARCHAR(50), "
             f"setting_train_type VARCHAR(250), setting_test_size VARCHAR(50), "
-            f"number_of_iterations INT(10), number_of_samples INT(10), factor INT(10))"
+            f"number_of_iterations INT(10), number_of_queries INT(10), factor INT(10))"
         )
         scenario_table_query = (
             f"CREATE TABLE IF NOT EXISTS {MySQLBenchmarkConnector.scenario_table} ("
@@ -553,16 +552,16 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
             f"learner_name VARCHAR(100) UNIQUE, learner_class VARCHAR(250), "
             f"learner_parameterization TEXT)"
         )
-        sampling_strategy_table_q = (
-            f"CREATE TABLE IF NOT EXISTS {MySQLBenchmarkConnector.sampling_strategy_table}"
-            f" (sampling_strategy_id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY, "
-            f"sampling_strategy_name VARCHAR(100) UNIQUE,"
-            f"sampling_strategy_class VARCHAR(250), "
-            f"sampling_strategy_parameterization TEXT)"
+        query_strategy_table_q = (
+            f"CREATE TABLE IF NOT EXISTS {MySQLBenchmarkConnector.query_strategy_table}"
+            f" (query_strategy_id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY, "
+            f"query_strategy_name VARCHAR(100) UNIQUE,"
+            f"query_strategy_class VARCHAR(250), "
+            f"query_strategy_parameterization TEXT)"
         )
 
         cursor = self.con.cursor()
-        for q in [setting_table_query, scenario_table_query, learner_table_query, sampling_strategy_table_q]:
+        for q in [setting_table_query, scenario_table_query, learner_table_query, query_strategy_table_q]:
             cursor.execute(q)
 
     def close(self):
@@ -685,7 +684,7 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
             raise Exception("Setting with name " + str(setting_name) + " could not be found.")
 
     def load_or_create_setting(
-        self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_samples, factor
+        self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_queries, factor
     ):
         """
         This method checks whether the specified setting already exists. If so, it just fetches the data from the
@@ -698,7 +697,7 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
             train_type (str): type of training
             test_size (str): test size
             number_of_iterations (int): number of iterations
-            number_of_samples (int): number of samples
+            number_of_queries (int): number of queries
             factor (int): factor
 
         Returns:
@@ -710,7 +709,7 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
             "setting_train_type": train_type,
             "setting_test_size": test_size,
             "number_of_iterations": number_of_iterations,
-            "number_of_samples": number_of_samples,
+            "number_of_queries": number_of_queries,
             "factor": factor,
         }
 
@@ -740,7 +739,7 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
             setting_train_type=train_type,
             setting_labeled_train_size=labeled_train_size,
             number_of_iterations=number_of_iterations,
-            number_of_samples=number_of_samples,
+            number_of_queries=number_of_queries,
             factor=factor,
         )
 
@@ -825,76 +824,76 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
 
         return learner_descriptor["learner_name"], obj
 
-    def load_sampling_strategy_by_name(self, sampling_strategy_name):
+    def load_query_strategy_by_name(self, query_strategy_name):
         """
-        This method loads the sampling strategy with the specified name from the database.
+        This method loads the query strategy with the specified name from the database.
 
         Parameters:
-            sampling_strategy_name (str): name of the sampling strategy to load
+            query_strategy_name (str): name of the query strategy to load
 
         Returns:
-            object: the loaded sampling strategy
+            object: the loaded query strategy
         """
         query = format_select_query(
-            MySQLBenchmarkConnector.sampling_strategy_table, {"sampling_strategy_name": sampling_strategy_name}
+            MySQLBenchmarkConnector.query_strategy_table, {"query_strategy_name": query_strategy_name}
         )
         cursor = self.con.cursor(buffered=True, dictionary=True)
         cursor.execute(query)
         res = cursor.fetchall()
         if len(res) > 0:
-            sampling_strategy_data = res[0]
+            query_strategy_data = res[0]
             return instantiate_class_by_fqn(
-                sampling_strategy_data["sampling_strategy_class"],
-                json.loads(sampling_strategy_data["sampling_strategy_parameterization"]),
+                query_strategy_data["query_strategy_class"],
+                json.loads(query_strategy_data["query_strategy_parameterization"]),
             )
         else:
-            raise Exception("Sampling strategy with name " + str(sampling_strategy_name) + " unknown")
+            raise Exception("query strategy with name " + str(query_strategy_name) + " unknown")
 
-    def load_sampling_strategy(self, sampling_strategy_id):
+    def load_query_strategy(self, query_strategy_id):
         """
-        This method loads the sampling strategy with the specified ID from the database.
+        This method loads the query strategy with the specified ID from the database.
 
         Parameters:
-            sampling_strategy_id (int): ID of the sampling strategy to load
+            query_strategy_id (int): ID of the query strategy to load
 
         Returns:
-            object: the loaded sampling strategy
+            object: the loaded query strategy
         """
         query = format_select_query(
-            MySQLBenchmarkConnector.sampling_strategy_table, {"sampling_strategy_id": sampling_strategy_id}
+            MySQLBenchmarkConnector.query_strategy_table, {"query_strategy_id": query_strategy_id}
         )
         cursor = self.con.cursor(buffered=True, dictionary=True)
         cursor.execute(query)
         res = cursor.fetchall()
         if len(res) > 0:
-            sampling_strategy_data = res[0]
+            query_strategy_data = res[0]
             return instantiate_class_by_fqn(
-                sampling_strategy_data["sampling_strategy_class"],
-                json.loads(sampling_strategy_data["sampling_strategy_parameterization"]),
+                query_strategy_data["query_strategy_class"],
+                json.loads(query_strategy_data["query_strategy_parameterization"]),
             )
         else:
-            raise Exception("Sampling strategy with ID " + str(sampling_strategy_id) + " unknown")
+            raise Exception("query strategy with ID " + str(query_strategy_id) + " unknown")
 
-    def load_or_create_sampling_strategy(self, sampling_strategy_name, obj):
+    def load_or_create_query_strategy(self, query_strategy_name, obj):
         """
-        This method checks whether the specified sampling strategy already exists in the database. If not, the specified
-        sampling strategy including its parameterization is added to the database and then also returned to the invoker.
+        This method checks whether the specified query strategy already exists in the database. If not, the specified
+        query strategy including its parameterization is added to the database and then also returned to the invoker.
 
         Parameters:
-            sampling_strategy_name (str): name of the sampling strategy
-            obj (object): the sampling strategy to load or create
+            query_strategy_name (str): name of the query strategy
+            obj (object): the query strategy to load or create
 
         Returns:
-            object: the loaded or created sampling strategy
+            object: the loaded or created query strategy
         """
-        sampling_strategy_descriptor = {
-            "sampling_strategy_class": fullname(obj),
-            "sampling_strategy_parameterization": json.dumps(obj.get_params()),
+        query_strategy_descriptor = {
+            "query_strategy_class": fullname(obj),
+            "query_strategy_parameterization": json.dumps(obj.get_params()),
         }
 
         # check whether the specified setting already exists. if so, fetch its id from the database and return an
         # instance of that setting
-        query_check = format_select_query(MySQLBenchmarkConnector.sampling_strategy_table, sampling_strategy_descriptor)
+        query_check = format_select_query(MySQLBenchmarkConnector.query_strategy_table, query_strategy_descriptor)
         cursor = self.con.cursor(buffered=True, dictionary=True)
         cursor.execute(query_check)
         res_check = cursor.fetchall()
@@ -902,21 +901,21 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
 
         if len(res_check) < 1:
             # The specified setting does not yet exist so create it in the database and then return it to the invoker.
-            sampling_strategy_descriptor["sampling_strategy_name"] = sampling_strategy_name
-            query = format_insert_query(MySQLBenchmarkConnector.sampling_strategy_table, sampling_strategy_descriptor)
+            query_strategy_descriptor["query_strategy_name"] = query_strategy_name
+            query = format_insert_query(MySQLBenchmarkConnector.query_strategy_table, query_strategy_descriptor)
             cursor = self.con.cursor()
             cursor.execute(query)
             self.con.commit()
         else:
-            sampling_strategy_descriptor["sampling_strategy_name"] = res_check[0]["sampling_strategy_name"]
+            query_strategy_descriptor["query_strategy_name"] = res_check[0]["query_strategy_name"]
 
-        return sampling_strategy_descriptor["sampling_strategy_name"], obj
+        return query_strategy_descriptor["query_strategy_name"], obj
 
 
 class CustomEncoder(json.JSONEncoder):
     """CustomEncoder
 
-    This class is a custom JSON encoder that is used to encode the parameters of a learner or sampling strategy.
+    This class is a custom JSON encoder that is used to encode the parameters of a learner or query strategy.
     """
 
     def default(self, obj):
