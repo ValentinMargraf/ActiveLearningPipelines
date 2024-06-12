@@ -21,7 +21,7 @@ class ActiveLearningPipeline:
         query_strategy: The query strategy used to select data points from the unlabeled dataset to be labeled by
             the oracle.
         initializer: The initializer used to select data points from the unlabeled dataset to be labeled by the oracle
-            in the first iteration.
+            in the first iterations.
         observer_list: A list of observers that are used to log the data and model at each iteration.
         init_budget: The budget for sampling data points with the initialization strategy.
         num_iterations: The number of active learning rounds to carry out alternating between learning and querying the
@@ -66,6 +66,22 @@ class ActiveLearningPipeline:
         self.num_samples_per_iteration = num_samples_per_iteration
 
     def active_fit(self, X_l, y_l, X_u, oracle):
+        """
+        Fits the active learning pipeline. This involves fitting the learner on the current labeled data,
+        querying instances from the pool of unlabeled data, forwarding them to the oracle for labeling,
+        updating the labeled data with the queried instances and their corresponding labels and repeating the process
+        for the given number of iterations. The performances and labeling statistics are logged at each iteration.
+
+        Parameters:
+            X_l (np.ndarray): The labeled data.
+            y_l (np.ndarray): The labels of the labeled data.
+            X_u (np.ndarray): The unlabeled data.
+            oracle (Oracle): The oracle used to query the true labels of the data.
+
+        Returns:
+            None
+        """
+
         # select data points from X_u to sample additional data points for initialization (i.e., uninformed) and remove
         # the sampled data points from the unlabeled dataset
         idx_available = np.arange(0, len(X_u))
@@ -212,4 +228,12 @@ class ActiveLearningPipeline:
                     o.log_model({"model_dict": json.dumps(observer_model)})
 
     def predict(self, X):
+        """Lets the learner predict on the given data.
+
+        Parameters:
+            X (np.ndarray): The data to predict on.
+
+        Returns:
+            np.ndarray: The predictions of the learner on the given data.
+        """
         return self.learner.predict(X)

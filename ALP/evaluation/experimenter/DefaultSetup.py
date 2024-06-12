@@ -13,35 +13,33 @@ from ALP.benchmark.BenchmarkConnector import MySQLBenchmarkConnector
 from ALP.pipeline.QueryStrategy import (
     BALDQueryStrategy,
     ClusterMargin,
-    CoreSetSampling,
-    DiscriminativeSampling,
-    EntropySampling,
-    EpistemicUncertaintySamplingStrategy,
-    FalcunSampling,
-    KMeansSampling,
-    LeastConfidentSampling,
-    MarginSampling,
-    MaxEntropySampling,
-    MinMarginSampling,
-    MonteCarloEERLogLoss,
+    CoreSetQueryStrategy,
+    DiscriminativeQueryStrategy,
+    EntropyQueryStrategy,
+    EpistemicUncertaintyQueryStrategy,
+    FalcunQueryStrategy,
+    KMeansQueryStrategy,
+    LeastConfidentQueryStrategy,
+    MarginQueryStrategy,
+    MaxEntropyQueryStrategy,
+    MinMarginQueryStrategy,
+    MonteCarloEERStrategy,
     MonteCarloEERMisclassification,
-    PowerBALDSampling,
-    PowerMarginSampling,
-    QBCVarianceRatioSampling,
-    QueryByCommitteeEntropySampling,
-    QueryByCommitteeKLSampling,
-    RandomMarginSampling,
-    RandomSamplingStrategy,
-    TypicalClusterSampling,
-    WeightedClusterSampling,
+    PowerBALDQueryStrategy,
+    PowerMarginQueryStrategy,
+    QBCVarianceRatioQueryStrategy,
+    QueryByCommitteeEntropyQueryStrategy,
+    QueryByCommitteeKLQueryStrategy,
+    RandomMarginQueryStrategy,
+    RandomQueryStrategy,
+    TypicalClusterQueryStrategy,
+    WeightedClusterQueryStrategy
 )
-
 
 def ensure_default_setup(dbbc: MySQLBenchmarkConnector):
     """
-    Ensure that the default settings, sampling strategies and learners are loaded into the database.
+    Ensures that the default settings, sampling strategies and learners are loaded into the database.
     This allows to later on load the default settings and strategies.
-
     """
     # init settings
     settings = [
@@ -95,29 +93,29 @@ def ensure_default_setup(dbbc: MySQLBenchmarkConnector):
         dbbc.load_or_create_setting(**setting)
 
     default_sampling_strategies = {
-        "random": RandomSamplingStrategy(42),
-        "random_margin": RandomMarginSampling(42),
+        "random": RandomQueryStrategy(42),
+        "random_margin": RandomMarginQueryStrategy(42),
         "cluster_margin": ClusterMargin(42),
-        "core_set": CoreSetSampling(42),
-        "epistemic": EpistemicUncertaintySamplingStrategy(42),
-        "entropy": EntropySampling(42),
-        "falcun": FalcunSampling(42),
-        "margin": MarginSampling(42),
-        "max_entropy": MaxEntropySampling(42, 10),
-        "least_confident": LeastConfidentSampling(42),
-        "mc_logloss": MonteCarloEERLogLoss(42),
+        "core_set": CoreSetQueryStrategy(42),
+        "epistemic": EpistemicUncertaintyQueryStrategy(42),
+        "entropy": EntropyQueryStrategy(42),
+        "falcun": FalcunQueryStrategy(42),
+        "margin": MarginQueryStrategy(42),
+        "max_entropy": MaxEntropyQueryStrategy(42, 10),
+        "least_confident": LeastConfidentQueryStrategy(42),
+        "mc_logloss": MonteCarloEERStrategy(42),
         "mc_misclass": MonteCarloEERMisclassification(42),
-        "kmeans": KMeansSampling(42),
-        "discrim": DiscriminativeSampling(42),
-        "qbc_entropy": QueryByCommitteeEntropySampling(42, 10),
-        "qbc_kl": QueryByCommitteeKLSampling(42, 10),
-        "bald": BALDSampling(42, 10),
-        "power_margin": PowerMarginSampling(42),
-        "min_margin": MinMarginSampling(42, 10),
-        "typ_cluster": TypicalClusterSampling(42),
-        "weighted_cluster": WeightedClusterSampling(42),
-        "qbc_variance_ratio": QBCVarianceRatioSampling(42, 10),
-        "power_bald": PowerBALDSampling(42, 10),
+        "kmeans": KMeansQueryStrategy(42),
+        "discrim": DiscriminativeQueryStrategy(42),
+        "qbc_entropy": QueryByCommitteeEntropyQueryStrategy(42, 10),
+        "qbc_kl": QueryByCommitteeKLQueryStrategy(42, 10),
+        "bald": BALDQueryStrategy(42, 10),
+        "power_margin": PowerMarginQueryStrategy(42),
+        "min_margin": MinMarginQueryStrategy(42, 10),
+        "typ_cluster": TypicalClusterQueryStrategy(42),
+        "weighted_cluster": WeightedClusterQueryStrategy(42),
+        "qbc_variance_ratio": QBCVarianceRatioQueryStrategy(42, 10),
+        "power_bald": PowerBALDQueryStrategy(42, 10),
     }
 
     for k, obj in default_sampling_strategies.items():

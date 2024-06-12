@@ -10,7 +10,11 @@ from ALP.benchmark.ActiveLearningSetting import ActiveLearningSetting
 def create_dataset_split(
     X, y, test_split_seed, test_split_size: float, train_split_seed, train_split_size, train_split_type, factor
 ):
-    """Create dataset split.
+    """This method creates a split of the data into labeled, unlabeled and test data. The type of the split can be
+    either absolute (i.e., a fixed number of labeled data points) or relative (i.e., a fixed share of the training
+    data). The split is stratified according to the labels. The labeled data is guaranteed to contain at least one
+    instance of each class. Further, if a factor is given, the number of labeled data points is determined by the
+    number of classes times the factor.
 
     Args:
         X (numpy.ndarray): data
@@ -148,36 +152,66 @@ class ActiveLearningScenario:
             )
 
     def get_scenario_id(self):
+        """
+        Get the scenario id.
+        """
         return self.scenario_id
 
     def get_openml_id(self):
+        """
+        Get the openml id.
+        """
         return self.openml_id
 
     def get_setting(self):
+        """
+        Get the setting.
+        """
         return self.setting
 
     def get_seed(self):
+        """
+        Get the seed.
+        """
         return self.seed
 
     def get_labeled_instances(self):
+        """
+        Get the labeled instances.
+        """
         return self.labeled_indices
 
     def get_test_indices(self):
+        """
+        Get the test indices.
+        """
         return self.test_indices
 
     def get_labeled_train_data(self):
+        """
+        Get the labeled training data.
+        """
         return self.X[self.labeled_indices], self.y[self.labeled_indices]
 
     def get_unlabeled_train_data(self):
+        """
+        Get the unlabeled training data (X and y).
+        """
         combined_train_labeled_test = self.labeled_indices + self.test_indices
         mask = np.array([True] * len(self.X))
         mask[combined_train_labeled_test] = False
         return self.X[mask], self.y[mask]
 
     def get_test_data(self):
+        """
+        Get the test data.
+        """
         return self.X[self.test_indices], self.y[self.test_indices]
 
     def get_data_split(self):
+        """
+        Get labeled, unlabeled and test data.
+        """
         X_l, y_l = self.get_labeled_train_data()
         X_u, y_u = self.get_unlabeled_train_data()
         X_test, y_test = self.get_test_data()

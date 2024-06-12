@@ -9,57 +9,114 @@ from ALP.util.common import format_insert_query, format_select_query, fullname, 
 
 
 class BenchmarkConnector(ABC):
+    """Benchmark Connector
+
+    This abstract class defines the interface for a benchmark connector. A benchmark connector is responsible for
+    storing and loading all data related to the active learning benchmark. This includes the active learning setting and
+    scenario as well as the learner and sampling strategy with all used parameters. The data is stored in a database or
+    file and can be accessed by the respective methods of this class.
+
+    """
+
     def __init__(self):
         pass
 
     @abstractmethod
     def load_scenario(self, scenario_id: int):
+        """
+        Abstract method that loads the scenario with the specified ID from the database.
+        """
         pass
 
     @abstractmethod
     def load_or_create_scenario(self, openml_id, test_split_seed, train_split_seed, seed, setting_id):
+        """
+        Abstract method that loads the scenario with the specified parameters from the database. If the scenario does
+        not exist yet, it is created and then returned to the invoker.
+        """
         pass
 
     @abstractmethod
     def load_setting(self, setting_id: int):
+        """
+        Abstract method that loads the setting with the specified ID from the database.
+        """
         pass
 
     @abstractmethod
     def load_setting_by_name(self, setting_name):
+        """
+        Abstract method that loads the setting with the specified name from the database.
+        """
         pass
 
     @abstractmethod
     def load_or_create_setting(
         self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_samples, factor
     ):
+        """
+        Abstract method that loads the setting with the specified parameters from the database. If the setting does
+        not exist yet, it is created and then returned to the invoker.
+        """
         pass
 
     @abstractmethod
     def load_learner_by_name(self, learner_name):
+        """
+        Abstract method that loads the learner with the specified name from the database.
+        """
         pass
 
     @abstractmethod
     def load_learner(self, learner_id: int):
+        """
+        Abstract method that loads the learner with the specified ID from the database.
+        """
         pass
 
     @abstractmethod
     def load_or_create_learner(self, learner_name, obj):
+        """
+        Abstract method that loads the learner with the specified parameters from the database. If the learner does
+        not exist yet, it is created and then returned to the invoker.
+        """
         pass
 
     @abstractmethod
     def load_sampling_strategy_by_name(self, sampling_strategy_name):
+        """
+        Abstract method that loads the sampling strategy with the specified name from the database.
+        """
         pass
 
     @abstractmethod
     def load_sampling_strategy(self, sampling_strategy_id):
+        """
+        Abstract method that loads the sampling strategy with the specified ID from the database.
+        """
         pass
 
     @abstractmethod
     def load_or_create_sampling_strategy(self, sampling_strategy_name, obj):
+        """
+        Abstract method that loads the sampling strategy with the specified parameters from the database. If the
+        sampling strategy does not exist yet, it is created and then returned to the invoker.
+        """
         pass
 
 
 def _fetch_data_of_descriptor(data, descriptor: dict):
+    """
+    This method fetches the data from the specified list that matches the specified descriptor. The descriptor is a
+    dictionary that contains key-value pairs that must match the data in order to be fetched.
+
+    Parameters:
+        data (list): list of dictionaries that contain the data
+        descriptor (dict): dictionary that contains the key-value pairs that must match the data
+
+    Returns:
+        dict: the data that matches the descriptor
+    """
     fetched_entry = None
     for entry in data:
         does_match = True
@@ -142,6 +199,15 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
                 json.dump(obj=dd[1], fp=f, indent=4)
 
     def load_scenario(self, scenario_id: int):
+        """
+        This method loads the scenario with the specified ID from the database.
+
+        Parameters:
+            scenario_id (int): ID of the scenario to load
+
+        Returns:
+            ActiveLearningScenario: the loaded scenario
+        """
         stored_scenario = _fetch_data_of_descriptor(self.scenarios, {"scenario_id": scenario_id})
         if stored_scenario is None:
             raise BaseException("No scenario could be found with ID " + str(scenario_id))
@@ -152,6 +218,20 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         return ActiveLearningScenario(**stored_scenario)
 
     def load_or_create_scenario(self, openml_id, test_split_seed, train_split_seed, seed, setting_id):
+        """
+        This method loads the scenario with the specified parameters from the database. If the scenario does not exist
+        yet, it is created and then returned to the invoker.
+
+        Parameters:
+            openml_id (int): ID of the openml dataset
+            test_split_seed (int): seed for the test split
+            train_split_seed (int): seed for the train split
+            seed (int): seed for the scenario
+            setting_id (int): ID of the setting
+
+        Returns:
+            ActiveLearningScenario: the loaded or created scenario
+        """
         descriptor = {
             "openml_id": openml_id,
             "test_split_seed": test_split_seed,
@@ -184,6 +264,15 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
             return ActiveLearningScenario(**descriptor)
 
     def load_setting(self, setting_id):
+        """
+        This method loads the setting with the specified ID from the database.
+
+        Parameters:
+            setting_id (int): ID of the setting to load
+
+        Returns:
+            ActiveLearningSetting: the loaded setting
+        """
         stored_setting = _fetch_data_of_descriptor(self.settings, {"setting_id": setting_id})
 
         if stored_setting is None:
@@ -192,6 +281,15 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         return ActiveLearningSetting(**stored_setting)
 
     def load_setting_by_name(self, setting_name):
+        """
+        This method loads the setting with the specified name from the database.
+
+        Parameters:
+            setting_name (str): name of the setting to load
+
+        Returns:
+            ActiveLearningSetting: the loaded setting
+        """
         stored_setting = _fetch_data_of_descriptor(self.settings, {"setting_name": setting_name})
 
         if stored_setting is None:
@@ -202,6 +300,22 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
     def load_or_create_setting(
         self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_samples, factor
     ):
+        """
+        This method checks whether the specified setting already exists. If so, it just fetches the data from the
+        database and returns an instance. If not, the specified setting is added to the database and then also returned.
+
+        Parameters:
+            name (str): name of the setting
+            labeled_train_size (str): labeled training size
+            train_type (str): type of training
+            test_size (str): test size
+            number_of_iterations (int): number of iterations
+            number_of_samples (int): number of samples
+            factor (int): factor
+
+        Returns:
+            ActiveLearningSetting: the loaded or created setting
+        """
         setting_descriptor = {
             "setting_name": name,
             "setting_labeled_train_size": labeled_train_size,
@@ -226,6 +340,15 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
             return ActiveLearningSetting(**stored_setting)
 
     def load_learner_by_name(self, learner_name):
+        """
+        This method loads the learner with the specified name from the database.
+
+        Parameters:
+            learner_name (str): name of the learner to load
+
+        Returns:
+            object: the loaded learner
+        """
         stored_learner = _fetch_data_of_descriptor(self.learners, {"learner_name": learner_name})
 
         if stored_learner is None:
@@ -236,6 +359,15 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         )
 
     def load_learner(self, learner_id):
+        """
+        This method loads the learner with the specified ID from the database.
+
+        Parameters:
+            learner_id (int): ID of the learner to load
+
+        Returns:
+            object: the loaded learner
+        """
         stored_learner = _fetch_data_of_descriptor(self.learners, {"learner_id": learner_id})
 
         if stored_learner is None:
@@ -246,6 +378,17 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         )
 
     def load_or_create_learner(self, learner_name, obj):
+        """
+        This method checks whether the specified learner already exists in the database. If not, the specified setting
+        is added to the database and then also returned to the invoker.
+
+        Parameters:
+            learner_name (str): name of the learner
+            obj (object): the learner to load or create
+
+        Returns:
+            object: the loaded or created learner
+        """
         data = obj.get_params()
 
         learner_descriptor = {
@@ -273,6 +416,15 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         return learner_descriptor["learner_name"], obj
 
     def load_sampling_strategy_by_name(self, sampling_strategy_name):
+        """
+        This method loads the sampling strategy with the specified name from the database.
+
+        Parameters:
+            sampling_strategy_name (str): name of the sampling strategy to load
+
+        Returns:
+            object: the loaded sampling strategy
+        """
         stored_sampling_strategy = _fetch_data_of_descriptor(
             self.sampling_strategies, {"sampling_strategy_name": sampling_strategy_name}
         )
@@ -286,6 +438,15 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         )
 
     def load_sampling_strategy(self, sampling_strategy_id):
+        """
+        This method loads the sampling strategy with the specified ID from the database.
+
+        Parameters:
+            sampling_strategy_id (int): ID of the sampling strategy to load
+
+        Returns:
+            object: the loaded sampling strategy
+        """
         stored_sampling_strategy = _fetch_data_of_descriptor(
             self.sampling_strategies, {"sampling_strategy_id": sampling_strategy_id}
         )
@@ -299,6 +460,17 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         )
 
     def load_or_create_sampling_strategy(self, sampling_strategy_name, obj):
+        """
+        This method checks whether the specified sampling strategy already exists in the database. If not, the specified
+        sampling strategy including its parameterization is added to the database and then also returned to the invoker.
+
+        Parameters:
+            sampling_strategy_name (str): name of the sampling strategy
+            obj (object): the sampling strategy to load or create
+
+        Returns:
+            object: the loaded or created sampling strategy
+        """
         sampling_strategy_descriptor = {
             "sampling_strategy_class": fullname(obj),
             "sampling_strategy_parameterization": json.dumps(obj.get_params()),
@@ -397,6 +569,15 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         self.con.close()
 
     def load_scenario(self, scenario_id):
+        """
+        This method loads the scenario with the specified ID from the database.
+
+        Parameters:
+            scenario_id (int): ID of the scenario to load
+
+        Returns:
+            ActiveLearningScenario: the loaded scenario
+        """
         query = format_select_query(MySQLBenchmarkConnector.scenario_table, {"scenario_id": scenario_id})
         cursor = self.con.cursor(buffered=True, dictionary=True)
         cursor.execute(query)
@@ -413,6 +594,20 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
             raise Exception("Scenario with ID " + str(scenario_id) + " unknown")
 
     def load_or_create_scenario(self, openml_id, test_split_seed, train_split_seed, seed, setting_id):
+        """
+        This method loads the scenario with the specified parameters from the database. If the scenario does not exist
+        yet, it is created and then returned to the invoker.
+
+        Parameters:
+            openml_id (int): ID of the openml dataset
+            test_split_seed (int): seed for the test split
+            train_split_seed (int): seed for the train split
+            seed (int): seed for the scenario
+            setting_id (int): ID of the setting
+
+        Returns:
+            ActiveLearningScenario: the loaded or created scenario
+        """
         setting = self.load_setting(setting_id)
         scenario_data = {
             "openml_id": openml_id,
@@ -452,6 +647,15 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         return new_scenario
 
     def load_setting(self, setting_id):
+        """
+        This method loads the setting with the specified ID from the database.
+
+        Parameters:
+            setting_id (int): ID of the setting to load
+
+        Returns:
+            ActiveLearningSetting: the loaded setting
+        """
         query = format_select_query(MySQLBenchmarkConnector.setting_table, {"setting_id": setting_id})
         cursor = self.con.cursor(buffered=True, dictionary=True)
         cursor.execute(query)
@@ -462,6 +666,15 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
             raise Exception("Setting with ID " + str(setting_id) + " could not be found.")
 
     def load_setting_by_name(self, setting_name):
+        """
+        This method loads the setting with the specified name from the database.
+
+        Parameters:
+            setting_name (str): name of the setting to load
+
+        Returns:
+            ActiveLearningSetting: the loaded setting
+        """
         query = format_select_query(MySQLBenchmarkConnector.setting_table, {"setting_name": setting_name})
         cursor = self.con.cursor(buffered=True, dictionary=True)
         cursor.execute(query)
@@ -478,6 +691,18 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         This method checks whether the specified setting already exists. If so, it just fetches the data from the
         database and returns an instance. If not, the specified setting is added to the database and then also returned
         to the invoker.
+
+        Parameters:
+            name (str): name of the setting
+            labeled_train_size (str): labeled training size
+            train_type (str): type of training
+            test_size (str): test size
+            number_of_iterations (int): number of iterations
+            number_of_samples (int): number of samples
+            factor (int): factor
+
+        Returns:
+            ActiveLearningSetting: the loaded or created setting
         """
         setting_descriptor = {
             "setting_name": name,
@@ -520,6 +745,15 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         )
 
     def load_learner_by_name(self, learner_name):
+        """
+        This method loads the learner with the specified name from the database.
+
+        Parameters:
+            learner_name (str): name of the learner to load
+
+        Returns:
+            object: the loaded learner
+        """
         query = format_select_query(MySQLBenchmarkConnector.learner_table, {"learner_name": learner_name})
         cursor = self.con.cursor(buffered=True, dictionary=True)
         cursor.execute(query)
@@ -533,6 +767,15 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
             raise Exception("Learner with name " + str(learner_name) + " unknown")
 
     def load_learner(self, learner_id):
+        """
+        This method loads the learner with the specified ID from the database.
+
+        Parameters:
+            learner_id (int): ID of the learner to load
+
+        Returns:
+            object: the loaded learner
+        """
         query = format_select_query(MySQLBenchmarkConnector.learner_table, {"learner_id": learner_id})
         cursor = self.con.cursor(buffered=True, dictionary=True)
         cursor.execute(query)
@@ -549,6 +792,13 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         """
         This method checks whether the specified learner already exists in the database. If not, the specified setting
         is added to the database and then also returned to the invoker.
+
+        Parameters:
+            learner_name (str): name of the learner
+            obj (object): the learner to load or create
+
+        Returns:
+            object: the loaded or created learner
         """
         learner_descriptor = {
             "learner_class": fullname(obj),
@@ -576,6 +826,15 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         return learner_descriptor["learner_name"], obj
 
     def load_sampling_strategy_by_name(self, sampling_strategy_name):
+        """
+        This method loads the sampling strategy with the specified name from the database.
+
+        Parameters:
+            sampling_strategy_name (str): name of the sampling strategy to load
+
+        Returns:
+            object: the loaded sampling strategy
+        """
         query = format_select_query(
             MySQLBenchmarkConnector.sampling_strategy_table, {"sampling_strategy_name": sampling_strategy_name}
         )
@@ -592,6 +851,15 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
             raise Exception("Sampling strategy with name " + str(sampling_strategy_name) + " unknown")
 
     def load_sampling_strategy(self, sampling_strategy_id):
+        """
+        This method loads the sampling strategy with the specified ID from the database.
+
+        Parameters:
+            sampling_strategy_id (int): ID of the sampling strategy to load
+
+        Returns:
+            object: the loaded sampling strategy
+        """
         query = format_select_query(
             MySQLBenchmarkConnector.sampling_strategy_table, {"sampling_strategy_id": sampling_strategy_id}
         )
@@ -611,6 +879,13 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         """
         This method checks whether the specified sampling strategy already exists in the database. If not, the specified
         sampling strategy including its parameterization is added to the database and then also returned to the invoker.
+
+        Parameters:
+            sampling_strategy_name (str): name of the sampling strategy
+            obj (object): the sampling strategy to load or create
+
+        Returns:
+            object: the loaded or created sampling strategy
         """
         sampling_strategy_descriptor = {
             "sampling_strategy_class": fullname(obj),
@@ -639,7 +914,21 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
 
 
 class CustomEncoder(json.JSONEncoder):
+    """CustomEncoder
+
+    This class is a custom JSON encoder that is used to encode the parameters of a learner or sampling strategy.
+    """
+
     def default(self, obj):
+        """
+        This method is called by the JSON encoder to encode the specified object.
+
+        Parameters:
+            obj (object): object to encode
+
+        Returns:
+            str: the encoded object
+        """
         if isinstance(obj, type):
             return str(obj)  # Convert class references to their string representation
         return json.JSONEncoder.default(self, obj)
