@@ -12,13 +12,13 @@ SEED = 44
 LABELED_INDICES = [0, 1, 2, 3]
 TEST_INDICES = [5, 6, 7, 8, 9]
 
-SETTING_ID = 42
+SETTING_ID = 1
 SETTING_NAME = "TestSetting"
 SETTING_TRAIN_SIZE = 0.4
 SETTING_TRAIN_TYPE = "proportion"
 SETTING_TEST_SIZE = 0.3
 NUMBER_OF_IT = 10
-NUMBER_OF_SAMPLES = 5
+NUMBER_OF_QUERIES = 5
 FACTOR = None
 
 
@@ -31,7 +31,7 @@ def setting():
         setting_train_type=SETTING_TRAIN_TYPE,
         setting_test_size=SETTING_TEST_SIZE,
         number_of_iterations=NUMBER_OF_IT,
-        number_of_samples=NUMBER_OF_SAMPLES,
+        number_of_queries=NUMBER_OF_QUERIES,
         factor=FACTOR
     )
 

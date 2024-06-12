@@ -1,7 +1,7 @@
 import pytest
 
 from fixtures.scenario import SETTING_ID, SETTING_NAME, SETTING_TRAIN_SIZE, SETTING_TRAIN_TYPE, SETTING_TEST_SIZE, \
-    NUMBER_OF_SAMPLES, NUMBER_OF_IT, FACTOR
+    NUMBER_OF_QUERIES, NUMBER_OF_IT, FACTOR
 
 
 @pytest.mark.usefixtures("setting")
@@ -36,7 +36,7 @@ def test_get_number_of_iterations(setting):
 
 @pytest.mark.usefixtures("setting")
 def test_get_number_of_samples(setting):
-    assert setting.get_number_of_samples() == NUMBER_OF_SAMPLES
+    assert setting.get_number_of_queries() == NUMBER_OF_QUERIES
 
 
 @pytest.mark.usefixtures("setting")

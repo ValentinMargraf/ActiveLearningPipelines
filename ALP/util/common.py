@@ -9,8 +9,6 @@ def format_insert_query(table_name, values: dict):
     Returns:
         str: The formatted insert query.
     """
-
-
     key_list = list(values.keys())
 
     query = f"INSERT INTO {table_name}"
@@ -37,7 +35,7 @@ def format_select_query(table_name, where: dict = None):
     return query
 
 
-def instantiate_class_by_fqn(learner_fqn, learner_params=None):
+def instantiate_class_by_fqn(learner_fqn, learner_params={}):
     """
     Instantiate a class by its fully qualified name.
 

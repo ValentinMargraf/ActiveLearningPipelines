@@ -10,6 +10,10 @@ branch = true
 context = "ALP" # Should be package name
 omit = [
     "ALP/__init__.py", # Has variables only needed for setup.py
+    "transformer.py",
+    "transformer_prediction_interface.py",
+    "transformer_prediction_interface_ens.py",
+    "tab_model.py"
 ]
 
 [tool.coverage.report]
