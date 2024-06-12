@@ -5,16 +5,28 @@ from sklearn.metrics import accuracy_score, f1_score, log_loss, precision_score,
 
 
 class Observer(ABC):
+    """Observer
+
+    Abstract class for the observer of the active learning process. The observer is responsible for keeping track of
+    the indices of the selected data, the labeled data, and the unlabeled data, as well as the model performance on the
+    test data in each iteration..
+    """
 
     def __init__(self):
         return
 
     @abstractmethod
     def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red):
+        """
+        Abstract method to observe the data in each iteration.
+        """
         pass
 
     @abstractmethod
     def observe_model(self, iteration, model):
+        """
+        Abstract method to observe the model performances in each iteration.
+        """
         pass
 
 
@@ -42,10 +54,10 @@ class StatisticalPerformanceObserver(Observer, ABC):
 
     def compute_labeling_statistics(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red):
         """
-        Compute the distribution of the data, which involves the ids of the selected data in each iteration, the
+        Computes the distribution of the data, which involves the ids of the selected data in each iteration, the
         overall labeled and unlabeled data.
 
-        Args:
+        Parameters:
             iteration (int): iteration number
             X_u_selected (np.array): selected data
             y_u_selected (np.array): selected labels
@@ -82,10 +94,10 @@ class StatisticalPerformanceObserver(Observer, ABC):
 
     def compute_model_performances(self, iteration, model):
         """
-        Compute the model performance on the test data, which involves the f1, precision, recall, log loss, accuracy,
+        Computes the model performance on the test data, which involves the f1, precision, recall, log loss, accuracy,
         and AUC scores.
 
-        Args:
+        Parameters:
             iteration (int): iteration number
             model (object): trained model
 
@@ -123,13 +135,45 @@ class StatisticalPerformanceObserver(Observer, ABC):
 
 
 class PrintObserver(StatisticalPerformanceObserver):
+    """PrintObserver
+
+    Observer class to get the statistical performance evaluation of the active learning process such as the
+    distribution of the labeled and selected data, and the model performance on the test data.
+
+    Args:
+        X_test (np.array): test data
+        y_test (np.array): test labels
+
+    Attributes:
+        X_test (np.array): test data
+        y_test (np.array): test labels
+    """
+
     def __init__(self, X_test, y_test):
         super().__init__(X_test, y_test)
         self.X_test = X_test
         self.y_test = y_test
 
     def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red):
+        """
+        Observes the data in each iteration.
+
+        Parameters:
+            iteration (int): iteration number
+            X_u_selected (np.array): selected data
+            y_u_selected (np.array): selected labels
+            X_l_aug (np.array): labeled data
+            y_l_aug (np.array): labels of labeled data
+            X_u_red (np.array): unlabeled data
+        """
         super().compute_labeling_statistics(iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red)
 
     def observe_model(self, iteration, model):
+        """
+        Observes the model performances in each iteration.
+
+        Parameters:
+            iteration (int): iteration number
+            model (object): trained model
+        """
         super().compute_model_performances(iteration, model)

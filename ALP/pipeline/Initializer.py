@@ -15,7 +15,9 @@ class Initializer(ABC):
 
     @abstractmethod
     def sample(self, X_u, num_samples):
-        """Queries the initial instances of the data."""
+        """
+        Abstract method, that queries the initial instances of the data.
+        """
         pass
 
 
@@ -36,7 +38,7 @@ class RandomInitializer(Initializer):
     def sample(self, X_u, num_samples):
         """Queries the initial instances of the data, sampling uniformly at random
 
-        Args:
+        Parameters:
             X_u (np.ndarray): The unlabeled data.
             num_samples (int): The number of instances to query.
         Returns:

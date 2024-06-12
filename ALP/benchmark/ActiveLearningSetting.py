@@ -25,8 +25,6 @@ class ActiveLearningSetting:
         number_of_iterations (int): number of iterations
         number_of_samples (int): number of samples queried per iteration
         factor (int): task-dependent factor
-
-
     """
 
     def __init__(
@@ -58,6 +56,15 @@ class ActiveLearningSetting:
         self.factor = factor
 
     def from_dict(setting: dict):
+        """
+        Create an ActiveLearningSetting object from a dictionary.
+
+        Args:
+            setting (dict): dictionary containing the setting information
+
+        Returns:
+            ActiveLearningSetting: active learning setting object
+        """
         return ActiveLearningSetting(
             setting_id=setting["setting_id"],
             setting_name=setting["setting_name"],
@@ -70,27 +77,51 @@ class ActiveLearningSetting:
         )
 
     def get_setting_id(self):
+        """
+        Get the setting id.
+        """
         return self.setting_id
 
     def get_setting_name(self):
+        """
+        Get the setting name.
+        """
         return self.setting_name
 
     def get_factor(self):
+        """
+        Get the factor.
+        """
         return self.factor
 
     def get_setting_labeled_train_size(self):
+        """
+        Get the size of the labeled training data.
+        """
         return self.setting_labeled_train_size
 
     def get_setting_train_type(self):
+        """
+        Get the training type, absolute or relative.
+        """
         return self.setting_train_type
 
     def get_setting_test_size(self):
+        """
+        Get the size of the test data.
+        """
         return self.setting_test_size
 
     def get_number_of_iterations(self):
+        """
+        Get the number of iterations.
+        """
         return self.number_of_iterations
 
     def get_number_of_samples(self):
+        """
+        Get the number of samples queried per iteration.
+        """
         return self.number_of_samples
 
     def __repr__(self):

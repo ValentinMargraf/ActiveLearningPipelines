@@ -30,6 +30,11 @@ class BudgetPerformancePlot:
         self.path_to_save = path_to_save
 
     def show(self):
+        """
+        This function plots the performance of different sampling strategies over the budget and saves
+        it as .pdf under the specified path.
+        """
+
         info = ["margin", "least_confident", "entropy", "power_margin", "bald", "power_bald",
          "max_entropy", "qbc_variance_ratio"]
         hybr = ["cluster_margin", "weighted_cluster","falcun"]
@@ -251,7 +256,10 @@ class HeatMapPlot:
 
 
     def show_heatmap(self):
-
+        """
+        This function plots heatmaps to compare performances of different active learning pipelines.
+        The figures are saved under the specified path.
+        """
         learners_ordered = ["knn_3", "svm_rbf", "rf_entropy", "catboost",
                             "xgb","mlp",
                             "tabnet",
@@ -388,6 +396,10 @@ class HeatMapPlot:
 
 
     def show_win_matrix(self, ties=True):
+        """
+        This function generates win-matrices to compare performances of different query strategies combined
+        with one fixed learning algorithm.
+        """
         info = ["margin", "entropy", "power_margin",  "power_bald"]
         repr = ["core_set", "typ_cluster"]
         hybr = ["cluster_margin",  "falcun"]

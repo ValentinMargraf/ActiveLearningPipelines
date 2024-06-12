@@ -87,7 +87,8 @@ class TabPFNEmbedder(nn.Module):
 class TimeLimitCallback(Callback):
     """TimeLimitCallback
 
-    This class is used for constraining TabNet classifier, such that it stops training after a certain time limit.
+    This class is used for limiting the training time of the TabNet classifier, such that it stops training
+    after a certain specified time limit.
 
     Args:
         time_limit: int

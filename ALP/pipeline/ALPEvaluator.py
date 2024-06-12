@@ -24,8 +24,8 @@ class ALPEvaluator:
     Attributes:
         benchmark_connector (BenchmarkConnector): The benchmark connector to use.
         observer_list (list): The list of observers to use.
-        setting (Setting): The setting to use.
-        scenario (Scenario): The scenario to use.
+        setting (ActiveLearningSetting): The setting to use.
+        scenario (ActiveLearningScenario): The scenario to use.
         setting_name (str): The name of the setting.
         learner_name (str): The name of the learner.
         sampling_strategy_name (str): The name of the sampling strategy.
@@ -33,7 +33,6 @@ class ALPEvaluator:
         test_split_seed (int): The seed for splitting the test data.
         train_split_seed (int): The seed for splitting the train data.
         seed (int): The seed for the random operatioms.
-
     """
 
     def __init__(

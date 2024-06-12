@@ -32,7 +32,7 @@ class QueryStrategy(ABC):
         is already fitted on the labeled data and potentially used to predict probabilities for the unlabeled
         data.
 
-        Args:
+        Parameters:
             learner: object
             X_l: np.ndarray
             y_l: np.ndarray

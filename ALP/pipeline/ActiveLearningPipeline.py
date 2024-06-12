@@ -17,11 +17,11 @@ class ActiveLearningPipeline:
     oracle in subsequent iterations. The observer is used to log the data and model at each iteration.
 
     Args:
-        learner: The learner that is trained on the labeled data.
+        learner (onject): The learner that is trained on the labeled data.
         sampling_strategy: The sampling strategy used to select data points from the unlabeled dataset to be labeled by
             the oracle.
         initializer: The initializer used to select data points from the unlabeled dataset to be labeled by the oracle
-            in the first iteration.
+            in the first iterations.
         observer_list: A list of observers that are used to log the data and model at each iteration.
         init_budget: The budget for sampling data points with the initialization strategy.
         num_iterations: The number of active learning rounds to carry out alternating between learning and querying the

@@ -17,7 +17,7 @@ class Ensemble:
         max_neighbors: int (for k nearest neighbors)
 
     Attributes:
-        estimator: object (the estimator to be used in the ensemble)
+        estimator: object (the estimator to construct the ensemble of)
         num_estimators: int (the number of estimators in the ensemble)
         max_neighbors: int  (for k nearest neighbors)
         random_states: list (random states for the ensemble members)
@@ -35,8 +35,12 @@ class Ensemble:
         self.init()
 
     def init(self):
-        self.estimators_ = []
+        """Initializes the ensemble members.
 
+        Returns:
+            None
+        """
+        self.estimators_ = []
         if self.learner_fqn == "tabpfn.scripts.transformer_prediction_interface.TabPFNClassifier":
             from ALP.util.transformer_prediction_interface_ens import TabPFNClassifierEns as TabPFNEns
             self.estimator = TabPFNEns(N_ensemble_configurations=self.num_estimators)

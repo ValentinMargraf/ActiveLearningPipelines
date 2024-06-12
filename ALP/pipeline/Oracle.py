@@ -24,7 +24,7 @@ class Oracle:
     def query(self, indices_to_label):
         """Queries the true labels of the data.
 
-        Args:
+        Parameters:
             indices_to_label (np.ndarray): The indices of the instances to query.
         Returns:
             np.ndarray: The true labels of the queried instances.

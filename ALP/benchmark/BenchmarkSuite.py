@@ -4,12 +4,25 @@ import openml
 
 
 class BenchmarkSuite(ABC):
+    """Benchmark Suite
 
-    def __init__(self, name="SALTBench-Suite"):
+    Abstract class for benchmark suites. A benchmark suite is a collection of datasets from OpenML.
+
+    Args:
+        name (str): name of the benchmark suite
+
+    Attributes:
+        name (str): name of the benchmark suite
+    """
+
+    def __init__(self, name="TabZilla"):
         self.name = name
 
     @abstractmethod
     def get_openml_dataset_ids(self):
+        """
+        Abstract method for getting the OpenML dataset ids of the benchmark suite.
+        """
         pass
 
 
@@ -30,6 +43,12 @@ class TabZillaBenchmarkSuite(BenchmarkSuite):
         super().__init__(name="TabZilla")
 
     def get_openml_dataset_ids(self):
+        """
+        Get the OpenML dataset ids of the TabZilla benchmark suite.
+
+        Returns:
+            list: list of OpenML dataset ids
+        """
         return [
             11,
             14,
@@ -95,4 +114,10 @@ class OpenMLBenchmarkSuite(BenchmarkSuite):
             self.openml_dataset_ids.append(t["did"])
 
     def get_openml_dataset_ids(self):
+        """
+        Get the OpenML dataset ids of the OpenML-CC18 benchmark suite.
+
+        Returns:
+            list: list of OpenML dataset ids
+        """
         return self.openml_dataset_ids
