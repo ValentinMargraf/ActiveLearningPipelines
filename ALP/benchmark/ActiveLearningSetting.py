@@ -55,27 +55,6 @@ class ActiveLearningSetting:
         # task-dependent factor
         self.factor = factor
 
-    def from_dict(setting: dict):
-        """
-        Create an ActiveLearningSetting object from a dictionary.
-
-        Args:
-            setting (dict): dictionary containing the setting information
-
-        Returns:
-            ActiveLearningSetting: active learning setting object
-        """
-        return ActiveLearningSetting(
-            setting_id=setting["setting_id"],
-            setting_name=setting["setting_name"],
-            setting_labeled_train_size=setting["setting_labeled_train_size"],
-            setting_train_type=setting["setting_train_type"],
-            setting_test_size=setting["setting_test_size"],
-            number_of_iterations=setting["number_of_iterations"],
-            number_of_samples=setting["number_of_samples"],
-            factor=setting["factor"],
-        )
-
     def get_setting_id(self):
         """
         Get the setting id.

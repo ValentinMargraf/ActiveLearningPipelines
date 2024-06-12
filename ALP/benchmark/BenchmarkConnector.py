@@ -661,7 +661,7 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         cursor.execute(query)
         res = cursor.fetchall()
         if len(res) > 0:
-            return ActiveLearningSetting.from_dict(res[0])
+            return ActiveLearningSetting(**res[0])
         else:
             raise Exception("Setting with ID " + str(setting_id) + " could not be found.")
 
@@ -680,7 +680,7 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
         cursor.execute(query)
         res = cursor.fetchall()
         if len(res) > 0:
-            return ActiveLearningSetting.from_dict(res[0])
+            return ActiveLearningSetting(**res[0])
         else:
             raise Exception("Setting with name " + str(setting_name) + " could not be found.")
 
@@ -724,7 +724,7 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
 
         if len(res_check) > 0:
             setting_descriptor["setting_id"] = res_check[0]["setting_id"]
-            return ActiveLearningSetting.from_dict(setting_descriptor)
+            return ActiveLearningSetting(**setting_descriptor)
 
         # The specified setting does not yet exist so create it in the database and then return it to the invoker.
         query = format_insert_query(MySQLBenchmarkConnector.setting_table, setting_descriptor)

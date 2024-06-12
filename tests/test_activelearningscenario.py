@@ -1,72 +1,34 @@
 import pytest
 
-from ALP.benchmark.ActiveLearningScenario import ActiveLearningScenario
-from ALP.benchmark.ActiveLearningSetting import ActiveLearningSetting
-
-SCENARIO_ID = 1
-OPENML_ID = 31
-LEN_DATASET = 1000
-TEST_SPLIT_SEED = 42
-TRAIN_SPLIT_SEED = 43
-SEED = 44
-LABELED_INDICES = [0, 1, 2, 3]
-TEST_INDICES = [5, 6, 7, 8, 9]
+from ALP.benchmark.ActiveLearningScenario import create_dataset_split
+from fixtures.scenario import SCENARIO_ID, OPENML_ID, TEST_INDICES, LABELED_INDICES, LEN_DATASET, SETTING_ID
 
 
-SETTING_ID = 1337
-SETTING_NAME = "TestSetting"
-SETTING_TRAIN_SIZE = 0.4
-SETTING_TRAIN_TYPE = "proportion"
-SETTING_TEST_SIZE = 0.3
-NUMBER_OF_IT = 10
-NUMBER_OF_SAMPLES = 5
-
-
-@pytest.fixture
-def scenario():
-    alsetting = ActiveLearningSetting(
-        setting_id=SETTING_ID,
-        setting_name=SETTING_NAME,
-        setting_labeled_train_size=SETTING_TRAIN_SIZE,
-        setting_train_type=SETTING_TRAIN_TYPE,
-        setting_test_size=SETTING_TEST_SIZE,
-        number_of_iterations=NUMBER_OF_IT,
-        number_of_samples=NUMBER_OF_SAMPLES,
-        factor=None,
-    )
-
-    return ActiveLearningScenario(
-        scenario_id=SCENARIO_ID,
-        openml_id=OPENML_ID,
-        test_split_seed=TEST_SPLIT_SEED,
-        train_split_seed=TRAIN_SPLIT_SEED,
-        seed=SEED,
-        labeled_indices=LABELED_INDICES,
-        test_indices=TEST_INDICES,
-        setting=alsetting,
-    )
-
-
+@pytest.mark.usefixtures("scenario")
 def test_get_setting_id(scenario):
     assert scenario.get_scenario_id() == SCENARIO_ID
 
 
+@pytest.mark.usefixtures("scenario")
 def test_get_openml_id(scenario):
     assert scenario.get_openml_id() == OPENML_ID
 
 
+@pytest.mark.usefixtures("scenario")
 def test_get_test_data(scenario):
     X, y = scenario.get_test_data()
     assert len(X) == len(TEST_INDICES)
     assert len(X) == len(TEST_INDICES)
 
 
+@pytest.mark.usefixtures("scenario")
 def test_get_labeled_train_data(scenario):
     X, y = scenario.get_labeled_train_data()
     assert len(X) == len(LABELED_INDICES)
     assert len(X) == len(LABELED_INDICES)
 
 
+@pytest.mark.usefixtures("scenario")
 def test_get_unlabeled_train_data(scenario):
     X, y = scenario.get_unlabeled_train_data()
     exp_len = LEN_DATASET - len(LABELED_INDICES) - len(TEST_INDICES)
@@ -74,7 +36,19 @@ def test_get_unlabeled_train_data(scenario):
     assert len(y) == exp_len
 
 
+@pytest.mark.usefixtures("scenario")
 def test_get_setting(scenario):
     setting = scenario.get_setting()
     assert str(type(setting)) == "<class 'ALP.benchmark.ActiveLearningSetting.ActiveLearningSetting'>"
     assert setting.get_setting_id() == SETTING_ID
+
+
+@pytest.mark.usefixtures("scenario")
+def test_create_dataset_split(scenario):
+    labeled_indices, test_indices = create_dataset_split(scenario.X, scenario.y, scenario.test_split_seed,
+                                                         scenario.setting.setting_test_size,
+                                                         scenario.train_split_seed,
+                                                         scenario.setting.setting_labeled_train_size,
+                                                         scenario.setting.setting_train_type, scenario.setting.factor)
+    assert len(labeled_indices) > 0
+    assert len(test_indices) > 0

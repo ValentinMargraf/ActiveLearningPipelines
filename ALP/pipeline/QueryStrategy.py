@@ -500,59 +500,57 @@ class TypicalClusterQueryStrategy(EmbeddingBasedQueryStrategy):
         super().__init__(seed=seed)
 
     def sample(self, learner, X_l, y_l, X_u, num_queries):
-        # from num_saples "uncovered" cluster (there where are no X_l) select the one with highest "typicality"
         pool_size = len(y_l)
         num_cluster = pool_size + num_queries
-        X_u, X_l = self.compute_embedding(learner, X_l, y_l, X_u, transform_labeled=True)
+        X_u = self.compute_embedding(learner,X_l=X_l, y_l=y_l, X_u=X_u)
 
         kmeans = KMeans(n_clusters=num_cluster)
         X = np.concatenate((X_l, X_u))
         kmeans.fit(X)
-
-        # we dont wan labels from this group
+        # We don't want labels from this group
         labeled_cluster_classes = np.unique(kmeans.labels_[:pool_size])
-        # array of the following type: position in array is the label, value is the size of the cluster
+        # Array of the following type: position in array is the label, value is the size of the cluster
         cluster_sizes = [len(np.argwhere(kmeans.labels_ == i)) for i in range(num_cluster)]
         ids_by_size = np.argsort(-np.array(cluster_sizes))
         labels_of_sorted_clusters = np.arange(num_cluster)[ids_by_size]
         selected_ids = []
-
-        # iterate through # num_samples uncovered largest cluster
+        # Create a mask for instances_ids to track selected elements
+        mask = np.ones(len(kmeans.labels_), dtype=bool)
+        # Iterate through the num_samples uncovered largest clusters
         for idx in ids_by_size:
             current_label = labels_of_sorted_clusters[idx]
             if current_label not in labeled_cluster_classes:
-                # get neighbours within this cluster
+                # Get neighbors within this cluster
                 instances_ids = np.argwhere(kmeans.labels_ == current_label).flatten()
-                # print("instances ids",instances_ids)
-                if len(instances_ids) == 1:
+                instances_ids = instances_ids[mask[instances_ids]]  # Apply the mask
+                if len(instances_ids) == 0:
+                    continue
+                elif len(instances_ids) == 1:
                     selected_ids.append(instances_ids[0])
+                    mask[instances_ids[0]] = False  # Update the mask
                     if len(selected_ids) == num_queries:
                         selected_ids = np.array(selected_ids).flatten()
                         return selected_ids - pool_size
                 else:
                     instances = X[instances_ids]
-                    # compute typicality for each instance, append the one with highest typicality
+                    # Compute typicality for each instance, append the one with highest typicality
                     typicalities = []
                     K = 20
                     for i, instance in enumerate(instances):
                         remaining_instances = np.delete(instances, i, axis=0)
-                        dists = np.sqrt((instance - remaining_instances) ** 2)
+                        dists = np.sqrt(np.sum((instance - remaining_instances) ** 2, axis=1))
                         if len(dists) < K:
                             dist = np.mean(dists)
                         else:
-                            dist = np.mean(np.argsort(dists)[:K])
+                            dist = np.mean(np.sort(dists)[:K])
                         typicality = 1 / (dist + 1e-8)
                         typicalities.append(typicality)
                     typicalities = np.array(typicalities)
-                    if len(typicalities) > 0:
-                        selected_id = instances_ids[np.argmax(typicalities)]
-                        selected_ids.append(selected_id[0])
-
                     selected_id = instances_ids[np.argmax(typicalities)]
                     selected_ids.append(selected_id)
+                    mask[selected_id] = False  # Update the mask
                     if len(selected_ids) == num_queries:
                         selected_ids = np.array(selected_ids).flatten()
-
                         return selected_ids - pool_size
 
 
