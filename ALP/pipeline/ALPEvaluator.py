@@ -14,7 +14,7 @@ class ALPEvaluator:
         benchmark_connector (BenchmarkConnector): The benchmark connector to use.
         setting_name (str): The name of the setting to use.
         learner_name (str): The name of the learner to use.
-        sampling_strategy_name (str): The name of the sampling strategy to use.
+        query_strategy_name (str): The name of the query strategy to use.
         openml_id (int): The openml id of the benchmark scenario to use.
         test_split_seed (int): The seed to use for splitting the test data.
         train_split_seed (int): The seed to use for splitting the train data.
@@ -27,7 +27,7 @@ class ALPEvaluator:
         scenario (Scenario): The scenario to use.
         setting_name (str): The name of the setting to use.
         learner_name (str): The name of the learner to use.
-        sampling_strategy_name (str): The name of the sampling strategy to use.
+        query_strategy_name (str): The name of the query strategy to use.
         openml_id (int): The openml id of the benchmark scenario to use.
         test_split_seed (int): The seed to use for splitting the test data.
         train_split_seed (int): The seed to use for splitting the train data.
@@ -40,7 +40,7 @@ class ALPEvaluator:
         benchmark_connector: BenchmarkConnector,
         setting_name=None,
         learner_name=None,
-        sampling_strategy_name=None,
+        query_strategy_name=None,
         openml_id=None,
         test_split_seed=0,
         train_split_seed=0,
@@ -62,7 +62,7 @@ class ALPEvaluator:
 
         # pipeline specifications
         self.learner_name = learner_name
-        self.sampling_strategy_name = sampling_strategy_name
+        self.query_strategy_name = query_strategy_name
 
     def with_setting(self, setting_name: str):
         self.setting_name = setting_name
@@ -72,8 +72,8 @@ class ALPEvaluator:
         self.learner_name = learner_name
         return self
 
-    def with_sampling_strategy(self, sampling_strategy_name: str):
-        self.sampling_strategy_name = sampling_strategy_name
+    def with_query_strategy(self, query_strategy_name: str):
+        self.query_strategy_name = query_strategy_name
         return self
 
     def with_test_split_seed(self, test_split_seed: int):
@@ -112,15 +112,15 @@ class ALPEvaluator:
 
         X_l, y_l, X_u, y_u, X_test, y_test = self.scenario.get_data_split()
         learner = self.benchmark_connector.load_learner_by_name(self.learner_name)
-        sampling_strategy = self.benchmark_connector.load_sampling_strategy_by_name(self.sampling_strategy_name)
+        query_strategy = self.benchmark_connector.load_query_strategy_by_name(self.query_strategy_name)
 
         oracle = Oracle(X_u=X_u, y_u=y_u)
         alp = ActiveLearningPipeline(
             learner=learner,
-            query_strategy=sampling_strategy,
+            query_strategy=query_strategy,
             num_iterations=self.setting.get_number_of_iterations(),
             observer_list=self.observer_list,
-            num_queries_per_iteration=self.setting.get_number_of_samples(),
+            num_queries_per_iteration=self.setting.get_number_of_queries(),
         )
         alp.active_fit(X_l=X_l, y_l=y_l, X_u=X_u, oracle=oracle)
 

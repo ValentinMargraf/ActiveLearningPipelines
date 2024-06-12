@@ -23,7 +23,6 @@ from ALP.pipeline.QueryStrategy import (
     QueryByCommitteeKLQueryStrategy,
     RandomMarginQueryStrategy,
     RandomQueryStrategy,
-    TypicalClusterQueryStrategy,
     WeightedClusterQueryStrategy,
 )
 

@@ -30,7 +30,6 @@
    ALP.pipeline.ALPEvaluator
    ALP.pipeline.ActiveLearningPipeline
    ALP.pipeline.Initializer
-   ALP.pipeline.Labeler
    ALP.pipeline.Oracle
-   ALP.pipeline.SamplingStrategy
+   ALP.pipeline.QueryStrategy
 
