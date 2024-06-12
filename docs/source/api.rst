@@ -1,4 +1,4 @@
-API References
+📖 API References
 ================
 
 Documentation of the API for public objects and functions in ``ALPBench``.
