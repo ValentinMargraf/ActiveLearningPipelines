@@ -1,7 +1,6 @@
 aiofiles==22.1.0
 aiosqlite==0.20.0
 alabaster==0.7.16
-ALP==0.0.1
 antlr4-python3-runtime==4.9.3
 anyio==4.4.0
 apeye==1.4.1
