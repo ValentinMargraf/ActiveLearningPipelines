@@ -28,6 +28,16 @@ def test_init_tabpfn_ensemble(benchmark_connector):
 
 
 @pytest.mark.usefixtures("benchmark_connector")
+def test_init_tabpfn_ensemble_larger_dataset(benchmark_connector):
+    learner = TabPFNClassifier()
+    X, y = np.random.random((1200, 10)), np.random.randint(0, 2, 1200)
+    learner.fit(X[0:999], y[0:999])
+    ens = Ensemble(learner, 10, 10)
+    ens.fit(X, y)
+    ens.predict(X)
+
+
+@pytest.mark.usefixtures("benchmark_connector")
 def test_init_tabnet_ensemble(benchmark_connector):
     learner = TabNetClassifier(verbose=0)
     eval_ensemble_with_learner(learner)

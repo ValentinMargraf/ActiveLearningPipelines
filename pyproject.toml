@@ -12,15 +12,16 @@ minversion = "3.10"
 
 [tool.coverage.run]
 branch = true
-context = "ALP" # Should be package name
+context = "alpbench" # Should be package name
 omit = [
-    "ALP/__init__.py", # Has variables only needed for setup.py
+    "alpbench/__init__.py", # Has variables only needed for setup.py
     "transformer.py",
     "transformer_prediction_interface.py",
     "transformer_prediction_interface_ens.py",
     "TorchUtil.py",
     "tab_model.py",
-    "plot_functions.py"
+    "plot_functions.py",
+    "alpbench/util/pytorch_tabnet/*"
 ]
 
 [tool.coverage.report]
