@@ -53,7 +53,7 @@ class BenchmarkConnector(ABC):
 
     @abstractmethod
     def load_or_create_setting(
-        self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_queries, factor
+            self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_queries, factor
     ):
         """
         Abstract method that loads the setting with the specified parameters from the database. If the setting does
@@ -152,7 +152,7 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
 
     """
 
-    base_folder = "alpbench/"
+    base_folder = "db_alpbench/"
     learner_file = base_folder + "learner.json"
     query_strategy_file = base_folder + "query_strategy.json"
     scenario_file = base_folder + "scenario.json"
@@ -160,10 +160,7 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
 
     def __init__(self, learner_file=None, query_strategy_file=None, scenario_file=None, setting_file=None):
         self.learner_file = learner_file if learner_file is not None else DataFileBenchmarkConnector.learner_file
-        if query_strategy_file is not None:
-            self.query_strategy_file = query_strategy_file
-        else:
-            self.query_strategy_file = DataFileBenchmarkConnector.query_strategy_file
+        self.query_strategy_file = query_strategy_file if learner_file is not None else DataFileBenchmarkConnector.query_strategy_file
         self.scenario_file = scenario_file if scenario_file is not None else DataFileBenchmarkConnector.scenario_file
         self.setting_file = setting_file if setting_file is not None else DataFileBenchmarkConnector.setting_file
 
@@ -300,7 +297,7 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
         return ActiveLearningSetting(**stored_setting)
 
     def load_or_create_setting(
-        self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_queries, factor
+            self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_queries, factor
     ):
         """
         This method checks whether the specified setting already exists. If so, it just fetches the data from the
@@ -692,7 +689,7 @@ class MySQLBenchmarkConnector(BenchmarkConnector):
             raise Exception("Setting with name " + str(setting_name) + " could not be found.")
 
     def load_or_create_setting(
-        self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_queries, factor
+            self, name, labeled_train_size, train_type, test_size, number_of_iterations, number_of_queries, factor
     ):
         """
         This method checks whether the specified setting already exists. If so, it just fetches the data from the

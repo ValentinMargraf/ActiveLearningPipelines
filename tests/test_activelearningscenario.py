@@ -1,7 +1,7 @@
 import pytest
+import numpy as np
 
 from alpbench.benchmark.ActiveLearningScenario import create_dataset_split
-
 from .fixtures.scenario import LABELED_INDICES, LEN_DATASET, OPENML_ID, SCENARIO_ID, SETTING_ID, TEST_INDICES, SEED
 
 
@@ -39,7 +39,8 @@ def test_get_unlabeled_train_data(scenario):
 
 @pytest.mark.usefixtures("scenario")
 def test_get_seed(scenario):
-    assert scenario.test_get_seed() == SEED
+    assert scenario.get_seed() == SEED
+
 
 @pytest.mark.usefixtures("scenario")
 def test_get_setting(scenario):
@@ -98,3 +99,6 @@ def test_create_dataset_split(scenario):
         "absolute",
         2,
     )
+
+
+
