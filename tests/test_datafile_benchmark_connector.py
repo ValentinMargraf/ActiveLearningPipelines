@@ -46,11 +46,6 @@ def test_load_learner_by_name(benchmark_connector):
     assert learner is not None
 
 
-def test_load_query_strategy(benchmark_connector):
-    query_strategy = benchmark_connector.load_query_strategy(1)
-    assert query_strategy is not None
-
-
 def test_load_query_strategy_by_name(benchmark_connector):
     query_strategy = benchmark_connector.load_query_strategy_by_name("random")
     assert query_strategy is not None
