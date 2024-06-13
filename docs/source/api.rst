@@ -8,7 +8,7 @@ Documentation of the API for public objects and functions in ``ALPBench``.
     :toctree: api/
     :recursive:
 
-    ALP.benchmark
-    ALP.evaluation
-    ALP.pipeline
-    ALP.util
+    alpbench.benchmark
+    alpbench.evaluation
+    alpbench.pipeline
+    alpbench.util
