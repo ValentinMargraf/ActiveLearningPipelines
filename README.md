@@ -3,6 +3,8 @@
 [![Tests](https://github.com/ValentinMargraf/ActiveLearningPipelines/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/ValentinMargraf/ActiveLearningPipelines/actions/workflows/unit-tests.yml)
 [![Read the Docs](https://readthedocs.org/projects/shapiq/badge/?version=latest)](https://activelearningpipelines.readthedocs.io/en/latest/?badge=latest)
 
+[![PyPI Version](https://img.shields.io/pypi/pyversions/alpbench.svg)](https://pypi.org/project/alpbench)
+[![PyPI status](https://img.shields.io/pypi/status/alpbench.svg?color=blue)](https://pypi.org/project/alpbench)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # ALPBench: A Benchmark for Active Learning Pipelines on Tabular Data
@@ -11,21 +13,25 @@
 
 # 🛠️ Install
 `ALPBench` is intended to work with **Python 3.10 and above**.
+
 ```
+# The base package can be installed via pip:
+pip install alpbench
+
+# Alternatively, you can install the full package via pip:
+pip install alpbench[full]
+
+# Or you can install the package from source:
 git clone https://github.com/ValentinMargraf/ActiveLearningPipelines.git
 cd ActiveLearningPipelines
-conda create --name ALP python=3.10
-conda activate ALP
+conda create --name alpbench python=3.10
+conda activate alpbench
 
 # Install for usage (without TabNet and TabPFN)
 pip install -r requirements.txt
 
-# OR
 # Install for usage (with TabNet and TabPFN)
 pip install -r requirements_full.txt
-
-# Install for development
-make install-dev
 ```
 
 Documentation at https://activelearningpipelines.readthedocs.io/en/latest/

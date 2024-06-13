@@ -3,3 +3,5 @@ mysql-connector-python==8.4.0
 openml==0.14.2
 scikit-learn==1.2.2
 scikit-activeml==0.4.1
+catboost==1.2.5
+xgboost==2.0.3

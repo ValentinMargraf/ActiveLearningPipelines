@@ -7,7 +7,7 @@ NAME = "alpbench"
 DESCRIPTION = "Active Learning Pipelines Benchmark"
 LONG_DESCRIPTION_CONTENT_TYPE = "text/markdown"
 URL = "https://github.com/ValentinMargraf/ActiveLearningPipelines"
-EMAIL = "valentin.margraf.lmu.de"
+EMAIL = "valentin.margraf@ifi.lmu.de"
 AUTHOR = "Valentin Margraf et al."
 REQUIRES_PYTHON = ">=3.10.0"
 
@@ -33,9 +33,21 @@ with open(os.path.join(work_directory, "README.md"), encoding="utf-8") as f:
 with open(os.path.join(work_directory, "CHANGELOG.md"), encoding="utf-8") as f:
     changelog = f.read()
 
-base_packages = ["py-experimenter", "mysql-connector-python", "openml", "scikit-learn", "scikit-activeml"]
+base_packages = [
+    "numpy",
+    "scipy",
+    "matplotlib",
+    "pandas",
+    "py-experimenter",
+    "mysql-connector-python",
+    "openml",
+    "scikit-learn",
+    "scikit-activeml",
+    "catboost",
+    "xgboost",
+]
 
-full_packages = ["catboost", "xgboost", "pytorch-tabnet"]
+full_packages = ["pytorch-tabnet", "tabpfn"]
 
 
 setuptools.setup(
@@ -49,12 +61,12 @@ setuptools.setup(
     python_requires=REQUIRES_PYTHON,
     url=URL,
     project_urls={
-        "Tracker": "https://github.com/mmschlk/shapiq/issues",
-        "Source": "https://github.com/mmschlk/shapiq",
-        "Documentation": "https://shapiq.readthedocs.io",
+        "Tracker": "https://github.com/ValentinMargraf/ActiveLearningPipelines/issues",
+        "Source": "https://github.com/ValentinMargraf/ActiveLearningPipelines",
+        "Documentation": "https://activelearningpipelines.readthedocs.io/",
     },
-    packages=setuptools.find_packages(include=("alp", "alp.*")),
-    install_requires=base_packages + full_packages,
+    packages=setuptools.find_packages(include=("alpbench", "alpbench.*")),
+    install_requires=base_packages,
     extras_require={"full": base_packages + full_packages},
     include_package_data=True,
     license="MIT",
@@ -69,11 +81,7 @@ setuptools.setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
     ],
-    keywords=[
-        "python",
-        "machine learning",
-    ],
+    keywords=["python", "machine learning", "active learning", "benchmark", "tabular data", "classification"],
     zip_safe=True,
 )
