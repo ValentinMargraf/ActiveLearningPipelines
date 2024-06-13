@@ -484,6 +484,11 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
 
         if stored_query_strategy is None:
             # The specified setting does not yet exist so create it in the database and then return it to the invoker.
+            max_id = 0
+            for query_strategy in self.query_strategies:
+                max_id = max(query_strategy["query_strategy_id"], max_id)
+
+            query_strategy_descriptor["query_strategy_id"] = max_id + 1
             query_strategy_descriptor["query_strategy_name"] = query_strategy_name
             self.query_strategies += [query_strategy_descriptor]
         else:
