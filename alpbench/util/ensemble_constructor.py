@@ -2,6 +2,7 @@ import time
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
+
 from alpbench.util.common import fullname
 
 
@@ -95,7 +96,7 @@ class Ensemble:
         else:
             for estimator in self.estimators_:
                 if self.learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
-                    from TorchUtil import TimeLimitCallback
+                    from alpbench.util.TorchUtil import TimeLimitCallback
                     estimator.fit(X, y, callbacks=[TimeLimitCallback(60)])
                 else:
                     estimator.fit(X, y)
