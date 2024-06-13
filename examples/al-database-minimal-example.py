@@ -14,7 +14,7 @@ salt = ALPEvaluator(
     benchmark_connector=benchmark_connector,
     setting_name="small",
     openml_id=31,
-    sampling_strategy_name="margin",
+    query_strategy_name="margin",
     learner_name="rf_gini",
 )
 alp = salt.fit()

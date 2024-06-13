@@ -9,17 +9,19 @@ benchmark_connector = DataFileBenchmarkConnector()
 
 # load some default settings and algorithm choices
 ensure_default_setup(benchmark_connector)
+# save the parameters of the used algorithms into .json files
+benchmark_connector.cleanup()
 
-salt = ALPEvaluator(
+eval = ALPEvaluator(
     benchmark_connector=benchmark_connector,
     setting_name="small",
     openml_id=31,
-    sampling_strategy_name="margin",
+    query_strategy_name="margin",
     learner_name="rf_gini",
 )
-alp = salt.fit()
+alp = eval.fit()
 
 # fit / predict and evaluate predictions
-X_test, y_test = salt.get_test_data()
+X_test, y_test = eval.get_test_data()
 y_hat = alp.predict(X=X_test)
 print("test acc", accuracy_score(y_test, y_hat))
