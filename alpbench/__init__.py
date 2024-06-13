@@ -1,7 +1,7 @@
 import datetime
 
 name = "ActiveLearningPipelines"
-package_name = "ALP"
+package_name = "alpbench"
 author = "JJ"
 author_email = "valentin.margraf@ifi.lmu.de"
 description = "Creating and evaluating active learning pipelines."

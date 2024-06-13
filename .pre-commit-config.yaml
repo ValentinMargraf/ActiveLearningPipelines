@@ -6,16 +6,16 @@ repos:
     rev: 24.4.2
     hooks:
       - id: black
-        name: black formatter ALP
+        name: black formatter alpbench
         entry: black
         language: python
-        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$|^ALP/util/'
+        exclude: '^alpbench/evaluation/|^alpbench/transformer_prediction_interface\.py$|^alpbench/util/'
 
       - id: black-jupyter
         name: black-jupyter
         entry: black
         language: python
-        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$|^ALP/util/'
+        exclude: '^alpbench/evaluation/|^alpbench/transformer_prediction_interface\.py$|^alpbench/util/'
 
 
   - repo: local
@@ -25,19 +25,19 @@ repos:
         language: python
         types: [ python ]
         entry: ruff check --no-cache --fix
-        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$|^ALP/util/'
+        exclude: '^alpbench/evaluation/|^alpbench/transformer_prediction_interface\.py$|^alpbench/util/'
 
 
   - repo: https://github.com/pycqa/flake8
     rev: 4.0.1
     hooks:
       - id: flake8
-        name: flake8 ALP
-        files: ALP
-        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$|^ALP/util/'
+        name: flake8 alpbench
+        files: alpbench
+        exclude: '^alpbench/evaluation/|^alpbench/transformer_prediction_interface\.py$|^alpbench/util/'
 
 
       - id: flake8
         name: flake8 tests
         files: tests
-        exclude: '^ALP/evaluation/|^ALP/transformer_prediction_interface\.py$|^ALP/util/'
+        exclude: '^alpbench/evaluation/|^alpbench/transformer_prediction_interface\.py$|^alpbench/util/'

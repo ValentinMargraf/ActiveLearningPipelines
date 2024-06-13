@@ -55,7 +55,6 @@ class ActiveLearningSetting:
         # task-dependent factor
         self.factor = factor
 
-
     def get_setting_id(self):
         """
         Get the setting id.

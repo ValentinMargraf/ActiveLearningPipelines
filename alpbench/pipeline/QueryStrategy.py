@@ -14,8 +14,8 @@ from skactiveml.pool import (
 )
 from sklearn.cluster import AgglomerativeClustering, KMeans
 
-from ALP.util.common import fullname
-from ALP.util.ensemble_constructor import Ensemble as Ens
+from alpbench.util.common import fullname
+from alpbench.util.ensemble_constructor import Ensemble as Ens
 
 
 class QueryStrategy(ABC):
@@ -455,7 +455,7 @@ class EmbeddingBasedQueryStrategy(PseudoRandomizedQueryStrategy):
     def compute_embedding(self, learner, X_l, y_l, X_u, transform_labeled=False):
         learner_fqn = fullname(learner)
         if learner_fqn == "tabpfn.scripts.transformer_prediction_interface.TabPFNClassifier":
-            from ALP.util.TorchUtil import TabPFNEmbedder
+            from alpbench.util.TorchUtil import TabPFNEmbedder
 
             clf = TabPFNEmbedder(X_l, y_l)
             if not transform_labeled:
@@ -468,7 +468,7 @@ class EmbeddingBasedQueryStrategy(PseudoRandomizedQueryStrategy):
             from pytorch_tabnet.tab_model import TabNetClassifier
 
             clf = TabNetClassifier(verbose=0)
-            from ALP.util.TorchUtil import TimeLimitCallback
+            from alpbench.util.TorchUtil import TimeLimitCallback
 
             clf.fit(X_l, y_l, callbacks=[TimeLimitCallback(180)])
             if not transform_labeled:
@@ -502,7 +502,7 @@ class TypicalClusterQueryStrategy(EmbeddingBasedQueryStrategy):
     def sample(self, learner, X_l, y_l, X_u, num_queries):
         pool_size = len(y_l)
         num_cluster = pool_size + num_queries
-        X_u = self.compute_embedding(learner,X_l=X_l, y_l=y_l, X_u=X_u)
+        X_u = self.compute_embedding(learner, X_l=X_l, y_l=y_l, X_u=X_u)
 
         kmeans = KMeans(n_clusters=num_cluster)
         X = np.concatenate((X_l, X_u))

@@ -1,74 +1,79 @@
+import codecs
 import os
 
 import setuptools
 
-from ALP import (
-    author,
-    author_email,
-    description,
-    package_name,
-    project_urls,
-    url,
-    version,
-)
+NAME = "alpbench"
+DESCRIPTION = "Active Learning Pipelines Benchmark"
+LONG_DESCRIPTION_CONTENT_TYPE = "text/markdown"
+URL = "https://github.com/ValentinMargraf/ActiveLearningPipelines"
+EMAIL = "valentin.margraf.lmu.de"
+AUTHOR = "Valentin Margraf et al."
+REQUIRES_PYTHON = ">=3.10.0"
 
-HERE = os.path.dirname(os.path.realpath(__file__))
+work_directory = os.path.abspath(os.path.dirname(__file__))
 
 
-def read_file(filepath: str) -> str:
-    with open(filepath, encoding="utf-8") as fh:
-        return fh.read()
+# https://packaging.python.org/guides/single-sourcing-package-version/
+def read(rel_path):
+    with codecs.open(str(os.path.join(work_directory, rel_path)), "r") as fp:
+        return fp.read()
 
 
-extras_require = {
-    "dev": [
-        # Dependencies
-        "scikit-learn>=1.2.0",
-        "scikit-activeml>=0.4.1",
-        "py-experimenter>=1.4.1",
-        "mysql-connector-python>=8.3.0",
-        "openml>=0.14.2",
-        # Test
-        "pytest>=4.6",
-        "pytest-cov",
-        "pytest-xdist",
-        "pytest-timeout",
-        # Docs
-        "automl_sphinx_theme",
-        # Others
-        "isort",
-        "black",
-        "pydocstyle",
-        "flake8",
-        "pre-commit",
-    ]
-}
+def get_version(rel_path):
+    for line in read(rel_path).splitlines():
+        if line.startswith("__version__"):
+            delimiter = '"' if '"' in line else "'"
+            return line.split(delimiter)[1]
+
+
+with open(os.path.join(work_directory, "README.md"), encoding="utf-8") as f:
+    readme = f.read()
+
+with open(os.path.join(work_directory, "CHANGELOG.md"), encoding="utf-8") as f:
+    changelog = f.read()
+
+base_packages = ["py-experimenter", "mysql-connector-python", "openml", "scikit-learn", "scikit-activeml"]
+
+full_packages = ["catboost", "xgboost", "pytorch-tabnet"]
+
 
 setuptools.setup(
-    name=package_name,
-    author=author,
-    author_email=author_email,
-    description=description,
-    long_description=read_file(os.path.join(HERE, "README.md")),
-    long_description_content_type="text/markdown",
-    url=url,
-    project_urls=project_urls,
-    version=version,
-    packages=setuptools.find_packages(exclude=["tests"]),
-    python_requires=">=3.8",
-    install_requires=["numpy"],
-    extras_require=extras_require,
-    test_suite="pytest",
-    platforms=["Linux"],
+    name=NAME,
+    version=get_version("alpbench/__init__.py"),
+    description=DESCRIPTION,
+    long_description="\n\n".join([readme, changelog]),
+    long_description_content_type=LONG_DESCRIPTION_CONTENT_TYPE,
+    author=AUTHOR,
+    author_email=EMAIL,
+    python_requires=REQUIRES_PYTHON,
+    url=URL,
+    project_urls={
+        "Tracker": "https://github.com/mmschlk/shapiq/issues",
+        "Source": "https://github.com/mmschlk/shapiq",
+        "Documentation": "https://shapiq.readthedocs.io",
+    },
+    packages=setuptools.find_packages(include=("alp", "alp.*")),
+    install_requires=base_packages + full_packages,
+    extras_require={"full": base_packages + full_packages},
+    include_package_data=True,
+    license="MIT",
+    license_files=("LICENSE",),
     classifiers=[
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Natural Language :: English",
+        "Development Status :: 4 - Beta",
+        "License :: OSI Approved :: MIT License",
         "Intended Audience :: Developers",
-        "Intended Audience :: Education",
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ],
+    keywords=[
+        "python",
+        "machine learning",
+    ],
+    zip_safe=True,
 )

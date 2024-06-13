@@ -1,10 +1,10 @@
-from ALP.util.pytorch_tabnet.callbacks import Callback
+from alpbench.util.pytorch_tabnet.callbacks import Callback
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
 import time
 
-from ALP.util.transformer import TransformerModel
+from alpbench.util.transformer import TransformerModel
 
 
 class TabPFNEmbedder(nn.Module):

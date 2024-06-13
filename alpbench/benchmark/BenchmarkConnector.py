@@ -1,12 +1,13 @@
 import json
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 import mysql.connector
 
-from ALP.benchmark.ActiveLearningScenario import ActiveLearningScenario
-from ALP.benchmark.ActiveLearningSetting import ActiveLearningSetting
-from ALP.util.common import format_insert_query, format_select_query, fullname, instantiate_class_by_fqn
-from pathlib import Path
+from alpbench.benchmark.ActiveLearningScenario import ActiveLearningScenario
+from alpbench.benchmark.ActiveLearningSetting import ActiveLearningSetting
+from alpbench.util.common import format_insert_query, format_select_query, fullname, instantiate_class_by_fqn
+
 
 class BenchmarkConnector(ABC):
     """Benchmark Connector
@@ -168,6 +169,7 @@ class DataFileBenchmarkConnector(BenchmarkConnector):
 
         # ensure files exist and are at least empty json arrays
         import os
+
         for file in [self.scenario_file, self.setting_file, self.learner_file, self.query_strategy_file]:
             p = Path(file)
             os.makedirs(p.parent, exist_ok=True)

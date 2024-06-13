@@ -1,8 +1,7 @@
-import pytest
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
-from ALP.benchmark.Observer import PrintObserver
+from alpbench.benchmark.Observer import PrintObserver
 
 
 def test_labeling_statistics():

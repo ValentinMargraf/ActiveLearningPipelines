@@ -1,14 +1,14 @@
-from ALP.benchmark.BenchmarkConnector import BenchmarkConnector
-from ALP.benchmark.Observer import Observer
-from ALP.pipeline.ActiveLearningPipeline import ActiveLearningPipeline
-from ALP.pipeline.Oracle import Oracle
+from alpbench.benchmark.BenchmarkConnector import BenchmarkConnector
+from alpbench.benchmark.Observer import Observer
+from alpbench.pipeline.ActiveLearningPipeline import ActiveLearningPipeline
+from alpbench.pipeline.Oracle import Oracle
 
 
 class ALPEvaluator:
     """ALPEvaluator
 
-    This class is used to evaluate an active learning pipeline (ALP) on a specific benchmark setting. This involves
-    fitting the ALP on the training data and then evaluating it on the test data.
+    This class is used to evaluate an active learning pipeline (alpbench) on a specific benchmark setting. This involves
+    fitting the alpbench on the training data and then evaluating it on the test data.
 
     Args:
         benchmark_connector (BenchmarkConnector): The benchmark connector to use.

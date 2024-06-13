@@ -1,10 +1,9 @@
 import pytest
-
 from sklearn.ensemble import RandomForestClassifier as RF
 
-from ALP.pipeline.ActiveLearningPipeline import ActiveLearningPipeline
-from ALP.pipeline.Oracle import Oracle
-from ALP.pipeline.QueryStrategy import (
+from alpbench.pipeline.ActiveLearningPipeline import ActiveLearningPipeline
+from alpbench.pipeline.Oracle import Oracle
+from alpbench.pipeline.QueryStrategy import (
     BALDQueryStrategy,
     ClusterMargin,
     CoreSetQueryStrategy,
@@ -49,6 +48,7 @@ default_query_strategies = {
     "qbc_variance_ratio": QBCVarianceRatioQueryStrategy(42, 10),
     "power_bald": PowerBALDQueryStrategy(42, 10),
 }
+
 
 @pytest.mark.usefixtures("scenario")
 def test_pipeline_executions(scenario):

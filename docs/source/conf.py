@@ -5,20 +5,20 @@ import commonmark
 from sphinx.builders.html import StandaloneHTMLBuilder
 
 sys.path.insert(0, os.path.abspath("../.."))
-sys.path.insert(0, os.path.abspath("../../ALP"))
+sys.path.insert(0, os.path.abspath("../../alpbench"))
 
-import ALP
+import alpbench
 
 # -- Read the Docs ---------------------------------------------------------------------------------
 master_doc = "index"
 
 # -- Project information ---------------------------------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-project = "ALP"
+project = "alpbench"
 copyright = "2024, Margraf et al."
 author = "Margraf et al."
-release = ALP.__version__
-version = ALP.__version__
+release = alpbench.__version__
+version = alpbench.__version__
 
 # -- General configuration -------------------------------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

@@ -1,7 +1,8 @@
 import pytest
 
-from ALP.benchmark.ActiveLearningScenario import create_dataset_split
-from fixtures.scenario import SCENARIO_ID, OPENML_ID, TEST_INDICES, LABELED_INDICES, LEN_DATASET, SETTING_ID
+from alpbench.benchmark.ActiveLearningScenario import create_dataset_split
+
+from .fixtures.scenario import LABELED_INDICES, LEN_DATASET, OPENML_ID, SCENARIO_ID, SETTING_ID, TEST_INDICES
 
 
 @pytest.mark.usefixtures("scenario")
@@ -39,29 +40,44 @@ def test_get_unlabeled_train_data(scenario):
 @pytest.mark.usefixtures("scenario")
 def test_get_setting(scenario):
     setting = scenario.get_setting()
-    assert str(type(setting)) == "<class 'ALP.benchmark.ActiveLearningSetting.ActiveLearningSetting'>"
+    assert str(type(setting)) == "<class 'alpbench.benchmark.ActiveLearningSetting.ActiveLearningSetting'>"
     assert setting.get_setting_id() == SETTING_ID
 
 
 @pytest.mark.usefixtures("scenario")
 def test_create_dataset_split(scenario):
-    labeled_indices, test_indices = create_dataset_split(scenario.X, scenario.y, scenario.test_split_seed,
-                                                         scenario.setting.setting_test_size,
-                                                         scenario.train_split_seed,
-                                                         scenario.setting.setting_labeled_train_size,
-                                                         scenario.setting.setting_train_type, scenario.setting.factor)
+    labeled_indices, test_indices = create_dataset_split(
+        scenario.X,
+        scenario.y,
+        scenario.test_split_seed,
+        scenario.setting.setting_test_size,
+        scenario.train_split_seed,
+        scenario.setting.setting_labeled_train_size,
+        scenario.setting.setting_train_type,
+        scenario.setting.factor,
+    )
     assert len(labeled_indices) > 0
     assert len(test_indices) > 0
-    labeled_indices, test_indices = create_dataset_split(scenario.X, scenario.y, scenario.test_split_seed,
-                                                         scenario.setting.setting_test_size,
-                                                         scenario.train_split_seed,
-                                                         scenario.setting.setting_labeled_train_size,
-                                                         scenario.setting.setting_train_type, 3)
+    labeled_indices, test_indices = create_dataset_split(
+        scenario.X,
+        scenario.y,
+        scenario.test_split_seed,
+        scenario.setting.setting_test_size,
+        scenario.train_split_seed,
+        scenario.setting.setting_labeled_train_size,
+        scenario.setting.setting_train_type,
+        3,
+    )
     assert len(labeled_indices) > 0
     assert len(test_indices) > 0
 
-    labeled_indices, test_indices = create_dataset_split(scenario.X, scenario.y, scenario.test_split_seed,
-                                                         scenario.setting.setting_test_size,
-                                                         scenario.train_split_seed,
-                                                         2,
-                                                         "absolute", scenario.setting.factor)
+    labeled_indices, test_indices = create_dataset_split(
+        scenario.X,
+        scenario.y,
+        scenario.test_split_seed,
+        scenario.setting.setting_test_size,
+        scenario.train_split_seed,
+        2,
+        "absolute",
+        scenario.setting.factor,
+    )

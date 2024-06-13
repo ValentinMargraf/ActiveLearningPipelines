@@ -1,4 +1,4 @@
-from ALP.benchmark.Observer import StatisticalPerformanceObserver
+from alpbench.benchmark.Observer import StatisticalPerformanceObserver
 
 
 class LogTableObserver(StatisticalPerformanceObserver):

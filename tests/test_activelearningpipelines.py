@@ -1,11 +1,10 @@
 import pytest
-
 from sklearn.ensemble import RandomForestClassifier as RF
-from ALP.benchmark.Observer import Observer
-from ALP.pipeline.ActiveLearningPipeline import ActiveLearningPipeline
-from ALP.pipeline.Oracle import Oracle
-from ALP.pipeline.QueryStrategy import RandomQueryStrategy
 
+from alpbench.benchmark.Observer import Observer
+from alpbench.pipeline.ActiveLearningPipeline import ActiveLearningPipeline
+from alpbench.pipeline.Oracle import Oracle
+from alpbench.pipeline.QueryStrategy import RandomQueryStrategy
 
 
 class DummyObserver(Observer):
@@ -41,5 +40,3 @@ def test_pipeline_executions(scenario):
     ALP.active_fit(X_l, y_l, X_u, oracle)
     y_test_hat = ALP.predict(X_test)
     assert len(y_test_hat) == len(y_test)
-
-

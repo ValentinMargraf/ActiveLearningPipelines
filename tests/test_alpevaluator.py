@@ -1,10 +1,9 @@
 import pytest
-import numpy as np
 
-from ALP.benchmark.BenchmarkConnector import DataFileBenchmarkConnector
-from ALP.benchmark.Observer import StatisticalPerformanceObserver, PrintObserver
-from ALP.evaluation.experimenter.DefaultSetup import ensure_default_setup
-from ALP.pipeline.ALPEvaluator import ALPEvaluator
+from alpbench.benchmark.BenchmarkConnector import DataFileBenchmarkConnector
+from alpbench.benchmark.Observer import PrintObserver
+from alpbench.evaluation.experimenter.DefaultSetup import ensure_default_setup
+from alpbench.pipeline.ALPEvaluator import ALPEvaluator
 
 base_folder = "temp/"
 learner_file = base_folder + "learner.json"
@@ -16,15 +15,27 @@ setting_file = base_folder + "setting.json"
 @pytest.fixture
 @pytest.mark.usefixtures("scenario")
 def benchmark_connector(scenario):
-    bc = DataFileBenchmarkConnector(learner_file=learner_file, query_strategy_file=query_strategy_file,
-                                    scenario_file=scenario_file, setting_file=setting_file)
+    bc = DataFileBenchmarkConnector(
+        learner_file=learner_file,
+        query_strategy_file=query_strategy_file,
+        scenario_file=scenario_file,
+        setting_file=setting_file,
+    )
     ensure_default_setup(bc)
-    bc.load_or_create_scenario(scenario.openml_id, test_split_seed=scenario.test_split_seed,
-                               train_split_seed=scenario.train_split_seed, seed=scenario.seed,
-                               setting_id=scenario.setting.setting_id)
+    bc.load_or_create_scenario(
+        scenario.openml_id,
+        test_split_seed=scenario.test_split_seed,
+        train_split_seed=scenario.train_split_seed,
+        seed=scenario.seed,
+        setting_id=scenario.setting.setting_id,
+    )
     bc.dump()
-    return DataFileBenchmarkConnector(learner_file=learner_file, query_strategy_file=query_strategy_file,
-                                      scenario_file=scenario_file, setting_file=setting_file)
+    return DataFileBenchmarkConnector(
+        learner_file=learner_file,
+        query_strategy_file=query_strategy_file,
+        scenario_file=scenario_file,
+        setting_file=setting_file,
+    )
 
 
 @pytest.fixture
@@ -69,7 +80,7 @@ def test_with_observer(alpevaluator):
     assert observer in alpevaluator.observer_list
 
 
-def test_with_observer(alpevaluator):
+def test_get_test_data(alpevaluator):
     alpevaluator.with_setting("small")
     alpevaluator.with_openml_id(31)
     alpevaluator.get_test_data()

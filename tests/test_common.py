@@ -1,7 +1,6 @@
-import pytest
 from sklearn.ensemble import RandomForestClassifier
 
-from ALP.util.common import format_insert_query, format_select_query, instantiate_class_by_fqn, fullname
+from alpbench.util.common import format_insert_query, format_select_query, fullname, instantiate_class_by_fqn
 
 
 def test_insert_query():

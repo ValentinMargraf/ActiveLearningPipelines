@@ -1,10 +1,9 @@
-import pytest
-
 import numpy as np
 
-from ALP.pipeline.Initializer import RandomInitializer
+from alpbench.pipeline.Initializer import RandomInitializer
 
 NUM_SAMPLES = 2
+
 
 def test_random_initializer():
     rand_init = RandomInitializer(42)

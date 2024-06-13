@@ -2,7 +2,7 @@ import time
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
-from ALP.util.common import fullname
+from alpbench.util.common import fullname
 
 
 class Ensemble:
@@ -42,11 +42,11 @@ class Ensemble:
         """
         self.estimators_ = []
         if self.learner_fqn == "tabpfn.scripts.transformer_prediction_interface.TabPFNClassifier":
-            from ALP.util.transformer_prediction_interface_ens import TabPFNClassifierEns as TabPFNEns
+            from alpbench.util.transformer_prediction_interface_ens import TabPFNClassifierEns as TabPFNEns
             self.estimator = TabPFNEns(N_ensemble_configurations=self.num_estimators)
         if self.learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
             for seed in self.random_states:
-                from ALP.util.pytorch_tabnet.tab_model import TabNetClassifier
+                from alpbench.util.pytorch_tabnet.tab_model import TabNetClassifier
                 self.estimators_.append(TabNetClassifier(seed=seed, verbose=0))
         if self.learner_fqn == "catboost.core.CatBoostClassifier":
             self.num_estimators = self.estimator.tree_count_

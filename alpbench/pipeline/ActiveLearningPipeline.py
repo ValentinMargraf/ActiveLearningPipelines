@@ -2,8 +2,8 @@ import json
 
 import numpy as np
 
-from ALP.evaluation.experimenter.LogTableObserver import LogTableObserver, SparseLogTableObserver
-from ALP.util.common import fullname
+from alpbench.evaluation.experimenter.LogTableObserver import LogTableObserver, SparseLogTableObserver
+from alpbench.util.common import fullname
 
 
 class ActiveLearningPipeline:
@@ -203,7 +203,7 @@ class ActiveLearningPipeline:
                 ids = np.random.choice(len(y_l_aug), 1000)
                 self.learner.fit(X_l_aug[ids], y_l_aug[ids])
             elif learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
-                from ALP.util.TorchUtil import TimeLimitCallback
+                from alpbench.util.TorchUtil import TimeLimitCallback
 
                 self.learner.fit(X_l_aug, y_l_aug, callbacks=[TimeLimitCallback(180)])
             else:

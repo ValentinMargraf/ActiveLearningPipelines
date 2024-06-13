@@ -1,8 +1,8 @@
 from sklearn.metrics import accuracy_score
 
-from ALP.benchmark.BenchmarkConnector import MySQLBenchmarkConnector
-from ALP.evaluation.experimenter.DefaultSetup import ensure_default_setup
-from ALP.pipeline.ALPEvaluator import ALPEvaluator
+from alpbench.benchmark.BenchmarkConnector import MySQLBenchmarkConnector
+from alpbench.evaluation.experimenter.DefaultSetup import ensure_default_setup
+from alpbench.pipeline.ALPEvaluator import ALPEvaluator
 
 # create benchmark connector and establish database connection
 benchmark_connector = MySQLBenchmarkConnector("host", "user", "password", "database", False)

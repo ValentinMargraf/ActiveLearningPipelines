@@ -45,9 +45,9 @@ Fit an ALP on dataset with openmlid 31, using a random forest and margin samplin
 ```python
 from sklearn.metrics import accuracy_score
 
-from ALP.benchmark.BenchmarkConnector import DataFileBenchmarkConnector
-from ALP.evaluation.experimenter.DefaultSetup import ensure_default_setup
-from ALP.pipeline.ALPEvaluator import ALPEvaluator
+from alpbench.benchmark.BenchmarkConnector import DataFileBenchmarkConnector
+from alpbench.evaluation.experimenter.DefaultSetup import ensure_default_setup
+from alpbench.pipeline.ALPEvaluator import ALPEvaluator
 
 # create benchmark connector and establish database connection
 benchmark_connector = DataFileBenchmarkConnector()

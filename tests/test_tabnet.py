@@ -1,9 +1,9 @@
 import pytest
 
-from ALP.pipeline.ActiveLearningPipeline import ActiveLearningPipeline
-from ALP.pipeline.Oracle import Oracle
-from ALP.pipeline.QueryStrategy import RandomQueryStrategy
-from ALP.util.pytorch_tabnet.tab_model import TabNetClassifier
+from alpbench.pipeline.ActiveLearningPipeline import ActiveLearningPipeline
+from alpbench.pipeline.Oracle import Oracle
+from alpbench.pipeline.QueryStrategy import RandomQueryStrategy
+from alpbench.util.pytorch_tabnet.tab_model import TabNetClassifier
 
 
 @pytest.mark.usefixtures("scenario")
@@ -27,4 +27,3 @@ def test_tabnet_execution(scenario):
     ALP.active_fit(X_l, y_l, X_u, oracle)
     y_test_hat = ALP.predict(X_test)
     assert len(y_test_hat) == len(y_test)
-

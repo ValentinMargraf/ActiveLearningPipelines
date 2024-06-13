@@ -1,7 +1,15 @@
 import pytest
 
-from fixtures.scenario import SETTING_ID, SETTING_NAME, SETTING_TRAIN_SIZE, SETTING_TRAIN_TYPE, SETTING_TEST_SIZE, \
-    NUMBER_OF_QUERIES, NUMBER_OF_IT, FACTOR
+from .fixtures.scenario import (
+    FACTOR,
+    NUMBER_OF_IT,
+    NUMBER_OF_QUERIES,
+    SETTING_ID,
+    SETTING_NAME,
+    SETTING_TEST_SIZE,
+    SETTING_TRAIN_SIZE,
+    SETTING_TRAIN_TYPE,
+)
 
 
 @pytest.mark.usefixtures("setting")

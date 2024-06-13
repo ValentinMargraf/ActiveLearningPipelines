@@ -8,9 +8,9 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 
 
-from ALP.benchmark.BenchmarkConnector import BenchmarkConnector
+from alpbench.benchmark.BenchmarkConnector import BenchmarkConnector
 
-from ALP.pipeline.QueryStrategy import (
+from alpbench.pipeline.QueryStrategy import (
     BALDQueryStrategy,
     ClusterMargin,
     CoreSetQueryStrategy,
@@ -35,8 +35,8 @@ from ALP.pipeline.QueryStrategy import (
     TypicalClusterQueryStrategy,
     WeightedClusterQueryStrategy
 )
-from ALP.util.pytorch_tabnet.tab_model import TabNetClassifier
-from ALP.util.transformer_prediction_interface import TabPFNClassifier
+from alpbench.util.pytorch_tabnet.tab_model import TabNetClassifier
+from alpbench.util.transformer_prediction_interface import TabPFNClassifier
 
 
 def ensure_default_setup(dbbc: BenchmarkConnector):
