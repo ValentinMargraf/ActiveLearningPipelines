@@ -35,9 +35,6 @@ from alpbench.pipeline.QueryStrategy import (
     TypicalClusterQueryStrategy,
     WeightedClusterQueryStrategy
 )
-from alpbench.util.pytorch_tabnet.tab_model import TabNetClassifier
-from alpbench.util.transformer_prediction_interface import TabPFNClassifier
-
 
 def ensure_default_setup(dbbc: BenchmarkConnector):
     """
@@ -145,9 +142,7 @@ def ensure_default_setup(dbbc: BenchmarkConnector):
         "GBT_exp": GradientBoostingClassifier(n_estimators=100, loss="exponential"),
         "GBT_logloss_large": GradientBoostingClassifier(n_estimators=250),
         "xgb": xgb.XGBClassifier(tree_method="hist", max_depth=6, n_estimators=100),
-        "catboost": cb.CatBoostClassifier(iterations=500, depth=6, verbose=0, rsm=0.1)#,
-        # "tabnet": TabNetClassifier(verbose=0),
-        # "tabpfn": TabPFNClassifier(device="cpu", N_ensemble_configurations=32)
+        "catboost": cb.CatBoostClassifier(iterations=500, depth=6, verbose=0, rsm=0.1)
     }
 
     for k, obj in default_learners.items():
