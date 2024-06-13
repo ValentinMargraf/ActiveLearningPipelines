@@ -35,6 +35,8 @@ from ALP.pipeline.QueryStrategy import (
     TypicalClusterQueryStrategy,
     WeightedClusterQueryStrategy
 )
+from ALP.util.pytorch_tabnet.tab_model import TabNetClassifier
+from ALP.util.transformer_prediction_interface import TabPFNClassifier
 
 
 def ensure_default_setup(dbbc: BenchmarkConnector):
@@ -144,8 +146,8 @@ def ensure_default_setup(dbbc: BenchmarkConnector):
         "GBT_logloss_large": GradientBoostingClassifier(n_estimators=250),
         "xgb": xgb.XGBClassifier(tree_method="hist", max_depth=6, n_estimators=100),
         "catboost": cb.CatBoostClassifier(iterations=500, depth=6, verbose=0, rsm=0.1)#,
-        #"tabnet": TabNetClassifier(verbose=0),
-        #"tabpfn": TabPFNClassifier(device="cpu", N_ensemble_configurations=32)
+        # "tabnet": TabNetClassifier(verbose=0),
+        # "tabpfn": TabPFNClassifier(device="cpu", N_ensemble_configurations=32)
     }
 
     for k, obj in default_learners.items():

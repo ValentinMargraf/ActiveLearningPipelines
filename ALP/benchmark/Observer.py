@@ -49,6 +49,7 @@ class StatisticalPerformanceObserver(Observer, ABC):
     precision = 8
 
     def __init__(self, X_test, y_test):
+        super().__init__()
         self.X_test = X_test
         self.y_test = y_test
 

@@ -33,6 +33,7 @@ class RandomInitializer(Initializer):
     """
 
     def __init__(self, seed):
+        super().__init__()
         self.qs = RandomSampling(random_state=seed)
 
     def sample(self, X_u, num_samples):

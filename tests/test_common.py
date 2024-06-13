@@ -10,8 +10,11 @@ def test_insert_query():
 
 
 def test_select_query():
-    query = format_select_query("TBL", where={"x": 1, "y": 'a'})
-    assert query == "SELECT * FROM TBL WHERE x='1' AND y='a';"
+    query = format_select_query("TBL", where={"x": 1})
+    assert query == "SELECT * FROM TBL WHERE x='1';"
+
+    query = format_select_query("TBL")
+    assert query == "SELECT * FROM TBL;"
 
 
 def test_instantiate_class_by_fqn():

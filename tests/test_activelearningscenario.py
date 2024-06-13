@@ -52,3 +52,16 @@ def test_create_dataset_split(scenario):
                                                          scenario.setting.setting_train_type, scenario.setting.factor)
     assert len(labeled_indices) > 0
     assert len(test_indices) > 0
+    labeled_indices, test_indices = create_dataset_split(scenario.X, scenario.y, scenario.test_split_seed,
+                                                         scenario.setting.setting_test_size,
+                                                         scenario.train_split_seed,
+                                                         scenario.setting.setting_labeled_train_size,
+                                                         scenario.setting.setting_train_type, 3)
+    assert len(labeled_indices) > 0
+    assert len(test_indices) > 0
+
+    labeled_indices, test_indices = create_dataset_split(scenario.X, scenario.y, scenario.test_split_seed,
+                                                         scenario.setting.setting_test_size,
+                                                         scenario.train_split_seed,
+                                                         2,
+                                                         "absolute", scenario.setting.factor)
