@@ -1,6 +1,11 @@
 # For TOML reference
 # https://learnxinyminutes.com/docs/toml/
 
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]             # path to the test directory
 minversion = "3.10"

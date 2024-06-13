@@ -15,7 +15,6 @@ class LogTableObserver(StatisticalPerformanceObserver):
     Attributes:
         model_performance_tbl (str): The name of the table where the model performance is logged.
         labeling_log_tbl (str): The name of the table where the labeling process is logged.
-
     """
 
     model_performance_tbl = "accuracy_log"
