@@ -15,7 +15,7 @@ class Ensemble:
     Args:
         estimator: object
         num_estimators: int
-        max_neighbors: int (for k nearest neighbors)
+        max_neighbors: int (for k nearest neighbors) else None
 
     Attributes:
         estimator: object (the estimator to construct the ensemble of)
@@ -26,7 +26,7 @@ class Ensemble:
         learner_fqn: str    (fully qualified name of the estimator)
     """
 
-    def __init__(self, estimator, num_estimators, max_neighbors):
+    def __init__(self, estimator, num_estimators, max_neighbors=None):
         self.estimator = estimator
         self.num_estimators = num_estimators
         self.max_neighbors = max_neighbors
@@ -127,6 +127,8 @@ class Ensemble:
                     preds[:, :, i] = self.estimator.predict_proba(X, iteration_range=(i, i + 1))
                 elif self.learner_fqn == "catboost.core.CatBoostClassifier":
                     preds[:, :, i] = self.estimator.predict_proba(X, ntree_start=i, ntree_end=i + 1)
+                elif self.learner_fqn == "sklearn.ensemble._forest.RandomForestClassifier":
+                    preds[:, :, i] = self.estimator.estimators_[i].predict_proba(X)
                 else:
                     preds[:, :, i] = self.estimators_[i].predict_proba(X)
 
