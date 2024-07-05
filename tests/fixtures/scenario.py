@@ -21,7 +21,7 @@ SETTING_TRAIN_TYPE = "proportion"
 SETTING_TEST_SIZE = 0.3
 NUMBER_OF_IT = 10
 NUMBER_OF_QUERIES = 5
-FACTOR = None
+FACTOR = -1
 
 
 @pytest.fixture
