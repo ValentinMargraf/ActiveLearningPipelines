@@ -50,7 +50,7 @@ def ensure_default_setup(dbbc: BenchmarkConnector):
             "test_size": 0.33,
             "number_of_queries": 10,
             "number_of_iterations": 20,
-            "factor": None,
+            "factor": -1,
         },
         {
             "name": "medium",
@@ -59,7 +59,7 @@ def ensure_default_setup(dbbc: BenchmarkConnector):
             "test_size": 0.33,
             "number_of_queries": 50,
             "number_of_iterations": 20,
-            "factor": None,
+            "factor": -1,
         },
         {
             "name": "large",
@@ -68,7 +68,7 @@ def ensure_default_setup(dbbc: BenchmarkConnector):
             "test_size": 0.33,
             "number_of_queries": 200,
             "number_of_iterations": 20,
-            "factor": None,
+            "factor": -1,
         },
         {
             "name": "small_dynamic",
@@ -142,7 +142,8 @@ def ensure_default_setup(dbbc: BenchmarkConnector):
         "GBT_exp": GradientBoostingClassifier(n_estimators=100, loss="exponential"),
         "GBT_logloss_large": GradientBoostingClassifier(n_estimators=250),
         "xgb": xgb.XGBClassifier(tree_method="hist", max_depth=6, n_estimators=100),
-        "catboost": cb.CatBoostClassifier(iterations=500, depth=6, verbose=0, rsm=0.1)
+        "catboost": cb.CatBoostClassifier(rsm=0.1, iterations=100, depth=10, verbose=0, boosting_type='Plain',
+                                          bootstrap_type='Bernoulli', subsample=.75),
     }
 
     for k, obj in default_learners.items():

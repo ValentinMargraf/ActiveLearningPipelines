@@ -62,7 +62,7 @@ benchmark_connector = DataFileBenchmarkConnector()
 ensure_default_setup(benchmark_connector)
 
 evaluator = ALPEvaluator(benchmark_connector=benchmark_connector,
-                         setting_name="small", openml_id=31, sampling_strategy_name="margin", learner_name="rf_gini")
+                         setting_name="small", openml_id=31, query_strategy_name="margin", learner_name="rf_gini")
 alp = evaluator.fit()
 
 # fit / predict and evaluate predictions

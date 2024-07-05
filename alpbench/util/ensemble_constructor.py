@@ -130,7 +130,7 @@ class Ensemble:
                 elif self.learner_fqn == "sklearn.ensemble._forest.RandomForestClassifier":
                     preds[:, :, i] = self.estimator.estimators_[i].predict_proba(X)
                 else:
-                    preds[:, :, i] = self.estimators_[i].predict_proba(X)
+                    preds[:, :, i] = self.estimator.estimators_[i].predict_proba(X)
 
             return preds
 

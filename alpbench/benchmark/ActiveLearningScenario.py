@@ -42,7 +42,7 @@ def create_dataset_split(
     # of labeled data points
     unlabeled_size = 1 - train_split_size
     if train_split_type == "absolute":
-        if factor is not None:
+        if factor != -1:
             train_split_size = factor * len(np.unique(y))
             unlabeled_size = 1 - train_split_size / len(X_train)
         else:
@@ -136,13 +136,17 @@ class ActiveLearningScenario:
             y = y_int
         X = OrdinalEncoder().fit_transform(X)
         X = SimpleImputer(missing_values=np.nan, strategy="mean").fit_transform(X)
-        self.X = X
-        self.y = LabelEncoder().fit_transform(y)
+
+        # filter X for duplicates
+        _, unique_indices = np.unique(X, axis=0, return_index=True)
+
+        self.X = X[unique_indices]
+        self.y = LabelEncoder().fit_transform(y)[unique_indices]
 
         if test_indices is None or labeled_indices is None:
             self.labeled_indices, self.test_indices = create_dataset_split(
-                X,
-                y,
+                self.X,
+                self.y,
                 test_split_seed,
                 setting.setting_test_size,
                 train_split_seed,
