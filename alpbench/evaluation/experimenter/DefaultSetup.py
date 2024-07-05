@@ -12,7 +12,7 @@ from alpbench.benchmark.BenchmarkConnector import BenchmarkConnector
 
 from alpbench.pipeline.QueryStrategy import (
     BALDQueryStrategy,
-    ClusterMargin,
+    ClusterMarginQueryStrategy,
     CoreSetQueryStrategy,
     DiscriminativeQueryStrategy,
     EntropyQueryStrategy,
@@ -95,7 +95,7 @@ def ensure_default_setup(dbbc: BenchmarkConnector):
     default_query_strategies = {
         "random": RandomQueryStrategy(42),
         "random_margin": RandomMarginQueryStrategy(42),
-        "cluster_margin": ClusterMargin(42),
+        "cluster_margin": ClusterMarginQueryStrategy(42),
         "core_set": CoreSetQueryStrategy(42),
         "epistemic": EpistemicUncertaintyQueryStrategy(42),
         "entropy": EntropyQueryStrategy(42),

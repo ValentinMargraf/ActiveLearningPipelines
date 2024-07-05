@@ -131,7 +131,6 @@ class ActiveMLQueryStrategy(PseudoRandomizedQueryStrategy):
             X=np.concatenate([X_l, X_u]), y=np.concatenate([y_l, nan_labels]), batch_size=num_queries
         )
         queried_original_ids = queried_ids - len(y_l)
-
         return queried_original_ids
 
 
@@ -182,7 +181,7 @@ class RandomQueryStrategy(ActiveMLQueryStrategy):
         super().__init__(seed, RandomSampling(random_state=seed))
 
 
-class UncertaintyQueryStrategy(ActiveMLModelBasedQueryStrategy):
+class UncertaintyQueryStrategy(ActiveMLQueryStrategy):
     """UncertaintyQueryStrategy
 
     This class is used to sample instances from the pool of unlabeled instances based on uncertainty.
@@ -216,7 +215,7 @@ class ExpectedAveragePrecision(UncertaintyQueryStrategy):
         super().__init__(seed=seed, method="expected_average_precision")
 
 
-class EpistemicUncertaintyQueryStrategy(ActiveMLQueryStrategy):
+class EpistemicUncertaintyQueryStrategy(ActiveMLModelBasedQueryStrategy):
     """EpistemicUncertaintyQueryStrategy
 
     This class is used to sample instances from the pool of unlabeled instances based on epistemic uncertainty.
@@ -502,8 +501,7 @@ class TypicalClusterQueryStrategy(EmbeddingBasedQueryStrategy):
     def sample(self, learner, X_l, y_l, X_u, num_queries):
         pool_size = len(y_l)
         num_cluster = pool_size + num_queries
-        X_u = self.compute_embedding(learner, X_l=X_l, y_l=y_l, X_u=X_u)
-
+        X_u, X_l = self.compute_embedding(learner, X_l=X_l, y_l=y_l, X_u=X_u, transform_labeled=True)
         kmeans = KMeans(n_clusters=num_cluster)
         X = np.concatenate((X_l, X_u))
         kmeans.fit(X)
@@ -852,7 +850,7 @@ class KMeansQueryStrategy(EmbeddingBasedQueryStrategy):
             return selected_ids[0:num_queries]
 
 
-class ClusterMargin(EmbeddingBasedQueryStrategy):
+class ClusterMarginQueryStrategy(EmbeddingBasedQueryStrategy):
     """ClusterMargin
 
     This class is used to sample instances from the pool of unlabeled instances based on the cluster margin method.
