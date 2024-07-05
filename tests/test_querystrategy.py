@@ -5,7 +5,7 @@ from alpbench.pipeline.ActiveLearningPipeline import ActiveLearningPipeline
 from alpbench.pipeline.Oracle import Oracle
 from alpbench.pipeline.QueryStrategy import (
     BALDQueryStrategy,
-    ClusterMargin,
+    ClusterMarginQueryStrategy,
     CoreSetQueryStrategy,
     DiscriminativeQueryStrategy,
     EntropyQueryStrategy,
@@ -29,7 +29,7 @@ from alpbench.pipeline.QueryStrategy import (
 default_query_strategies = {
     "random": RandomQueryStrategy(42),
     "random_margin": RandomMarginQueryStrategy(42),
-    "cluster_margin": ClusterMargin(42),
+    "cluster_margin": ClusterMarginQueryStrategy(42),
     "core_set": CoreSetQueryStrategy(42),
     "entropy": EntropyQueryStrategy(42),
     "falcun": FalcunQueryStrategy(42),
