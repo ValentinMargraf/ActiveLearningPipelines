@@ -72,7 +72,7 @@ class BudgetPerformancePlot:
                 std = df_temp[self.metric].std()
 
                 df_reset = df_temp[self.metric].reset_index()
-                 # append data to dict
+                # append data to dict
                 data[qs]['budget'].append(budget)
                 data[qs]['mean'].append(mean)
                 data[qs]['std'].append(std)
@@ -82,7 +82,7 @@ class BudgetPerformancePlot:
         self.plot_data = data
 
 
-    def show(self):
+    def show(self, show_fig = False):
         """
         This function plots the performance of different query strategies over the budget and saves
         it as .pdf under the specified path.
@@ -159,5 +159,6 @@ class BudgetPerformancePlot:
                     os.makedirs(self.path_to_save)
             self.path_to_save = self.path_to_save + str(self.learner_name) + ".pdf"
             fig.savefig(self.path_to_save, facecolor='white', transparent=True, bbox_inches='tight')
-            plt.show()
+            if show_fig:
+                plt.show()
             plt.close()

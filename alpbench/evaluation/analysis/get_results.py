@@ -19,7 +19,7 @@ class StudyData():
             os.makedirs(dir_to_save + "/")
         self.base = None
 
-    def generate_aubc_df(self):
+    def generate_summary_df(self):
         results = pd.read_csv(self.dir_to_save+"/results.csv")
         if self.base == "file":
             results = results.rename(columns={'ID': 'experiment_id'})
@@ -65,9 +65,31 @@ class StudyData():
                                 'test_f1',
                                 'test_precision', 'test_recall', 'test_auc', 'test_log_loss', 'len_X_l']]
         end_df = merged_df
-        end_df.to_csv(self.dir_to_save + "/aubc_df.csv")
+        end_df.to_csv(self.dir_to_save + "/summarized_df.csv")
         return end_df
 
+
+    def generate_aubc_df(self, df):
+        aubc_df = pd.DataFrame(columns=['setting_name', 'openml_id', 'learner_name', 'query_strategy_name',
+                                'test_split_seed', 'train_split_seed', 'seed', "aubc"])
+        for openmlid in df['openml_id'].unique():
+            for learner_name in df['learner_name'].unique():
+                for query_strategy_name in df['query_strategy_name'].unique():
+                    for test_split_seed in df['test_split_seed'].unique():
+                        for train_split_seed in df['train_split_seed'].unique():
+                            for seed in df['seed'].unique():
+                                sub_df = df[(df['openml_id'] == openmlid) & (df['learner_name'] == learner_name) &
+                                            (df['query_strategy_name'] == query_strategy_name) &
+                                            (df['test_split_seed'] == test_split_seed) &
+                                            (df['train_split_seed'] == train_split_seed) &
+                                            (df['seed'] == seed)]
+                                if len(sub_df) == 0:
+                                    continue
+                                aubc = np.trapz(sub_df['test_accuracy'].values, sub_df['len_X_l'].values)
+                                aubc_df.loc[len(aubc_df)] = [sub_df['setting_name'].values[0], openmlid, learner_name,
+                                                            query_strategy_name, test_split_seed, train_split_seed, seed, aubc]
+
+        aubc_df.to_csv(self.dir_to_save + "/aubc_df.csv")
 
 class StudyDataFromFile(StudyData):
 
