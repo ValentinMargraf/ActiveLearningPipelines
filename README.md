@@ -5,6 +5,7 @@
 
 [![PyPI Version](https://img.shields.io/pypi/pyversions/alpbench.svg)](https://pypi.org/project/alpbench)
 [![PyPI status](https://img.shields.io/pypi/status/alpbench.svg?color=blue)](https://pypi.org/project/alpbench)
+[![Downloads](https://static.pepy.tech/badge/alpbench)](https://pepy.tech/project/alpbench)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # ALPBench: A Benchmark for Active Learning Pipelines on Tabular Data
