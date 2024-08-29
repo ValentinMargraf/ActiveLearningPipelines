@@ -68,28 +68,28 @@ class StudyData():
         end_df.to_csv(self.dir_to_save + "/summarized_df.csv")
         return end_df
 
-
     def generate_aubc_df(self, df):
-        aubc_df = pd.DataFrame(columns=['setting_name', 'openml_id', 'learner_name', 'query_strategy_name',
-                                'test_split_seed', 'train_split_seed', 'seed', "aubc"])
-        for openmlid in df['openml_id'].unique():
-            for learner_name in df['learner_name'].unique():
-                for query_strategy_name in df['query_strategy_name'].unique():
-                    for test_split_seed in df['test_split_seed'].unique():
-                        for train_split_seed in df['train_split_seed'].unique():
-                            for seed in df['seed'].unique():
-                                sub_df = df[(df['openml_id'] == openmlid) & (df['learner_name'] == learner_name) &
-                                            (df['query_strategy_name'] == query_strategy_name) &
-                                            (df['test_split_seed'] == test_split_seed) &
-                                            (df['train_split_seed'] == train_split_seed) &
-                                            (df['seed'] == seed)]
-                                if len(sub_df) == 0:
-                                    continue
-                                aubc = np.trapz(sub_df['test_accuracy'].values, sub_df['len_X_l'].values)
-                                aubc_df.loc[len(aubc_df)] = [sub_df['setting_name'].values[0], openmlid, learner_name,
-                                                            query_strategy_name, test_split_seed, train_split_seed, seed, aubc]
+        # Group by all relevant columns except 'test_accuracy' and 'len_X_l'
+        grouped = df.groupby(['setting_name', 'openml_id', 'learner_name', 'query_strategy_name',
+                              'test_split_seed', 'train_split_seed', 'seed'])
 
-        aubc_df.to_csv(self.dir_to_save + "/aubc_df.csv")
+        # Apply np.trapz function to each group and calculate AUBC
+        aubc_df = grouped.apply(lambda x: pd.Series({
+            'aubc': np.trapz(x['test_accuracy'].values, x['len_X_l'].values),
+            'setting_name': x['setting_name'].iloc[0],
+            'openml_id': x['openml_id'].iloc[0],
+            'learner_name': x['learner_name'].iloc[0],
+            'query_strategy_name': x['query_strategy_name'].iloc[0],
+            'test_split_seed': x['test_split_seed'].iloc[0],
+            'train_split_seed': x['train_split_seed'].iloc[0],
+            'seed': x['seed'].iloc[0],
+        })).reset_index(drop=True)
+
+        # Save the result to a CSV file
+        aubc_df.to_csv(self.dir_to_save + "/aubc_df.csv", index=False)
+
+        return aubc_df
+
 
 class StudyDataFromFile(StudyData):
 
