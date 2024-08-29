@@ -17,7 +17,7 @@ qs_for_figure = {"margin": "MS", "least_confident": "LC", "entropy": "ES",
                  "core_set": "CoreSet", "typ_cluster": "TypClu", "cluster_margin": "CluMS",
                  "weighted_cluster": "Clue", "falcun": "FALCUN", "random": "Rand",
                  "epistemic": "EU", "aleatoric": "AU", "switching": "switch", "total": "total"}
-info = ["entropy", "least_confident", "margin", "power_margin",
+info = [ "margin", "entropy", "least_confident","power_margin",
         "max_entropy", "bald", "power_bald", "qbc_variance_ratio", "epistemic",
         "aleatoric", "total", "switching"]
 repr = ["kmeans", "core_set", "typ_cluster"]
@@ -33,6 +33,13 @@ all_learners_ordered = ["knn_3", "svm_rbf", "rf_entropy", "catboost",
                     "xgb", "mlp",
                     "tabnet",
                     "tabpfn"]
+
+binary_ids = [3, 15, 1043, 40981, 25, 1049, 1050, 29, 1053, 31, 40994, 37, 4134, 38, 1063, 1067, 44, 1068, 50, 51,
+              1590, 40536, 1169, 151, 41143, 41147, 6332, 41150, 41159, 40701, 334, 846, 23381, 40978, 40983, 934,
+              1461, 4534, 1462, 1464, 1480, 1485, 1486, 1487, 1489, 470, 1494, 23512, 23517, 1510]
+multi_ids = [6, 40966, 11, 12, 14, 16, 40975, 18, 40979, 22, 23, 40982, 28, 1567, 32, 40996, 554, 46, 40499, 54, 41027,
+             182, 188, 40668, 40670, 300, 307, 40984, 1459, 4538, 1468, 1475, 1478, 458, 1493, 469, 1497, 40923,
+             1501, 40927]
 
 class BudgetPerformancePlot:
     """BudgetPerformancePlot
@@ -179,7 +186,7 @@ class BudgetPerformancePlot:
 
 
 class WinMatrixPlot:
-    def __init__(self, df, learner_name, path_to_save = None, statistical_significant=True):
+    def __init__(self, df, learner_name, path_to_save = None, statistical_significant=True, filter_ids="all"):
         self.df = df
         self.learner_name = learner_name
         self.path_to_save = path_to_save
@@ -188,6 +195,7 @@ class WinMatrixPlot:
         self.win_matrix = None
         self.query_strategies = None
         self.num_datasets = None
+        self.filter_ids = filter_ids
 
     def generate_win_matrix(self):
         """
@@ -200,9 +208,16 @@ class WinMatrixPlot:
         for qs1 in self.query_strategies:
             for qs2 in self.query_strategies:
                 self.win_matrix[(qs1, qs2)] = [0, 0]
-        thresh = 0.05 if self.statistical_significant else 1.01
-        self.num_datasets = len(df['openml_id'].unique())
-        for oid in df['openml_id'].unique():
+        thresh = 0.05 if self.statistical_significant else -np.inf
+        oids = df['openml_id'].unique()
+        # filter for binary/multi in case
+        if self.filter_ids == "binary":
+            oids = [filter_id for filter_id in oids if filter_id in binary_ids]
+        elif self.filter_ids == "multi":
+            oids = [filter_id for filter_id in oids if filter_id in multi_ids]
+        self.num_datasets = len(oids)
+
+        for oid in oids[:]:
             oid_df = df[df['openml_id'] == oid]
             for qs1 in self.query_strategies:
                 for qs2 in self.query_strategies:
@@ -216,8 +231,8 @@ class WinMatrixPlot:
                             std1 = df1['aubc'].std()
                             std2 = df2['aubc'].std()
 
-                            t, p = ttest_ind_from_stats(mean1, std1, len(df1), mean2, std2, len(df2))
-                            if p < thresh:
+                            t, p = ttest_ind_from_stats(mean1, std1, len(df1), mean2, std2, len(df2), equal_var=False)
+                            if p > thresh:
                                 if mean1 > mean2:
                                     self.win_matrix[(qs1, qs2)][0] += 1
                                 else:
@@ -293,16 +308,21 @@ class WinMatrixPlot:
 
         ax.set_xticklabels(qs_names, fontsize=40, rotation=45)
         ax.set_yticklabels(qs_names, fontsize=40)
-        ax.set_title("Setting: " + self.setting_name + ", Learner: " + self.learner_name,
+
+        ax.set_title("Setting: " + self.setting_name + ", Learner: " + learner_for_figure[self.learner_name],
                      fontsize=50)
 
 
         if self.path_to_save is None:
-            self.path_to_save = "FIGURES/WIN_MATRICES"
-        PATH = self.path_to_save + "/"
+            self.path_to_save = "FIGURES/WIN_MATRICES/"
+        PATH = self.path_to_save
         if not os.path.exists(PATH):
             os.makedirs(PATH)
-        SAVE_PATH = PATH + self.setting_name +  "_AUBC_"+str(self.learner_name) + ".pdf"
+        if self.statistical_significant:
+            SAVE_PATH = PATH + str(self.learner_name)+"_"+ str(self.filter_ids)+ "_significant_AUBC.pdf"
+        else:
+            SAVE_PATH = PATH + str(self.learner_name)+"_"+ str(self.filter_ids) + "_AUBC.pdf"
+
         fig.savefig(SAVE_PATH, facecolor='white', transparent=True, bbox_inches='tight')
         if show_fig:
             plt.show()
@@ -338,6 +358,7 @@ class HeatMapPlot:
         self.query_strategies = None
         self.learners = None
         self.num_datasets = None
+        self.loose_matrix = False
 
 
     def generate_heatmap(self):
@@ -353,7 +374,13 @@ class HeatMapPlot:
             for qs in self.query_strategies:
                 self.heatmap[(l, qs)] = 0
         self.num_datasets = len(df['openml_id'].unique())
-        for oid in df['openml_id'].unique():
+        oids = df['openml_id'].unique()
+        # filter for binary/multi in case
+        if self.filter_ids == "binary":
+            oids = [filter_id for filter_id in oids if filter_id in binary_ids]
+        elif self.filter_ids == "multi":
+            oids = [filter_id for filter_id in oids if filter_id in multi_ids]
+        for oid in oids[:]:
             oid_df = df[df['openml_id'] == oid]
             # Dictionary to store mean performance per pipeline (learner + query strategy)
             pipeline_means = {}
@@ -363,14 +390,26 @@ class HeatMapPlot:
                     if not pipeline_df.empty:
                         pipeline_means[(l, qs)] = pipeline_df['aubc'].mean()
 
-            # Find the pipeline with the highest mean
-            best_pipeline = max(pipeline_means, key=pipeline_means.get)
-            self.heatmap[best_pipeline] += 1
+            if self.loose_matrix is False:
+                # Find the pipeline with the highest mean
+                best_pipeline = max(pipeline_means, key=pipeline_means.get)
+            else:
+                best_pipeline = min(pipeline_means, key=pipeline_means.get)
+            # And all other pipelines with exactly the same mean
+            best_mean = pipeline_means[best_pipeline]
+            # Find all pipelines with exactly the same mean as the best pipeline
+            best_pipelines = [best_pipeline]
+            for pipeline in pipeline_means:
+                if pipeline != best_pipeline:
+                    if pipeline_means[pipeline] == best_mean:
+                        best_pipelines.append(pipeline)
+            for bp in best_pipelines:
+                self.heatmap[bp] += 1
             # Increment pipelines that are not statistically significantly worse
             if self.statistical_significant:
                 best_mean = pipeline_means[best_pipeline]
-                for pipeline, mean in pipeline_means.items():
-                    if pipeline != best_pipeline:
+                for pipeline in pipeline_means:
+                    if pipeline not in best_pipelines:
                         # Retrieve the statistics for the two pipelines
                         df1 = oid_df[(oid_df['learner_name'] == best_pipeline[0]) & (
                                     oid_df['query_strategy_name'] == best_pipeline[1])]
@@ -382,8 +421,10 @@ class HeatMapPlot:
                             mean2 = df2['aubc'].mean()
                             std1 = df1['aubc'].std()
                             std2 = df2['aubc'].std()
-                            t, p = ttest_ind_from_stats(mean1, std1, len(df1), mean2, std2, len(df2))
-                            if p < 0.05:
+                            # Welch t-test
+                            t, p = ttest_ind_from_stats(mean1, std1, len(df1), mean2, std2, len(df2), equal_var=False)
+                            # p value higher than 0.05 --> no statistical significance
+                            if p > 0.05:
                                 self.heatmap[pipeline] += 1
 
 
@@ -392,11 +433,6 @@ class HeatMapPlot:
         This function plots heatmaps to compare performances of different active learning pipelines.
         The figures are saved under the specified path.
         """
-
-        res = np.zeros((len(self.learners), len(self.query_strategies)))
-        for enum_i, l in enumerate(self.learners):
-            for enum_j, qs in enumerate(self.query_strategies):
-                res[enum_i, enum_j] = self.heatmap[(l,qs)]
 
         qs_ordered = []
         for qs in all_qs_ordered:
@@ -408,6 +444,12 @@ class HeatMapPlot:
                 learners_ordered.append(l)
 
 
+        res = np.zeros((len(self.learners), len(self.query_strategies)))
+        for enum_i, l in enumerate(learners_ordered):
+            for enum_j, qs in enumerate(qs_ordered):
+                res[enum_i, enum_j] = self.heatmap[(l,qs)]
+
+
         # Define a custom colormap from light red to red
         greens = plt.cm.Greens
         reds = plt.cm.Reds
@@ -415,7 +457,7 @@ class HeatMapPlot:
         purples = plt.cm.Purples
 
         # Normalize the data
-        norm = Normalize(vmin=res.min(), vmax=res.max()/3)
+        norm = Normalize(vmin=res.min(), vmax=res.max())
 
         # Apply the custom colormap to the data
         red_colors = reds(norm(res))
@@ -431,7 +473,7 @@ class HeatMapPlot:
         # Zeichnen der Tafel mit den Farben basierend auf den Werten
         for i,l in enumerate(learners_ordered):
             for j,qs in enumerate(qs_ordered):
-                if res[i,j] > 0:
+                if res[i,j] > res.max()/3:
                     ax.text(j + 0.5, i + 0.5, str(int(res[i,j])), ha='center', va='center', color='white',
                         fontsize=30,
                         weight='bold')
@@ -482,11 +524,14 @@ class HeatMapPlot:
 
 
         if self.path_to_save is None:
-            self.path_to_save = "FIGURES/HEATMAPS"
-        PATH = self.path_to_save + "/"
+            self.path_to_save = "FIGURES/HEATMAPS/"
+        PATH = self.path_to_save
         if not os.path.exists(PATH):
             os.makedirs(PATH)
-        SAVE_PATH = PATH + self.setting_name +  "_AUBC.pdf"
+        if self.statistical_significant:
+            SAVE_PATH = PATH + str(self.filter_ids)+ "_significant_AUBC.pdf"
+        else:
+            SAVE_PATH = PATH + str(self.filter_ids) + "_AUBC.pdf"
         fig.savefig(SAVE_PATH, facecolor='white', transparent=True, bbox_inches='tight')
         if show_fig:
             plt.show()
