@@ -16,7 +16,7 @@ class Observer(ABC):
         return
 
     @abstractmethod
-    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red):
+    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red, D_u_ind):
         """
         Abstract method to observe the data in each iteration.
         """
@@ -53,7 +53,7 @@ class StatisticalPerformanceObserver(Observer, ABC):
         self.X_test = X_test
         self.y_test = y_test
 
-    def compute_labeling_statistics(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red):
+    def compute_labeling_statistics(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red, D_u_ind):
         """
         Computes the distribution of the data, which involves the ids of the selected data in each iteration, the
         overall labeled and unlabeled data.
@@ -65,6 +65,7 @@ class StatisticalPerformanceObserver(Observer, ABC):
             X_l_aug (np.array): labeled data
             y_l_aug (np.array): labeled labels
             X_u_red (np.array): unlabeled data
+            D_u_ind (np.array): Indices of X_u selected
 
         Returns:
             eval_scores (dict): dictionary with the distribution of the labeled and selected data
@@ -90,6 +91,7 @@ class StatisticalPerformanceObserver(Observer, ABC):
             "len_X_u": len(X_u_red),
             "y_sel_dist": str(selected_dist),
             "y_l_dist": str(labeled_dist),
+            "D_u_ind": str(D_u_ind),
         }
         return eval_scores
 
@@ -155,7 +157,7 @@ class PrintObserver(StatisticalPerformanceObserver):
         self.X_test = X_test
         self.y_test = y_test
 
-    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red):
+    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red, D_u_ind):
         """
         Observes the data in each iteration.
 
@@ -167,7 +169,7 @@ class PrintObserver(StatisticalPerformanceObserver):
             y_l_aug (np.array): labels of labeled data
             X_u_red (np.array): unlabeled data
         """
-        super().compute_labeling_statistics(iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red)
+        super().compute_labeling_statistics(iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red, D_u_ind)
 
     def observe_model(self, iteration, model):
         """

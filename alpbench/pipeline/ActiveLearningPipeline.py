@@ -118,7 +118,7 @@ class ActiveLearningPipeline:
             if self.observer_list is not None:
                 for o in self.observer_list:
                     if isinstance(o, LogTableObserver):
-                        o.observe_data(0, X_u_sel, y_u_sel, X_l_aug, y_l_aug, X_u_red)
+                        o.observe_data(0, X_u_sel, y_u_sel, X_l_aug, y_l_aug, X_u_red, idx_init)
                     elif isinstance(o, SparseLogTableObserver):
                         observer_data[0] = o.observe_data(0, X_u_sel, y_u_sel, X_l_aug, y_l_aug, X_u_red)
 
@@ -190,7 +190,7 @@ class ActiveLearningPipeline:
             if self.observer_list is not None:
                 for o in self.observer_list:
                     if isinstance(o, LogTableObserver):
-                        o.observe_data(i, X_u_sel, y_u_sel, X_l_aug, y_l_aug, X_u_red)
+                        o.observe_data(i, X_u_sel, y_u_sel, X_l_aug, y_l_aug, X_u_red, idx_query_orig)
                     elif isinstance(o, SparseLogTableObserver):
                         observer_data[i] = o.observe_data(i, X_u_sel, y_u_sel, X_l_aug, y_l_aug, X_u_red)
 
