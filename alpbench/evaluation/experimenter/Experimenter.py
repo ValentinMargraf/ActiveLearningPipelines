@@ -53,6 +53,8 @@ class ExperimentRunner:
             observer_list=OBSERVER,
             num_iterations=setting.get_number_of_iterations(),
             num_queries_per_iteration=setting.get_number_of_queries(),
+            initially_labeled_indices=scenario.labeled_indices,
+
         )
 
         oracle = Oracle(X_u, y_u)

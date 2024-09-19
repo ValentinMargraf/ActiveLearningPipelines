@@ -21,6 +21,7 @@ def test_tabnet_execution(scenario):
         init_budget=10,
         num_iterations=1,
         num_queries_per_iteration=10,
+        initially_labeled_indices=scenario.labeled_indices,
     )
 
     oracle = Oracle(X_u, y_u)

@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
+from pytorch_tabnet.tab_model import TabNetClassifier
 from tabpfn.scripts.transformer_prediction_interface import TabPFNClassifier
 
 from alpbench.util.ensemble_constructor import Ensemble
-from pytorch_tabnet.tab_model import TabNetClassifier
 
 
 def eval_ensemble_with_learner(learner):

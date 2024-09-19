@@ -52,6 +52,7 @@ class ActiveLearningPipeline:
         init_budget: int = None,
         num_iterations=10,
         num_queries_per_iteration=10,
+        initially_labeled_indices: list() = None,
     ):
         self.initializer = initializer
         self.learner = learner
@@ -64,6 +65,8 @@ class ActiveLearningPipeline:
         self.num_iterations = num_iterations
         # the number of data points to select in every active learning iteration to be labeled by the oracle
         self.num_queries_per_iteration = num_queries_per_iteration
+        # indices of initially labeled indices (in case no initializer is given)
+        self.initially_labeled_indices = initially_labeled_indices
 
     def active_fit(self, X_l, y_l, X_u, oracle):
         """

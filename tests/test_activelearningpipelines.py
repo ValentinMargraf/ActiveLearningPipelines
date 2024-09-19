@@ -13,7 +13,7 @@ class MockupLogTableObserver(LogTableObserver):
     def __init__(self):
         pass
 
-    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red):
+    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red, D_l_ind):
         pass
 
     def observe_model(self, iteration, model):
@@ -24,7 +24,7 @@ class MockupSparseLogTableObserver(SparseLogTableObserver):
     def __init__(self):
         pass
 
-    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red):
+    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red, D_l_ind):
         pass
 
     def observe_model(self, iteration, model):
@@ -42,7 +42,7 @@ class DummyObserver(Observer):
         self.data_logs = False
         self.model_logs = False
 
-    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red):
+    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red, D_l_ind):
         self.data_logs = True
 
     def observe_model(self, iteration, model):
@@ -64,12 +64,14 @@ def test_pipeline_executions(scenario):
         init_budget=10,
         num_iterations=1,
         num_queries_per_iteration=10,
+        initially_labeled_indices=scenario.labeled_indices,
     )
 
     oracle = Oracle(X_u, y_u)
     ALP.active_fit(X_l, y_l, X_u, oracle)
     y_test_hat = ALP.predict(X_test)
     assert len(y_test_hat) == len(y_test)
+
 
 @pytest.mark.usefixtures("scenario")
 def test_pipeline_execution_with_initializer(scenario):
@@ -95,6 +97,7 @@ def test_pipeline_execution_with_initializer(scenario):
     y_test_hat = ALP.predict(X_test)
     assert len(y_test_hat) == len(y_test)
 
+
 @pytest.mark.usefixtures("scenario")
 def test_pipeline_execution_with_observers(scenario):
     X_l, y_l, X_u, y_u, X_test, y_test = scenario.get_data_split()
@@ -119,6 +122,7 @@ def test_pipeline_execution_with_observers(scenario):
         y_test_hat = ALP.predict(X_test)
         assert len(y_test_hat) == len(y_test)
 
+
 @pytest.mark.usefixtures("scenario")
 def test_fewer_instances_than_budget(scenario):
     X_l, y_l, X_u, y_u, X_test, y_test = scenario.get_data_split()
@@ -131,6 +135,7 @@ def test_fewer_instances_than_budget(scenario):
         init_budget=10,
         num_iterations=2,
         num_queries_per_iteration=10,
+        initially_labeled_indices=scenario.labeled_indices,
     )
 
     oracle = Oracle(X_u, y_u)

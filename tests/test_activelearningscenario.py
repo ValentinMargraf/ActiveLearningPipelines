@@ -1,8 +1,8 @@
 import pytest
-import numpy as np
 
 from alpbench.benchmark.ActiveLearningScenario import create_dataset_split
-from .fixtures.scenario import LABELED_INDICES, LEN_DATASET, OPENML_ID, SCENARIO_ID, SETTING_ID, TEST_INDICES, SEED
+
+from .fixtures.scenario import LABELED_INDICES, LEN_DATASET, OPENML_ID, SCENARIO_ID, SEED, SETTING_ID, TEST_INDICES
 
 
 @pytest.mark.usefixtures("scenario")
@@ -99,6 +99,3 @@ def test_create_dataset_split(scenario):
         "absolute",
         2,
     )
-
-
-
