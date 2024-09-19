@@ -24,7 +24,7 @@ class LogTableObserver(StatisticalPerformanceObserver):
         super().__init__(X_test, y_test)
         self.result_processor = result_processor
 
-    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red, D_u_ind):
+    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red, D_l_ind):
         """
         Computes labeling statistics and log the results in the database.
 
@@ -35,12 +35,13 @@ class LogTableObserver(StatisticalPerformanceObserver):
             X_l_aug (array): The augmented labeled data.
             y_l_aug (array): The augmented labeled labels.
             X_u_red (array): The reduced unlabeled data.
+            D_l_ind (np.array): Indices of X_u selected to be labeled
 
         Returns:
             None
         """
         eval_scores = super().compute_labeling_statistics(
-            iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red, D_u_ind
+            iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red, D_l_ind
         )
         self.result_processor.process_logs({LogTableObserver.labeling_log_tbl: eval_scores})
 
@@ -82,7 +83,7 @@ class SparseLogTableObserver(StatisticalPerformanceObserver):
         super().__init__(X_test, y_test)
         self.result_processor = result_processor
 
-    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red, D_u_ind):
+    def observe_data(self, iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red, D_l_ind):
         """
         Computes labeling statistics per iteration.
 
@@ -93,12 +94,13 @@ class SparseLogTableObserver(StatisticalPerformanceObserver):
             X_l_aug (array): The augmented labeled data.
             y_l_aug (array): The augmented labels.
             X_u_red (array): The reduced unlabeled data.
+            D_l_ind (np.array): Indices of X_u selected to be labeled
 
         Returns:
             eval_scores (dict): The evaluation scores.
         """
         eval_scores = super().compute_labeling_statistics(
-            iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red, D_u_ind
+            iteration, X_u_selected, y_u_selected, X_l_aug, y_l_aug, X_u_red, D_l_ind
         )
         return eval_scores
 
@@ -139,3 +141,6 @@ class SparseLogTableObserver(StatisticalPerformanceObserver):
             None
         """
         self.result_processor.process_logs({LogTableObserver.model_performance_tbl: dict})
+
+
+

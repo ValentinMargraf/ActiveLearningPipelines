@@ -464,7 +464,7 @@ class EmbeddingBasedQueryStrategy(PseudoRandomizedQueryStrategy):
                 X_embeds = clf.forward(X, encode=True)
                 X_l, X_u = X_embeds[: len(X_l)], X_embeds[len(X_l) :]
         elif learner_fqn == "pytorch_tabnet.tab_model.TabNetClassifier":
-            from pytorch_tabnet.tab_model import TabNetClassifier
+            from alpbench.util.pytorch_tabnet.tab_model import TabNetClassifier
 
             clf = TabNetClassifier(verbose=0)
             from alpbench.util.TorchUtil import TimeLimitCallback
@@ -718,38 +718,32 @@ class FalcunQueryStrategy(PseudoRandomizedQueryStrategy):
         super().__init__(seed=seed)
 
     def sample(self, learner, X_l, y_l, X_u, num_queries):
-        probas = learner.predict_proba(X_u)
-        sorted_probas = np.sort(probas, axis=-1)
-        margins = sorted_probas[:, -1] - sorted_probas[:, -2]
-        div_scores = 1 - margins
-        gamma = 10
-        selected_ids = []
-        ids_to_choose_from = np.arange(len(margins))
-        mask = np.ones(len(margins), dtype=bool)  # Initialize mask
-        for round in range(num_queries):
-            relevance = margins + div_scores
-            relevance[np.isnan(relevance)] = 0
-            prob = relevance[mask] ** gamma / np.sum(relevance[mask] ** gamma)
-            # set nan to 0, afterwards normalize
-            prob[np.isnan(prob)] = 0
-            prob = prob / np.sum(prob)
-            prob[np.isnan(prob)] = 0
-            np.random.seed(self.seed)
-            # if still a nan
-            if np.sum(np.isnan(prob)) > 0:
-                selected_id = np.random.choice(ids_to_choose_from[mask])
-            else:
-                selected_id = np.random.choice(ids_to_choose_from[mask], p=prob)
-            selected_ids.append(selected_id)
-            # update div scores
-            x_q = probas[selected_id]
-            mask[selected_id] = False
-            # remove selected id
-            distances = np.sum(abs(probas - x_q), axis=1)
-            div_scores = np.minimum(div_scores, distances)
-            # normalize
-            div_scores = (div_scores - np.min(div_scores)) / (np.max(div_scores) - np.min(div_scores) + 1e-8)
+        from sklearn.metrics import pairwise_distances
 
+        selected_ids = []
+        vec_selected = []
+
+        probs = learner.predict_proba(X_u)
+        probs_sorted = np.sort(-probs, axis=-1)
+        unc = 1 - (probs_sorted[:, 0] - probs_sorted[:, 1])
+
+        dists = unc.copy()
+        unlabeled_range = np.arange(len(dists))
+        candidate_mask = np.ones(len(dists), dtype=bool)
+        while len(vec_selected) < num_queries:
+            if len(vec_selected) > 0:
+                new_dists = pairwise_distances(probs, [vec_selected[-1]], metric="l1").ravel().astype(float)
+                dists = np.array([dists[i] if dists[i] < new_dists[i] else new_dists[i] for i in range(len(probs))])
+            if sum(dists[candidate_mask]) > 0:
+                np.random.seed(self.seed)
+                dist_probs = dists[candidate_mask] ** 10 / sum(dists[candidate_mask] ** 10)
+                ind = np.random.choice(unlabeled_range[candidate_mask], size=1, p=dist_probs)[0]
+            else:
+                np.random.seed(self.seed)
+                ind = np.random.choice(unlabeled_range[candidate_mask], size=1)[0]
+            candidate_mask[ind] = False
+            vec_selected.append(probs[ind])
+            selected_ids.append(ind)
         return selected_ids
 
 
