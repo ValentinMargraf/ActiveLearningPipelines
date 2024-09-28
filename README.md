@@ -1,13 +1,3 @@
-[![License](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
-[![Coverage Status](https://coveralls.io/repos/github/ValentinMargraf/ActiveLearningPipelines/badge.svg)](https://coveralls.io/github/ValentinMargraf/ActiveLearningPipelines)
-[![Tests](https://github.com/ValentinMargraf/ActiveLearningPipelines/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/ValentinMargraf/ActiveLearningPipelines/actions/workflows/unit-tests.yml)
-[![Read the Docs](https://readthedocs.org/projects/shapiq/badge/?version=latest)](https://activelearningpipelines.readthedocs.io/en/latest/?badge=latest)
-
-[![PyPI Version](https://img.shields.io/pypi/pyversions/alpbench.svg)](https://pypi.org/project/alpbench)
-[![PyPI status](https://img.shields.io/pypi/status/alpbench.svg?color=blue)](https://pypi.org/project/alpbench)
-[![Downloads](https://static.pepy.tech/badge/alpbench)](https://pepy.tech/project/alpbench)
-[![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-
 # ALPBench: A Benchmark for Active Learning Pipelines on Tabular Data
 `ALPBench` is a Python package for the specification, execution, and performance monitoring of **active learning pipelines (ALP)** consisting of a **learning algorithm** and a **query strategy** for real-world tabular classification tasks. It has built-in measures to ensure evaluations are done reproducibly, saving exact dataset splits and hyperparameter settings of used algorithms. In total, `ALPBench` consists of 86 real-world tabular classification datasets and 5 active learning settings, yielding 430 active learning problems. However, the benchmark allows for easy extension such as implementing your own learning algorithm and/or query strategy and benchmark it against existing approaches.
 
@@ -16,13 +6,7 @@
 `ALPBench` is intended to work with **Python 3.10 and above**.
 
 ```
-# The base package can be installed via pip:
-pip install alpbench
-
-# Alternatively, you can install the full package via pip:
-pip install alpbench[full]
-
-# Or you can install the package from source:
+# Install the package from source:
 git clone https://github.com/ValentinMargraf/ActiveLearningPipelines.git
 cd ActiveLearningPipelines
 conda create --name alpbench python=3.10
@@ -34,8 +18,6 @@ pip install -r requirements.txt
 # Install for usage (with TabNet and TabPFN)
 pip install -r requirements_full.txt
 ```
-
-Documentation at https://activelearningpipelines.readthedocs.io/en/latest/
 
 
 # ⭐ Quickstart
