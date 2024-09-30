@@ -6,8 +6,8 @@
 `ALPBench` is intended to work with **Python 3.10 and above**.
 
 ```
-# Install the package from source:
-git clone https://github.com/ValentinMargraf/ActiveLearningPipelines.git
+# Install the package:
+git clone https://anonymous.4open.science/r/ActiveLearningPipelines-1F59.git
 cd ActiveLearningPipelines
 conda create --name alpbench python=3.10
 conda activate alpbench
