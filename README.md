@@ -7,8 +7,9 @@
 
 ```
 # Install the package:
-git clone https://anonymous.4open.science/r/ActiveLearningPipelines-1F59.git
-cd ActiveLearningPipelines
+# Download and unzip the repository under https://anonymous.4open.science/r/ActiveLearningPipelines-1F59
+# Go into the downloaded directory, e.g.:
+cd ActiveLearningPipelines-1F59
 conda create --name alpbench python=3.10
 conda activate alpbench
 
