@@ -25,8 +25,11 @@ You can use `ALPBench` in different ways. There already exist quite some learner
 run through accessing them with their name, as can be seen in the minimal example below. In the ALP.pipeline module you
 can also implement your own (new) query strategies.
 
+## 📈 Example notebooks
+Check out the following notebooks in ```docs/source/notbooks/```  to see how to run large-scale experiments using combining multiple learners with multiple 
+query strategies, how to plot results and how to specify your own active learning notebooks.
 
-## 📈 Fit an Active Learning Pipeline
+## Fit an Active Learning Pipeline
 
 Fit an ALP on dataset with openmlid 31, using a random forest and margin sampling. You can find similar example code snippets in
 **examples/**.
