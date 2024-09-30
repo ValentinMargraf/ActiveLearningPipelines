@@ -7,9 +7,9 @@
 
 ```
 # Install the package:
-# Download and unzip the repository under https://anonymous.4open.science/r/ActiveLearningPipelines-0126
+# Download and unzip the repository under https://anonymous.4open.science/r/ActiveLearningPipelines-D94B
 # Go into the downloaded directory, e.g.:
-cd ActiveLearningPipelines-0126
+cd ActiveLearningPipelines-D94B
 conda create --name alpbench python=3.10
 conda activate alpbench
 
