@@ -13,11 +13,8 @@ cd alpbench-ilcr25-F8E5
 conda create --name alpbench python=3.10
 conda activate alpbench
 
-# Install for usage (without TabNet and TabPFN)
-pip install -r requirements.txt
-
-# Install for usage (with TabNet and TabPFN)
-pip install -r requirements_full.txt
+# Install for usage
+pip install .
 ```
 
 
@@ -30,10 +27,12 @@ can also implement your own (new) query strategies.
 Check out the notebooks in ```docs/source/notebooks/```  to see how to run large-scale experiments combining multiple learners with multiple 
 query strategies (```docs/source/notebooks/run_experiments.ipynb```), how to plot results (```docs/source/notebooks/plot_results.ipynb```) and how to specify your own active learning setting (```docs/source/notebooks/test_active_learning_pipeline.ipynb```).
 
+The python snippet below will be executed, if you are currently in the root directory and run ```python examples/al-filebased-minimal-example.py```.
+
 ## Fit an Active Learning Pipeline
 
 Fit an ALP on dataset with openmlid 31, using a random forest and margin sampling. You can find similar example code snippets in
-**examples/**.
+**examples/**. 
 
 ```python
 from sklearn.metrics import accuracy_score
