@@ -26,8 +26,8 @@ run through accessing them with their name, as can be seen in the minimal exampl
 can also implement your own (new) query strategies.
 
 ## 📈 Example notebooks
-Check out the notebooks in ```docs/source/notebooks/```  to see how to run large-scale experiments using combining multiple learners with multiple 
-query strategies (```docs/source/notebooks/run_experiments.ipynb```), how to plot results (```docs/source/notebooks/plot_results.ipynb```) and how to specify your own active learning setting (```docs/source/notebooks/test_active_learning_pipeline.ipynb.ipynb```).
+Check out the notebooks in ```docs/source/notebooks/```  to see how to run large-scale experiments combining multiple learners with multiple 
+query strategies (```docs/source/notebooks/run_experiments.ipynb```), how to plot results (```docs/source/notebooks/plot_results.ipynb```) and how to specify your own active learning setting (```docs/source/notebooks/test_active_learning_pipeline.ipynb```).
 
 ## Fit an Active Learning Pipeline
 
